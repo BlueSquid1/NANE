@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# macOS cache files
+*.DS_Store
