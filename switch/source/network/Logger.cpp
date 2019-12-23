@@ -4,8 +4,6 @@ std::string Logger::serverIp = std::string();
 Logger * Logger::stdOutLogger = NULL;
 Logger * Logger::stdErrLogger = NULL;
 
-//const std::string Logger::SERVER_IP = "10.48.119.4";
-
 void Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
 {
     Result socketsInit = socketInitializeDefault();

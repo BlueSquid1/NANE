@@ -1,30 +1,49 @@
+#include <iostream> //cout
+#include <thread> //thread
+
 #include "network/Logger_server.h"
+
+enum ServerType
+{
+    StandardOut,
+    StandardError
+};
+
+void thread_main(ServerType serverType, int port)
+{
+    Logger_server stdOutServer(port);
+    int stdFd = stdOutServer.WaitForConnection();
+    if(stdFd == -1)
+    {
+        std::cout << "failed to read client on port: " << port << std::endl;
+    }
+
+    std::cout << "--------" << std::endl;
+
+    while(true)
+    {
+        std::string outMsg = stdOutServer.ReceiveMsg();
+        if(serverType == StandardOut)
+        {
+            std::cout << outMsg;
+        }
+        else
+        {
+            std::cerr << outMsg;
+        }
+    }
+}
 
 
 int main(int argc, char *argv[])
 {
     int stdOutPort = 8067;
+    std::thread stdOutThread(thread_main, StandardOut, stdOutPort);
+
     int stdErrPort = 8068;
-    Logger_server stdOutServer(stdOutPort);
-    Logger_server stdErrServer(stdErrPort);
+    std::thread stdErrThread(thread_main, StandardError, stdErrPort);
 
-    int stdOutFd = stdOutServer.WaitForConnection();
-    if(stdOutFd == -1)
-    {
-        std::cout << "failed to read client standard output" << std::endl;
-    }
-    int stdErrFd = stdErrServer.WaitForConnection();
-    if(stdErrFd == -1)
-    {
-        std::cout << "failed to read client standard errors" << std::endl;
-    }
-
-    while(true)
-    {
-        std::string outMsg = stdOutServer.ReceiveMsg();
-        std::cout << outMsg;
-
-        std::string errMsg = stdErrServer.ReceiveMsg();
-        std::cerr << errMsg;
-    }
+    stdOutThread.join();
+    stdErrThread.join();
+    return 0;
 }

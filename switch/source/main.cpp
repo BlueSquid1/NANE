@@ -1,3 +1,4 @@
+#include <iostream> //cout
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -8,11 +9,8 @@
 
 int main(int argc, char *argv[])
 {
-    Logger::Initalize("10.48.119.4");
-    
-    std::cout << "Hello World" << std::endl;
-    std::cout << "this is the second message" << std::endl;
-
+    Logger::Initalize("10.48.119.4", STDOUT_FILENO, STDERR_FILENO);
+    std::cout << "launching program" << std::endl;
 
     // Main loop
     while (appletMainLoop())
