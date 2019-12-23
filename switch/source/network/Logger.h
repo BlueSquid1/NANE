@@ -1,7 +1,7 @@
 #ifndef NETWORK_LOGGER
 #define NETWORK_LOGGER
 
-#include <iostream> //std::string
+#include <iostream> //std::string std::ostream
 #include <strings.h> //bzero()
 #include <sys/socket.h> //for socket()
 #include <arpa/inet.h> //for struct sockaddr_in
@@ -25,7 +25,7 @@ class Logger
     ~Logger();
 
     public:
-    static void Initalize(std::string serverIp, int stdOutFD = STDOUT_FILENO, int stdErrFD = STDERR_FILENO);
+    static bool Initalize(std::string serverIp, int stdOutFD = STDOUT_FILENO, int stdErrFD = STDERR_FILENO);
     static void Close();
 };
 

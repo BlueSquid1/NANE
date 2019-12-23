@@ -4,12 +4,12 @@ std::string Logger::serverIp = std::string();
 Logger * Logger::stdOutLogger = NULL;
 Logger * Logger::stdErrLogger = NULL;
 
-void Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
+bool Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
 {
     Result socketsInit = socketInitializeDefault();
     if (R_FAILED(socketsInit))
     {
-        return;
+        return false;
     }
 
     Logger::serverIp = serverIpAddress;
@@ -17,6 +17,7 @@ void Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
     int stdErrPort = 8068;
     Logger::stdOutLogger = new Logger(stdOutFD, stdOutPort);
     Logger::stdErrLogger = new Logger(stdErrFD, stdErrPort);
+    return true;
 }
 
 Logger::Logger(int fileDescriptor, int serverPort)

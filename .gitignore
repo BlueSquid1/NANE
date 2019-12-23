@@ -33,3 +33,11 @@
 
 # macOS cache files
 *.DS_Store
+
+# Nintendo switch executables
+*.elf
+*.nacp
+*.nro
+
+# build folders
+*/build/
