@@ -1,16 +1,21 @@
 #!/bin/sh
 
 #build switch project
-make -C ./switch
+make -C ./NES-Switch
+
+#build desktop project
+cmake -S ./NES-Desktop -B ./NES-Desktop/build
+make -C ./NES-Desktop/build
 
 #build logging server
-cmake -S ./desktop -B ./desktop/build
-make -C ./desktop/build
+cmake -S ./log_server -B ./log_server/build
+make -C ./log_server/build
 
 #upload via ftp
 if [ -z "$1" ]
     then
-    echo "no IP address supplied. Please provide the IP address from the nintendo switch."
+    echo "no IP address supplied."
+    echo "Finished building."
     exit 1
 fi
 

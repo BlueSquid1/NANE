@@ -6,11 +6,13 @@ Logger * Logger::stdErrLogger = NULL;
 
 bool Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
 {
+    #ifdef __SWITCH__
     Result socketsInit = socketInitializeDefault();
     if (R_FAILED(socketsInit))
     {
         return false;
     }
+    #endif
 
     Logger::serverIp = serverIpAddress;
     int stdOutPort = 8067;
@@ -63,6 +65,8 @@ void Logger::Close()
 
     Logger::stdOutLogger = NULL;
     Logger::stdErrLogger = NULL;
-
+    
+    #ifdef SWITCH
     socketExit();
+    #endif
 }

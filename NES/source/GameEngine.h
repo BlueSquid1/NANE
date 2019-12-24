@@ -3,6 +3,11 @@
 
 #include <iostream> //std::string
 #include <memory>
+#include <SDL.h>
+
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
 
 #include "network/Logger.h"
 #include "graphics/GraphicsEngine.h"

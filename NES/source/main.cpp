@@ -1,9 +1,5 @@
 #include <iostream> //cout string
-
-#include <switch.h>
-
 #include "GameEngine.h"
-
 
 int main(int argc, char *argv[])
 {    
@@ -16,7 +12,8 @@ int main(int argc, char *argv[])
     }
 
     // Main loop
-    while (appletMainLoop() && gameEngine.GetShouldExit() == false)
+    std::cout << "Entering main loop" << std::endl;
+    while (gameEngine.GetShouldExit() == false)
     {
         bool inputRet = gameEngine.UserInput();
         if(inputRet == false)

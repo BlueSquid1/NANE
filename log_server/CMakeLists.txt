@@ -9,5 +9,6 @@ file(GLOB_RECURSE SOURCES "source/*.cpp")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
-add_executable(server ${SOURCES})
+add_executable(log_server ${SOURCES})

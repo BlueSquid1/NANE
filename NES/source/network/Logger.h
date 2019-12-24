@@ -7,8 +7,9 @@
 #include <arpa/inet.h> //for struct sockaddr_in
 #include <unistd.h> //close()
 
+#ifdef __SWITCH__
 #include <switch.h> //socketInitializeDefault()
-
+#endif
 class Logger
 {
     private:

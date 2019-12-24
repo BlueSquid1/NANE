@@ -27,6 +27,15 @@ bool GameEngine::Init(std::string serverIp)
 
 bool GameEngine::UserInput()
 {
+	SDL_Event e;
+	while (SDL_PollEvent(&e)){
+        if (e.type == SDL_QUIT){
+            this->shouldExit = true;
+        }
+        if (e.type == SDL_KEYDOWN){
+            this->shouldExit = true;
+        }
+    }
 	return true;
 }
 
@@ -57,5 +66,12 @@ void GameEngine::Close()
 
 bool GameEngine::GetShouldExit()
 {
+	#ifdef __SWITCH__
+	bool shouldContinue = appletMainLoop();
+	if(shouldContinue == false)
+	{
+		return true;
+	}
+	#endif
 	return this->shouldExit;
 }
