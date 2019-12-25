@@ -41,3 +41,6 @@
 
 # build folders
 */build/
+
+#deploy cache
+cache.ini

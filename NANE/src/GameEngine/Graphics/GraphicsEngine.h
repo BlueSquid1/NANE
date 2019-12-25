@@ -10,8 +10,7 @@ class GraphicsEngine
     const int yPixelRes = 1080;
 
     SDL_Window * gWindow;
-    //SDL_Renderer *renderer;
-    SDL_Surface * gSurface;
+    SDL_Renderer *gRenderer;
 
     public:
     bool Init();

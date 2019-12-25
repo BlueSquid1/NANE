@@ -6,6 +6,13 @@ Logger * Logger::stdErrLogger = NULL;
 
 bool Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
 {
+    if( serverIpAddress.empty() )
+    {
+        std::cout << "no server ip address provided. sending logs over network has been disabled" << std::endl;
+        return true;
+    }
+    std::cout << "sending logs over network to ip: " << serverIpAddress << std::endl;
+
     #ifdef __SWITCH__
     Result socketsInit = socketInitializeDefault();
     if (R_FAILED(socketsInit))
@@ -54,6 +61,7 @@ Logger::~Logger()
 {
     if(this->serverSocket != -1)
     {
+        std::cout << "closing socket: " << this->serverSocket << std::endl;
         close(this->serverSocket);
     }
 }

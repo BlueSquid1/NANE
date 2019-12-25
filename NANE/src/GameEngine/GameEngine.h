@@ -9,8 +9,8 @@
 #include <switch.h>
 #endif
 
-#include "network/Logger.h"
-#include "graphics/GraphicsEngine.h"
+#include "Network/Logger.h"
+#include "Graphics/GraphicsEngine.h"
 
 class GameEngine
 {

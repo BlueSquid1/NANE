@@ -37,16 +37,22 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   of a homebrew executable (.nro). This is intended to be used for sysmodules.
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	NANE
 BUILD		:=	build
-SOURCES		:=	../NES/source ../NES/source/network ../NES/source/graphics
+SOURCES		:=	../NANE/src ../NANE/src/GameEngine ../NANE/src/GameEngine/Graphics ../NANE/src/GameEngine/Network ../NANE/src/NES
 DATA		:=	data
-INCLUDES	:=	../NES/source
+INCLUDES	:=	../NANE/src
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
+NANE_FLAGS := 
+
+ifneq ($(strip $(LOG_SERVER_IP)),)
+NANE_FLAGS := $(NANE_FLAGS) -DLOG_SERVER_IP=\"$(LOG_SERVER_IP)\"
+endif
+
 ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 
 CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
@@ -54,7 +60,7 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 
 CFLAGS	+=	-D__SWITCH__ $(INCLUDE) `sdl2-config --cflags`
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions $(NANE_FLAGS)
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
