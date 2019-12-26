@@ -26,7 +26,7 @@ class Logger
     ~Logger();
 
     public:
-    static bool Initalize(std::string serverIp, int stdOutFD = STDOUT_FILENO, int stdErrFD = STDERR_FILENO);
+    static bool Initalize(const std::string & serverIp, int stdOutFD = STDOUT_FILENO, int stdErrFD = STDERR_FILENO);
     static void Close();
 };
 

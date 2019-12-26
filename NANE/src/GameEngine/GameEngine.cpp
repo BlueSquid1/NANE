@@ -6,7 +6,7 @@ GameEngine::GameEngine()
 }
 
 
-bool GameEngine::Init(std::string serverIp)
+bool GameEngine::Init(const std::string & serverIp)
 {
 	std::cout << "initalizing game engine" << std::endl;
     bool isLogInit = Logger::Initalize(serverIp, STDOUT_FILENO, STDERR_FILENO);

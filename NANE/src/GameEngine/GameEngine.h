@@ -21,7 +21,7 @@ class GameEngine
 
     public:
     GameEngine();
-    bool Init(std::string serverIp);
+    bool Init(const std::string & serverIp);
     
     //returns false if fatal error has occured
     bool UserInput();

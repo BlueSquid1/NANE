@@ -6,7 +6,6 @@
 #include <sys/socket.h> //for socket()
 #include <arpa/inet.h> //for struct sockaddr_in
 #include <unistd.h> //close()
-#include <memory> //unique_ptr
 
 class Logger_server
 {

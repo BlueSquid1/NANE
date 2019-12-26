@@ -4,7 +4,7 @@ std::string Logger::serverIp = std::string();
 Logger * Logger::stdOutLogger = NULL;
 Logger * Logger::stdErrLogger = NULL;
 
-bool Logger::Initalize(std::string serverIpAddress, int stdOutFD, int stdErrFD)
+bool Logger::Initalize(const std::string & serverIpAddress, int stdOutFD, int stdErrFD)
 {
     if( serverIpAddress.empty() )
     {
