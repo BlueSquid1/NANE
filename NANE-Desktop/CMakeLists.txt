@@ -13,16 +13,23 @@ find_package(Catch2 REQUIRED)
 
 #where source code is kept
 include_directories(../NANE/src)
-file(GLOB_RECURSE SOURCES "../NANE/src/*.cpp")
+file(GLOB_RECURSE SOURCES 
+    ../NANE/src/GameEngine/*.cpp 
+    ../NANE/src/NES/*.cpp)
+
+#NANE library
+add_library(NANE_Lib ${SOURCES})
+target_link_libraries(NANE_Lib ${SDL2_LIBRARIES})
 
 #NANE executable
-add_executable(NANE ${SOURCES})
-target_link_libraries(NANE ${SDL2_LIBRARIES})
+add_executable(NANE ../NANE/src/main.cpp)
+target_link_libraries(NANE NANE_Lib)
 
 #unit test executable
-file(GLOB_RECURSE TEST_SOURCES "../NANE/test/*.cpp")
+file(GLOB_RECURSE TEST_SOURCES ../NANE/test/*.cpp)
 add_executable(unit_tests ${TEST_SOURCES})
 target_include_directories(unit_tests PUBLIC ../NANE/test)
+target_link_libraries(unit_tests NANE_Lib)
 target_link_libraries(unit_tests Catch2::Catch2)
 
 

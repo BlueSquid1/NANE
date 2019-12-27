@@ -20,7 +20,7 @@ void thread_main(ServerType serverType, int port)
 
     std::cout << "--------" << std::endl;
 
-    while(true)
+    while(stdOutServer.getConnected())
     {
         std::string outMsg = stdOutServer.ReceiveMsg();
         if(serverType == StandardOut)

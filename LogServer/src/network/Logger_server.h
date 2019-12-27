@@ -13,6 +13,7 @@ class Logger_server
     int listeningPort = -1;
     int serverSocket = -1;
     int clientSocket = -1;
+    bool connected = false;
 
     public:
     //constructor
@@ -23,6 +24,8 @@ class Logger_server
     int WaitForConnection();
     
     std::string ReceiveMsg();
+
+    bool getConnected();
 };
 
 #endif

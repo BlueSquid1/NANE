@@ -40,13 +40,14 @@ Logger_server::Logger_server(int serverListeningPort)
     std::cout << "successfully bind on port: " << this->listeningPort << std::endl;
 
     std::cout << "start to listen on port: " << this->listeningPort << std::endl;
-    int listenRet = listen(this->serverSocket, 3);
+    int listenRet = listen(this->serverSocket, 1);
     if(listenRet != 0)
     {
         std::cout << "Failed to listen to socket: " << this->serverSocket << ". listen() " << listenRet << std::endl;
         close(this->serverSocket);
         return;
     }
+    this->connected = true;
 
     std::cout << "successfully started listening on port: " << this->serverSocket << std::endl;
 }
@@ -75,6 +76,12 @@ std::string Logger_server::ReceiveMsg()
     const int bufferLen = 256;
     char coutBuffer[bufferLen];
     int bytesActuallyRead = recv(this->clientSocket, coutBuffer, bufferLen, 0);
+    if(bytesActuallyRead < 0)
+    {
+        //connection has closed exit
+        this->connected = false;
+        return std::string();
+    }
     std::string bufferString(coutBuffer, bytesActuallyRead);
     return bufferString;
 }
@@ -83,4 +90,9 @@ Logger_server::~Logger_server()
 {
     close(this->serverSocket);
     close(this->clientSocket);
+}
+
+bool Logger_server::getConnected()
+{
+    return this->connected;
 }

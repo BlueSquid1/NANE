@@ -5,5 +5,5 @@
 TEST_CASE("parse nestest.nes rom") {
   const std::string nestestPath = "../../resources/nestest.nes";
   std::unique_ptr<INes> ines = INesParser::ParseINes(nestestPath);
-  REQUIRE(2 == 4);
+  REQUIRE(ines.get() != NULL);
 }
