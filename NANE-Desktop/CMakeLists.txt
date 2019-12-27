@@ -5,20 +5,25 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(NANE)
 
+#dependancies
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 find_package(Catch2 REQUIRED)
 
+#where source code is kept
 include_directories(../NANE/src)
 file(GLOB_RECURSE SOURCES "../NANE/src/*.cpp")
 
+#NANE executable
 add_executable(NANE ${SOURCES})
 target_link_libraries(NANE ${SDL2_LIBRARIES})
 
-add_executable(unit_tests ../NANE/test/test_main.cpp ../NANE/test/NES/ROM/INesParserTest.cpp)
+#unit test executable
+file(GLOB_RECURSE TEST_SOURCES "../NANE/test/*.cpp")
+add_executable(unit_tests ${TEST_SOURCES})
+target_include_directories(unit_tests PUBLIC ../NANE/test)
 target_link_libraries(unit_tests Catch2::Catch2)
-# catch_discover_tests(unit_tests WORKING_DIRECTORY ../NANE/test)
 
 
 if(DEFINED LOG_SERVER_IP)

@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/devkitpro/libnx/include/**",
-                "/opt/devkitpro/portlibs/switch/include/**"
+                "/opt/devkitpro/portlibs/switch/include/**",
+                "/usr/local/Cellar/catch2/2.11.0/include/**"
             ],
             "defines": [],
             "macFrameworkPath": [
