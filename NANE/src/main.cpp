@@ -1,14 +1,17 @@
 #include <iostream> //cout string
 #include "GameEngine/GameEngine.h"
 
-
-
+/**
+ * program entry point
+ */
 int main(int argc, char *argv[])
 {    
     std::string logServerIp = std::string();
     #ifdef LOG_SERVER_IP
+    //if set will send cout and cerr logs to the Log server ip address below
     logServerIp = LOG_SERVER_IP;
     #endif
+    
     GameEngine gameEngine;
     if(gameEngine.Init(logServerIp) == false)
     {
@@ -16,7 +19,6 @@ int main(int argc, char *argv[])
 		return 1;
     }
 
-    // Main loop
     std::cout << "Entering main loop" << std::endl;
     while (gameEngine.GetShouldExit() == false)
     {
