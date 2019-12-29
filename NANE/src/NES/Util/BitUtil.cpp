@@ -2,6 +2,10 @@
 
 std::unique_ptr<std::vector<byte>> BitUtil::ArrayToVec(byte * array, unsigned int arrayLen)
 {
+    if(array == NULL)
+    {
+        return NULL;
+    }
     std::unique_ptr<std::vector<byte>> returnVec( new std::vector<byte>(arrayLen) );
     for(int i = 0; i < arrayLen; ++i)
     {;
@@ -10,8 +14,19 @@ std::unique_ptr<std::vector<byte>> BitUtil::ArrayToVec(byte * array, unsigned in
     return returnVec;
 }
 
-bool BitUtil::VecEqual(std::vector<byte> * vec1, std::vector<byte> * vec2)
+bool BitUtil::VecEqual(const std::vector<byte> * vec1, const std::vector<byte> * vec2)
 {
+    if(vec1 == NULL)
+    {
+        if(vec2 == NULL)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     if( vec1->size() != vec2->size() )
     {
         return false;
@@ -27,14 +42,14 @@ bool BitUtil::VecEqual(std::vector<byte> * vec1, std::vector<byte> * vec2)
     return true;
 }
 
-std::unique_ptr<std::vector<byte>> BitUtil::VecSplit(std::vector<byte> * vec, unsigned int start, unsigned int end)
+std::unique_ptr<std::vector<byte>> BitUtil::VecSplit(const std::vector<byte> * vec, unsigned int start, unsigned int end)
 {
-    if( start > end )
+    if( start >= end )
     {
-        throw std::invalid_argument("start is greater than end");
+        throw std::invalid_argument("start is greater than or equal to end");
     }
 
-    if( end >= vec->size() )
+    if( end > vec->size() )
     {
         throw std::invalid_argument("end is greater than vector length");
     }
@@ -50,11 +65,16 @@ std::unique_ptr<std::vector<byte>> BitUtil::VecSplit(std::vector<byte> * vec, un
 
 unsigned char BitUtil::GetBits(byte value, unsigned char startBit, unsigned char endBit)
 {
+    if( startBit > 7 || endBit > 7 )
+    {
+        throw std::invalid_argument("end is greater than 7");
+    }
+
     byte startMask = 0x1;
     byte mask = startMask << startBit;
     for(int i = startBit+1; i <= endBit; ++i)
     {
         mask = mask | startMask << i;
     }
-    return value & mask;
+    return (value & mask) >> startBit;
 }

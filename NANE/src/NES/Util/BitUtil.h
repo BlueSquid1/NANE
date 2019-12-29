@@ -24,7 +24,7 @@ class BitUtil
      * @param vec2 the second vector to compaire.
      * @return true if both vectors have the same content
      */
-    static bool VecEqual(std::vector<byte> * vec1, std::vector<byte> * vec2);
+    static bool VecEqual(const std::vector<byte> * vec1, const std::vector<byte> * vec2);
 
     /**
      * Will split a vector and create a smaller subvector.
@@ -33,7 +33,7 @@ class BitUtil
      * @param end the last index in "vec" for the subvector (exclusive).
      * @return the subvector.
      */
-    static std::unique_ptr<std::vector<byte>> VecSplit(std::vector<byte> * vec, unsigned int start, unsigned int end);
+    static std::unique_ptr<std::vector<byte>> VecSplit(const std::vector<byte> * vec, unsigned int start, unsigned int end);
 
     /**
      * for finding values within a single byte by applying a bit mask.
