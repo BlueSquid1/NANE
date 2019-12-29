@@ -2,8 +2,8 @@
 #include <catch2/catch.hpp>
 
 #include "NesTestdata.h"
-#include "../../../src/NES/Util/BitUtil.h"
-#include "../../../src/NES/ROM/INesParser.h"
+#include "NES/Util/BitUtil.h"
+#include "NES/ROM/INesParser.h"
 
 /**
  * tests if the nestest.nes rom can be parsed properly.

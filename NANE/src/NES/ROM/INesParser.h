@@ -6,7 +6,7 @@
 #include <fstream> //std::ifstream
 #include <exception> //exceptions
 
-#include "../Util/BitUtil.h"
+#include "NES/Util/BitUtil.h"
 #include "INes.h"
 
 /**

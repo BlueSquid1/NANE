@@ -6,6 +6,7 @@
 #include <memory> //unique_ptr
 
 typedef unsigned char byte;
+typedef unsigned short int dword;
 
 class BitUtil
 {

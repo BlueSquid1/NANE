@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "../../../src/NES/Util/BitUtil.h"
+#include "NES/Util/BitUtil.h"
 
 /**
  * test valid array to vect
