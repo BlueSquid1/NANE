@@ -4,17 +4,18 @@
 #include <memory> //std::shared_ptr
 
 #include "PpuRegisters.h"
+#include "PpuMemoryMap.h"
 #include "NES/Util/BitUtil.h"
 
-/**
- * PPU registers. 
- * Struct is used so can guarantee that fields of the struct will be laid out in memory in the order they are declared.
- */
 class Ppu
 {
     private:
-    std::shared_ptr<PpuRegisters> r;
+    std::shared_ptr<PpuRegisters> registers;
+    std::unique_ptr<PpuMemoryMap> memory;
+
     public:
+    //constructor
+    Ppu(std::shared_ptr<PpuRegisters> ppuRegisters);
 };
 
 #endif

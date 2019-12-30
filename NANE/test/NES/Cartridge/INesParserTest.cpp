@@ -2,7 +2,7 @@
 
 #include "NesTestdata.h"
 #include "NES/Util/BitUtil.h"
-#include "NES/ROM/INesParser.h"
+#include "NES/Cartridge/CartridgeLoader.h"
 
 /**
  * tests if the nestest.nes rom can be parsed properly.
@@ -10,7 +10,7 @@
 TEST_CASE("parse nestest.nes rom") {
   const std::string nestestPath = "NANE/test/resources/nestest.nes";
 
-  INesParser inesParser;
+  CartridgeLoader inesParser;
   std::unique_ptr<INes> ines = inesParser.ParseINes(nestestPath);
   REQUIRE(ines.get() != NULL);
   REQUIRE(ines->GetPrgRomLen() == 1 * 16384);

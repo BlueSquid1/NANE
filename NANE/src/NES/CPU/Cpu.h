@@ -18,7 +18,7 @@ class Cpu
 
 
     public:
-    Cpu(std::unique_ptr<CpuRegisters> cpuRegisters, std::unique_ptr<CpuMemoryMap> cpuMemoryMap);
+    Cpu(std::unique_ptr<CpuRegisters> cpuRegisters, std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
     void PowerCycle();
     void Step();
 };

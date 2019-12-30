@@ -1,5 +1,5 @@
-#ifndef INES_PARSER
-#define INES_PARSER
+#ifndef CARTRIDGE_LOADER
+#define CARTRIDGE_LOADER
 
 #include <iostream> //std::cout
 #include <memory> //unique_ptr
@@ -14,7 +14,7 @@
 /**
  * responsible for parsing a INET ROM file.
  */
-class INesParser
+class CartridgeLoader
 {
     private:
     //parse ROM file
@@ -33,7 +33,7 @@ class INesParser
     /**
      * constructor
      */
-    INesParser();
+    CartridgeLoader();
     /**
      * parsers a ROM file.
      * @param romFilePath the file path to the .nes file to be parsed into a INES format. e.g. "/var/example.nes".
@@ -41,7 +41,8 @@ class INesParser
      */
     std::unique_ptr<INes> ParseINes(const std::string & romFilePath);
 
-    std::unique_ptr<ICartridge> GenerateCartridge(std::unique_ptr<INes> INesRom);
+
+    std::unique_ptr<ICartridge> LoadCartridge(const std::string & romFilePath);
 };
 
 #endif

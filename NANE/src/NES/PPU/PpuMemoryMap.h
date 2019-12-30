@@ -2,12 +2,13 @@
 #define PPU_MEMORY_MAP
 
 #include "NES/Util/BitUtil.h"
+#include "NES/Memory/IMemoryRW.h"
 
 class PpuMemoryMap
 {
     private:
     public:
-    byte Read(dword address);
-    void Write(dword address, byte value);
+    virtual byte Read(dword address);
+    virtual void Write(dword address, byte value);
 };
 #endif
