@@ -141,3 +141,15 @@ std::unique_ptr<INes> INesParser::ParseINes(const std::string& romFilePath)
 
     return std::move(this->rom);
 }
+
+std::unique_ptr<ICartridge> INesParser::GenerateCartridge(std::unique_ptr<INes> INesRom)
+{
+    std::unique_ptr<ICartridge> returnCartridge;
+    switch(INesRom->GetMapperNumber())
+    {
+        case 0:
+            returnCartridge = std::unique_ptr<ICartridge>( new CartridgeMapping0() );
+    }
+
+    return returnCartridge;
+}

@@ -4,24 +4,40 @@
 #include "NES/Util/BitUtil.h"
 
 /**
- * CPU registers
+ * PPU registers. 
+ * Plain-Old Data struct is used so can guarantee that fields of the struct will be laid out in memory in the order they are declared in union.
  */
-struct CpuRegisters
+class CpuRegisters
 {
+    public:
+    struct RegStruct
+    {
+        union
+        {
+            unsigned short int PC; /**< Program Counter (to next instruction) */
+            struct
+            {
+                byte PCL;
+                byte PCH;
+            };
+        };
+        byte S; /**< Stack Pointer (to last inserted value) */
+        byte P; /**< Processor status */
+        byte A; /**< Accumulator */
+        byte X; /**< Index Register X */
+        byte Y; /**< Index Register Y */
+    };
+
+    //anonymous union
     union
     {
-        unsigned short int PC; /**< Program Counter (to next instruction) */
-        struct
-        {
-            byte PCL;
-            byte PCH;
-        };
+        RegStruct name;
+        byte raw[sizeof(RegStruct)];
     };
-    byte S; /**< Stack Pointer (to last inserted value) */
-    byte P; /**< Processor status */
-    byte A; /**< Accumulator */
-    byte X; /**< Index Register X */
-    byte Y; /**< Index Register Y */
-};
+    const int rawLen = sizeof(RegStruct);
+
+    //constructor
+    CpuRegisters();
+ };
 
 #endif

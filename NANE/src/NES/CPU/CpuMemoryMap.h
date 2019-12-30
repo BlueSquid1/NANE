@@ -2,19 +2,28 @@
 #define CPU_MEMORY_MAP
 
 #include <memory> //std::shared_ptr
+#include <vector> //std::vector
 
 #include "CpuRegisters.h"
 #include "NES/Util/BitUtil.h"
 #include "NES/PPU/PpuRegisters.h"
+#include "NES/APU/ApuRegisters.h"
+#include "NES/ROM/CartridgeMapping/ICartridge.h"
 
 class CpuMemoryMap
 {
     private:
-    byte cpuRam[2048];
-    std::shared_ptr<PpuRegisters> ppuRegisters;
+    
+    std::vector<byte> cpuRam; //2048 bytes
+    std::shared_ptr<PpuRegisters> ppuRegisters = NULL;
+    std::shared_ptr<ApuRegisters> apuRegisters = NULL;
+    std::shared_ptr<ICartridge> cartridgeMapping = NULL;
 
     public:
-    CpuMemoryMap(std::unique_ptr<CpuRegisters> cpuRegisters, std::shared_ptr<PpuRegisters> ppuRegisters);
+    CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, 
+        std::shared_ptr<ApuRegisters> apuRegisters, 
+        std::shared_ptr<ICartridge> cartridgeMapping);
+    
     byte Read(dword address);
     void Write(dword address, byte value);
 };

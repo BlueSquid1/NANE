@@ -6,6 +6,8 @@
 #include <fstream> //std::ifstream
 #include <exception> //exceptions
 
+#include "CartridgeMapping/ICartridge.h"
+#include "CartridgeMapping/CartridgeMapping0.h"
 #include "NES/Util/BitUtil.h"
 #include "INes.h"
 
@@ -37,7 +39,9 @@ class INesParser
      * @param romFilePath the file path to the .nes file to be parsed into a INES format. e.g. "/var/example.nes".
      * @return the parsed ROM file.
      */
-    std::unique_ptr<INes> ParseINes(const std::string& romFilePath);
+    std::unique_ptr<INes> ParseINes(const std::string & romFilePath);
+
+    std::unique_ptr<ICartridge> GenerateCartridge(std::unique_ptr<INes> INesRom);
 };
 
 #endif
