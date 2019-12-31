@@ -61,22 +61,22 @@ void INes::SetTrainerPresent(bool isTrainerPresent)
 }
 
 
-std::shared_ptr<std::vector<byte>> INes::GetPrgRomData()
+std::unique_ptr<std::vector<byte>> INes::GetPrgRomData()
 {
-    return this->prgRomData;
+    return std::move(this->prgRomData);
 }
 
-void INes::SetPrgRomData(std::shared_ptr<std::vector<byte>> prgRomData)
+void INes::SetPrgRomData(std::unique_ptr<std::vector<byte>> prgRomData)
 {
-    this->prgRomData = prgRomData;
+    this->prgRomData = std::move(prgRomData);
 }
 
-std::shared_ptr<std::vector<byte>> INes::GetChrRomData()
+std::unique_ptr<std::vector<byte>> INes::GetChrRomData()
 {
-    return this->chrRomData;
+    return std::move(this->chrRomData);
 }
 
-void INes::SetChrRomData(std::shared_ptr<std::vector<byte>> chrRomData)
+void INes::SetChrRomData(std::unique_ptr<std::vector<byte>> chrRomData)
 {
-    this->chrRomData = chrRomData;
+    this->chrRomData = std::move(chrRomData);
 }

@@ -7,6 +7,7 @@
 
 #include "Network/Logger.h"
 #include "Graphics/GraphicsEngine.h"
+#include "NES/Nes.h"
 
 /**
  * Responsible for controlling the logic flow from initialization to the game loop to closing the game.
@@ -15,7 +16,8 @@ class GameEngine
 {
     private:
     //graphics module
-    std::unique_ptr<GraphicsEngine> graphics;
+    std::unique_ptr<GraphicsEngine> graphics = NULL;
+    std::unique_ptr<Nes> nesEmulator = NULL;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
@@ -38,6 +40,18 @@ class GameEngine
      * @return false if a fatal error has occured.
      */
     bool UserInput();
+
+    /**
+     * Handles loading emulator media
+     * @return false if a fatal error has occured.
+     */
+    bool LoadMedia();
+
+    /**
+     * Final initalisation before entering game loop
+     * @return false if a fatal error has occured.
+     */
+    bool PostInit();
 
     /**
      * Handles any proccessing that needs to take place in the game loop.

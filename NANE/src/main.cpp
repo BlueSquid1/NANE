@@ -15,7 +15,21 @@ int main(int argc, char *argv[])
     GameEngine gameEngine;
     if(gameEngine.Init(logServerIp) == false)
     {
-        std::cout << "failed to initalizing game engine" << std::endl;
+        std::cerr << "failed to initalizing game engine" << std::endl;
+		return 1;
+    }
+
+    std::cout << "loaind media" << std::endl;
+    if(gameEngine.LoadMedia() == false)
+    {
+        std::cerr << "failed to load media" << std::endl;
+		return 1;
+    }
+
+    std::cout << "entering postInit" << std::endl;
+    if(gameEngine.PostInit() == false)
+    {
+        std::cerr << "failed to post init" << std::endl;
 		return 1;
     }
 
@@ -25,21 +39,21 @@ int main(int argc, char *argv[])
         bool inputRet = gameEngine.UserInput();
         if(inputRet == false)
         {
-            std::cout << "failed to read user input" << std::endl;
+            std::cerr << "failed to read user input" << std::endl;
             return 1;
         }
 
         bool processRet = gameEngine.Processing();
         if(processRet == false)
         {
-            std::cout << "processing failed" << std::endl;
+            std::cerr << "processing failed" << std::endl;
             return 1;
         }
 
         bool displayRet = gameEngine.Display();
         if(displayRet == false)
         {
-            std::cout << "displaying failed" << std::endl;
+            std::cerr << "displaying failed" << std::endl;
             return 1;
         }
     }

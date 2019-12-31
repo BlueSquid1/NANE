@@ -3,25 +3,52 @@
 GameEngine::GameEngine()
 {
 	this->graphics = std::unique_ptr<GraphicsEngine>(new GraphicsEngine());
+	this->nesEmulator = std::unique_ptr<Nes>(new Nes());
 }
 
 
 bool GameEngine::Init(const std::string & serverIp)
 {
-	std::cout << "initalizing game engine" << std::endl;
     bool isLogInit = Logger::Initalize(serverIp, STDOUT_FILENO, STDERR_FILENO);
 	if(isLogInit == false)
 	{
-		std::cout << "failed to initalize network logger" << std::endl;
+		std::cerr << "failed to initalize network logger" << std::endl;
 		return false;
 	}
+
+	std::cout << "initalizing game engine" << std::endl;
 
 	bool isGraphicsInit = this->graphics->Init();
 	if(isGraphicsInit == false)
 	{
-		std::cout << "failed to initalize graphics engine" << std::endl;
+		std::cerr << "failed to initalize graphics engine" << std::endl;
 		return false;
 	}
+
+	return true;
+}
+
+bool GameEngine::LoadMedia()
+{
+	std::string romPath = "./NANE-Desktop/build/nestest.nes";
+	if(this->nesEmulator->LoadCartridge(romPath) == false)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool GameEngine::PostInit()
+{
+	if(this->nesEmulator->PowerCycle() == false)
+	{
+		return false;
+	}
+
+	//TODO delete
+	this->nesEmulator->processes();
+
 	return true;
 }
 
@@ -49,7 +76,7 @@ bool GameEngine::Display()
 	bool graphicsRet = this->graphics->Display();
 	if(graphicsRet == false)
 	{
-		std::cout << "graphics failed to display" << std::endl;
+		std::cerr << "graphics failed to display" << std::endl;
 	}
 	return true;
 }

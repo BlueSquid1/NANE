@@ -39,10 +39,10 @@ class INes
     bool isTrainerPresent = false;
 
     //stores Prg ROM data
-    std::shared_ptr<std::vector<byte>> prgRomData = NULL;
+    std::unique_ptr<std::vector<byte>> prgRomData = NULL;
 
     //stores Chr ROM data
-    std::shared_ptr<std::vector<byte>> chrRomData = NULL;
+    std::unique_ptr<std::vector<byte>> chrRomData = NULL;
 
     //getters and setters
     public:
@@ -64,11 +64,11 @@ class INes
     bool GetTrainerPresent();
     void SetTrainerPresent(bool isTrainerPresent);
 
-    std::shared_ptr<std::vector<byte>> GetPrgRomData();
-    void SetPrgRomData(std::shared_ptr<std::vector<byte>> prgRomData);
+    std::unique_ptr<std::vector<byte>> GetPrgRomData();
+    void SetPrgRomData(std::unique_ptr<std::vector<byte>> prgRomData);
 
-    std::shared_ptr<std::vector<byte>> GetChrRomData();
-    void SetChrRomData(std::shared_ptr<std::vector<byte>> chrRomData);
+    std::unique_ptr<std::vector<byte>> GetChrRomData();
+    void SetChrRomData(std::unique_ptr<std::vector<byte>> chrRomData);
 };
 
 #endif

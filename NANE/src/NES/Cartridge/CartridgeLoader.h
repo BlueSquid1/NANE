@@ -17,23 +17,16 @@
 class CartridgeLoader
 {
     private:
-    //parse ROM file
-    std::unique_ptr<INes> rom = NULL;
-
     //parses and updates ROM with the head section
-    bool UpdateHead(std::ifstream * fileStream);
+    bool UpdateHead(std::unique_ptr<INes> & rom, std::ifstream * fileStream);
     //parses and updates ROM with the trainer section
-    bool UpdateTrainer(std::ifstream * fileStream);
+    bool UpdateTrainer(std::unique_ptr<INes> & rom, std::ifstream * fileStream);
     //parses and updates ROM with the Prg section
-    bool UpdatePrgRomData(std::ifstream * fileStream);
+    bool UpdatePrgRomData(std::unique_ptr<INes> & rom, std::ifstream * fileStream);
     //parses and updates ROM with the Chr section
-    bool UpdateChrRomData(std::ifstream * fileStream);
+    bool UpdateChrRomData(std::unique_ptr<INes> & rom, std::ifstream * fileStream);
 
     public:
-    /**
-     * constructor
-     */
-    CartridgeLoader();
     /**
      * parsers a ROM file.
      * @param romFilePath the file path to the .nes file to be parsed into a INES format. e.g. "/var/example.nes".

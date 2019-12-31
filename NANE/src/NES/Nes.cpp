@@ -19,11 +19,19 @@ bool Nes::LoadCartridge(std::string pathToRom)
     {
         return false;
     }
+    this->cpu->SetCartridge(this->cartridge);
+
     return true;
 }
 
 bool Nes::PowerCycle()
 {
+    bool cputRet = this->cpu->PowerCycle();
+    if(cputRet == false)
+    {
+        return false;
+    }
+    
     return true;
 }
 

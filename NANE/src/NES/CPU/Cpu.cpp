@@ -6,11 +6,19 @@ Cpu::Cpu(std::unique_ptr<CpuRegisters> cpuRegisters, std::shared_ptr<PpuRegister
     this->memory = std::unique_ptr<CpuMemoryMap>( new CpuMemoryMap(ppuRegisters, apuRegisters) );
 }
 
+bool Cpu::PowerCycle()
+{
+    //TODO
+    this->registers->name.PC = 0xC000;
+    return true;
+}
+
 void Cpu::Step()
 {
     //get optCode from memory
     byte optCode = this->memory->Read(this->registers->name.PC);
-    Instruction instruction = instructionSet.GetDetails(optCode);
+    std::cout << int(optCode) << std::endl;
+    //Instruction instruction = instructionSet.GetDetails(optCode);
 
     //get arguments
 
@@ -19,10 +27,17 @@ void Cpu::Step()
     //set the address temp variable
 
     //execute instructions
-    switch(instruction.instructionType)
+    //switch(instruction.instructionType)
     {
         
     }
 
     //return cycles
+}
+
+
+bool Cpu::SetCartridge(std::shared_ptr<ICartridge> cartridge)
+{
+    this->memory->SetCartridge(cartridge);
+    return true;
 }

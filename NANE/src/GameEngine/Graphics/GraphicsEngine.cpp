@@ -5,21 +5,21 @@ bool GraphicsEngine::Init()
 	std::cout << "initalizing SDL" << std::endl;
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
 	{
-		std::cout << "can't start SDL. SDL error: " << SDL_GetError() << std::endl;
+		std::cerr << "can't start SDL. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
     this->gWindow = SDL_CreateWindow("NES-NX", 0, 0, this->xPixelRes, this->yPixelRes, SDL_WINDOW_SHOWN);
 	if (!gWindow)
 	{
-		std::cout << "can't create window. SDL error: " << SDL_GetError() << std::endl;
+		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
 	this->gRenderer = SDL_CreateRenderer(this->gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if(!gRenderer)
 	{
-		std::cout << "Can't create renderer. SDL error: " << SDL_GetError() << std::endl;
+		std::cerr << "Can't create renderer. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 

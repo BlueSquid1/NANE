@@ -21,7 +21,7 @@ class Nes
     private:
     std::unique_ptr<Cpu> cpu = NULL;
     std::unique_ptr<Ppu> ppu = NULL;
-    std::unique_ptr<ICartridge> cartridge = NULL;
+    std::shared_ptr<ICartridge> cartridge = NULL;
 
     public:
     Nes();

@@ -18,12 +18,12 @@ LOGGING_SERVER_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | gre
 echo "LOGGING IP address = $LOGGING_SERVER_IP"
 
 #build switch project
-make -C ./$NES_SWITCH_PATH LOG_SERVER_IP=$LOGGING_SERVER_IP
-ret=$?
-if [[ $ret != 0 ]]; then
-    echo "Failed to build switch binary. Exiting."
-    exit 1
-fi
+#make -C ./$NES_SWITCH_PATH LOG_SERVER_IP=$LOGGING_SERVER_IP
+#ret=$?
+#if [[ $ret != 0 ]]; then
+#    echo "Failed to build switch binary. Exiting."
+#    exit 1
+#fi
 
 #build desktop project
 cmake -S ./$NES_DESKTOP_PATH -B ./$NES_DESKTOP_PATH/build

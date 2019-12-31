@@ -1,11 +1,6 @@
 #include "CartridgeLoader.h"
 
-CartridgeLoader::CartridgeLoader()
-{
-    this->rom = std::unique_ptr<INes>(new INes());
-}
-
-bool CartridgeLoader::UpdateHead( std::ifstream * fileStream )
+bool CartridgeLoader::UpdateHead( std::unique_ptr<INes> & rom, std::ifstream * fileStream )
 {
     const int headerSize = 16;
     std::vector<byte> header(headerSize);
@@ -18,8 +13,8 @@ bool CartridgeLoader::UpdateHead( std::ifstream * fileStream )
         return false;
     }
 
-    this->rom->SetPrgRomLen(header[4] * 16384);
-    this->rom->SetChrRomLen(header[5] * 8192);
+    rom->SetPrgRomLen(header[4] * 16384);
+    rom->SetChrRomLen(header[5] * 8192);
     byte flag_6 = header[6];
     bool mirroringVertical = BitUtil::GetBits(flag_6, 0);
     bool containsBattery = BitUtil::GetBits(flag_6, 1);
@@ -50,9 +45,9 @@ bool CartridgeLoader::UpdateHead( std::ifstream * fileStream )
             mirrorType = INes::horizontal;
         }
     }
-    this->rom->SetMirroringType(mirrorType);
-    this->rom->SetBatteryPresent(containsBattery);
-    this->rom->SetTrainerPresent(trainerPresent);
+    rom->SetMirroringType(mirrorType);
+    rom->SetBatteryPresent(containsBattery);
+    rom->SetTrainerPresent(trainerPresent);
 
     byte flag_7 = header[7];
     bool isVsUniSystem = BitUtil::GetBits(flag_7, 0);
@@ -65,14 +60,14 @@ bool CartridgeLoader::UpdateHead( std::ifstream * fileStream )
     byte upperNybbleMapperNum = BitUtil::GetBits(flag_7, 4, 7);
     upperNybbleMapperNum = upperNybbleMapperNum << 4;
     byte mapperNum = upperNybbleMapperNum | lowerNybbleMapperNum;
-    this->rom->SetMapperNumber(mapperNum);
+    rom->SetMapperNumber(mapperNum);
 
     return true;
 }
 
-bool CartridgeLoader::UpdateTrainer(std::ifstream * fileStream)
+bool CartridgeLoader::UpdateTrainer( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
 {
-    if(this->rom->GetTrainerPresent() == true)
+    if(rom->GetTrainerPresent() == true)
     {
         const int trainerSize = 512;
         std::vector<byte> trainer(trainerSize);
@@ -82,21 +77,21 @@ bool CartridgeLoader::UpdateTrainer(std::ifstream * fileStream)
     return true;
 }
 
-bool CartridgeLoader::UpdatePrgRomData(std::ifstream * fileStream)
+bool CartridgeLoader::UpdatePrgRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
 {
-    unsigned int prgRomSize = this->rom->GetPrgRomLen();
-    std::shared_ptr<std::vector<byte>> prgRom(new std::vector<byte>(prgRomSize));
-    fileStream->read( (char *) &(*prgRom)[0], prgRomSize);
-    this->rom->SetPrgRomData(prgRom);
+    unsigned int prgRomSize = rom->GetPrgRomLen();
+    std::unique_ptr<std::vector<byte>> prgRom(new std::vector<byte>(prgRomSize));
+    fileStream->read( (char *) prgRom->data(), prgRomSize);
+    rom->SetPrgRomData(std::move(prgRom));
     return true;
 }
 
-bool CartridgeLoader::UpdateChrRomData(std::ifstream * fileStream)
+bool CartridgeLoader::UpdateChrRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
 {
-    unsigned int chrRomSize = this->rom->GetChrRomLen();
-    std::shared_ptr<std::vector<byte>> chrRom(new std::vector<byte>(chrRomSize));
-    fileStream->read( (char *) &(*chrRom)[0], chrRomSize);
-    this->rom->SetChrRomData(chrRom);
+    unsigned int chrRomSize = rom->GetChrRomLen();
+    std::unique_ptr<std::vector<byte>> chrRom(new std::vector<byte>(chrRomSize));
+    fileStream->read( (char *) chrRom->data(), chrRomSize);
+    rom->SetChrRomData(std::move(chrRom));
     return true;
 }
 
@@ -111,54 +106,66 @@ std::unique_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
         return NULL;
     }
 
+    //parse ROM file
+    std::unique_ptr<INes> rom = std::unique_ptr<INes>(new INes());
+
     //read header
-    bool headRet = this->UpdateHead( &fileStream );
+    bool headRet = this->UpdateHead( rom, &fileStream );
     if(headRet == false)
     {
         return NULL;
     }
 
     //read trainer if present
-    bool trainerRet = this->UpdateTrainer( &fileStream );
+    bool trainerRet = this->UpdateTrainer( rom, &fileStream );
     if(trainerRet == false)
     {
         return NULL;
     }
 
     //read Program Rom
-    bool prgRomRet = this->UpdatePrgRomData( &fileStream );
+    bool prgRomRet = this->UpdatePrgRomData( rom, &fileStream );
     if(prgRomRet == false)
     {
         return NULL;
     }
 
     //read chr Rom
-    bool chrRomRet = this->UpdateChrRomData( &fileStream );
+    bool chrRomRet = this->UpdateChrRomData( rom, &fileStream );
     if(chrRomRet == false)
     {
         return NULL;
     }
 
-    return std::move(this->rom);
+    return rom;
 }
 
 std::unique_ptr<ICartridge> CartridgeLoader::LoadCartridge(const std::string & romFilePath)
 {
-    std::unique_ptr<INes> INesRom = this->ParseINes(romFilePath);
+    std::unique_ptr<INes> iNesRom = this->ParseINes(romFilePath);
+    if(iNesRom == NULL)
+    {
+        return NULL;
+    }
 
     std::unique_ptr<ICartridge> returnCartridge;
-    switch(INesRom->GetMapperNumber())
+    switch(iNesRom->GetMapperNumber())
     {
         case 0:
             returnCartridge = std::unique_ptr<ICartridge>( new CartridgeMapping0() );
             break;
         default:
-            std::cerr << "cartrdige mapping number: " << INesRom->GetMapperNumber() << " hasn't been implemented." << std::endl;
+            std::cerr << "cartrdige mapping number: " << iNesRom->GetMapperNumber() << " hasn't been implemented." << std::endl;
             return NULL;
             break;
     }
 
-    returnCartridge->
+    bool loadRet = returnCartridge->LoadINes(std::move(iNesRom));
+    if(loadRet == false)
+    {
+        std::cerr << "failed to load INES into mapping: " << returnCartridge->GetMapNumber() << std::endl;
+        return NULL;
+    }
 
     return returnCartridge;
 }

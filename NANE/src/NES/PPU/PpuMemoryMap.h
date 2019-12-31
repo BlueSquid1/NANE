@@ -4,10 +4,12 @@
 #include "NES/Util/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
 
-class PpuMemoryMap
+class PpuMemoryMap : public IMemoryRW
 {
     private:
     public:
+    //constructor
+    PpuMemoryMap();
     virtual byte Read(dword address);
     virtual void Write(dword address, byte value);
 };

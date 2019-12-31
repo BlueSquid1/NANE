@@ -19,8 +19,9 @@ class Cpu
 
     public:
     Cpu(std::unique_ptr<CpuRegisters> cpuRegisters, std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
-    void PowerCycle();
+    bool PowerCycle();
     void Step();
+    bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
 };
 
 #endif
