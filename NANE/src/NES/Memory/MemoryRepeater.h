@@ -9,12 +9,13 @@
 class MemoryRepeater : public IMemoryRW
 {
     private:
-
+    dword dataLen = 0;
     std::unique_ptr<std::vector<byte>> data = NULL;
 
     public:
-    //constructor
-    MemoryRepeater(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data = NULL);
+    //constructors
+    MemoryRepeater(dword startAddress, dword endAddress, dword dataLen);
+    MemoryRepeater(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data);
 
     dword LowerOffset(dword origionalAddress);
 

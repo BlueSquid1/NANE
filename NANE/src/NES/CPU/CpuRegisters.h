@@ -34,7 +34,7 @@ class CpuRegisters
         RegStruct name;
         byte raw[sizeof(RegStruct)];
     };
-    const int rawLen = sizeof(RegStruct);
+    int rawLen = sizeof(RegStruct);
 
     //constructor
     CpuRegisters();

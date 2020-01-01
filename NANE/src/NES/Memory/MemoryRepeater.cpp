@@ -1,17 +1,30 @@
 #include "MemoryRepeater.h"
 
+MemoryRepeater::MemoryRepeater(dword startAddress, dword endAddress, dword dataLen)
+:IMemoryRW(startAddress, endAddress)
+{
+    this->startAddress = startAddress;
+    this->endAddress = endAddress;
+    this->dataLen = dataLen;
+}
+
 MemoryRepeater::MemoryRepeater(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data)
     :IMemoryRW(startAddress, endAddress)
 {
     this->startAddress = startAddress;
     this->endAddress = endAddress;
     this->data = std::move(data);
+    this->dataLen = dataLen;
 }
 
 dword MemoryRepeater::LowerOffset(dword origionalAddress)
 {
+    if(this->data != NULL)
+    {
+        this->dataLen = this->data->size();
+    }
     dword offset = origionalAddress - this->startAddress;
-    dword lowerOffset = remainder(offset, this->data->size());
+    dword lowerOffset = fmod(offset, this->dataLen);
     return lowerOffset;
 }
 #include <iostream>
@@ -41,7 +54,6 @@ void MemoryRepeater::Write(dword address, byte value)
     {
         throw std::invalid_argument("try to write when the data field hasn't been set");
     }
-
     dword lowerOffset = this->LowerOffset(address);
     this->data->at(lowerOffset) = value;
 }

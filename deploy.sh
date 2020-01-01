@@ -1,6 +1,31 @@
 #!/bin/sh
-DeployTarget=$1 #optional, values can be "switch" or "desktop"
-SwitchIpAddress=$2 #optional, value of the form "xxx.xxx.xxx.xxx" for example: "192.168.1.100"
+
+while getopts ":b:t:p:" opt; do
+  case $opt in
+    b) BuiltType="$OPTARG" #optional, Release or Debug (defaults to Release)
+    ;;
+    t) DeployTarget="$OPTARG" #optional, values can be "switch" or "desktop"
+    ;;
+    p) SwitchIpAddress="$OPTARG" #optional, value of the form "xxx.xxx.xxx.xxx" for example: "192.168.1.100"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+#if its not specified
+if [[ -z "$BuiltType" || $BuiltType != "Debug" ]]; then
+    BuiltType="Release"
+fi
+
+echo "deploying with:"
+echo "BuiltType=$BuiltType"
+echo "DeployTarget=$DeployTarget" 
+echo "SwitchIpAddress=$SwitchIpAddress"
+
+#BuiltType=$1 #optional, release or debug (defaults to release)
+#DeployTarget=$2 #optional, values can be "switch" or "desktop"
+#SwitchIpAddress=$3 #optional, value of the form "xxx.xxx.xxx.xxx" for example: "192.168.1.100"
 
 NES_SWITCH_PATH="NANE-Switch"
 NES_DESKTOP_PATH="NANE-Desktop"
@@ -26,8 +51,8 @@ echo "LOGGING IP address = $LOGGING_SERVER_IP"
 #fi
 
 #build desktop project
-cmake -S ./$NES_DESKTOP_PATH -B ./$NES_DESKTOP_PATH/build
-make -C ./$NES_DESKTOP_PATH/build
+cmake -DCMAKE_BUILD_TYPE="$BuiltType" -S ./$NES_DESKTOP_PATH -B ./$NES_DESKTOP_PATH/build/$BuiltType
+make -C ./$NES_DESKTOP_PATH/build/$BuiltType
 ret=$?
 if [[ $ret != 0 ]]; then
     echo "Failed to build desktop binary. Exiting."
@@ -35,8 +60,8 @@ if [[ $ret != 0 ]]; then
 fi
 
 #build logging server
-cmake -S ./$LOGGING_SERVER_PATH -B ./$LOGGING_SERVER_PATH/build
-make -C ./$LOGGING_SERVER_PATH/build
+cmake -DCMAKE_BUILD_TYPE="Release" -S ./$LOGGING_SERVER_PATH -B ./$LOGGING_SERVER_PATH/build/Release
+make -C ./$LOGGING_SERVER_PATH/build/Release
 ret=$?
 if [[ $ret != 0 ]]; then
     echo "Failed to build log server. Exiting."
@@ -45,7 +70,7 @@ fi
 
 #run unit tests
 echo "running unit tests"
-./$NES_DESKTOP_PATH/build/$NES_DESKTOP_UNIT_TESTS_BINARY
+./$NES_DESKTOP_PATH/build/$BuiltType/$NES_DESKTOP_UNIT_TESTS_BINARY
 ret=$?
 if [[ $ret != 0 ]]; then
     echo "not all unit test passed. Exiting."
@@ -54,11 +79,10 @@ fi
 
 if [[ $DeployTarget == "desktop" ]]; then
     echo "launching NANE for the desktop"
-    ./$NES_DESKTOP_PATH/build/$NES_DESKTOP_BINARY
+    ./$NES_DESKTOP_PATH/build/$BuiltType/$NES_DESKTOP_BINARY
     exit 0
-fi
 
-if [[ $DeployTarget == "switch" ]]; then
+elif [[ $DeployTarget == "switch" ]]; then
     #upload via ftp
     CACHE_FILE=cache.ini
 
@@ -105,10 +129,12 @@ END_SCRIPT
 
     #launch server
     echo "launching log server"
-    ./$LOGGING_SERVER_PATH/build/$LOGGING_SERVER_BINARY
+    ./$LOGGING_SERVER_PATH/build/Release/$LOGGING_SERVER_BINARY
     ret=$?
     if [[ $ret != 0 ]]; then
         echo "Failed to launch log server. Exiting."
         exit 1
     fi
+else
+    echo "finished building"
 fi

@@ -6,10 +6,10 @@ CpuMemoryMap::CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, std::shar
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
     this->cpuRam = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x0000, 0x1FFF, std::move(ramVec)) );
     this->ppuRegisters = ppuRegisters;
-    this->ppuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x2000, 0x3FFF) );
+    this->ppuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x2000, 0x3FFF, this->ppuRegisters->rawLen) );
 
     this->apuRegisters = apuRegisters;
-    this->apuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x4000, 0x4017) );
+    this->apuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x4000, 0x4017, this->apuRegisters->rawLen) );
 }
 
 
@@ -34,7 +34,7 @@ byte CpuMemoryMap::Read(dword address)
         dword lowerOffset = this->apuRegMem->LowerOffset(address);
         return this->apuRegisters->raw[lowerOffset];
     }
-    else if(this->cartridge->Contains(address))
+    else if(this->cartridge != NULL &&this->cartridge->Contains(address))
     {
         return this->cartridge->Read(address);
     }
@@ -60,7 +60,7 @@ void CpuMemoryMap::Write(dword address, byte value)
         dword lowerOffset = this->apuRegMem->LowerOffset(address);
         this->apuRegisters->raw[lowerOffset] = value;
     }
-    else if(this->cartridge->Contains(address))
+    else if(this->cartridge != NULL && this->cartridge->Contains(address))
     {
         this->cartridge->Write(address, value);
     }

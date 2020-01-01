@@ -28,7 +28,7 @@ class PpuRegisters
         RegStruct name;
         byte raw[sizeof(RegStruct)];
     };
-    const int rawLen = sizeof(RegStruct);
+    int rawLen = sizeof(RegStruct);
 
     //constructor
     PpuRegisters();

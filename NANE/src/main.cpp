@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 		return 1;
     }
 
-    std::cout << "loaind media" << std::endl;
+    std::cout << "loading media" << std::endl;
     if(gameEngine.LoadMedia() == false)
     {
         std::cerr << "failed to load media" << std::endl;
