@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "NesTestdata.h"
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "NES/Cartridge/CartridgeLoader.h"
 
 /**

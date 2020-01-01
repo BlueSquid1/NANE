@@ -1,7 +1,7 @@
 #ifndef APU_REGISTERS
 #define APU_REGISTERS
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 
 /**
  * APU registers. 

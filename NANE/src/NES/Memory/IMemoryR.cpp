@@ -6,7 +6,7 @@ IMemoryR::IMemoryR(dword startAddress, dword endAddress)
     this->endAddress = endAddress;
 }
 
-bool IMemoryR::Contains(dword address)
+bool IMemoryR::Contains(dword address) const
 {
     return (address >= this->startAddress) && (address <= this->endAddress);
 }

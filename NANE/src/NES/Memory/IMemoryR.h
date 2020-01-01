@@ -1,7 +1,10 @@
 #ifndef I_MEMORY_R
 #define I_MEMORY_R
 
-#include "NES/Util/BitUtil.h"
+//unfortunately can't include BitUitl for the definitions as BitUtil depends on IMemoryR.
+//so I have redeclared the typedef to break the cyclic dependancies
+typedef unsigned char byte;
+typedef unsigned short int dword;
 
 class IMemoryR
 {
@@ -18,9 +21,9 @@ class IMemoryR
     //virtual deconstructor
     virtual ~IMemoryR();
 
-    virtual bool Contains(dword address);
+    virtual bool Contains(dword address) const;
 
-    virtual byte Read(dword address) = 0;
+    virtual byte Read(dword address) const = 0;
 };
 
 #endif

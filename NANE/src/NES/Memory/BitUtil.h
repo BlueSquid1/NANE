@@ -5,6 +5,8 @@
 #include <exception> //exceptions
 #include <memory> //unique_ptr
 
+#include "IMemoryR.h"
+
 typedef unsigned char byte;
 typedef unsigned short int dword;
 
@@ -44,6 +46,13 @@ class BitUtil
      * @return the resulting value from all the bits between startBit and endBit.
      */
     static unsigned char GetBits(byte value, unsigned char startBit, unsigned char endBit = 0);
+    
+    /**
+     * intepretes the 2 bytes starts at startAddress as a single dword.
+     * @param memory pointer to a piece of readable memory
+     * @param startAddress the first byte that makes up the dword 
+     */
+    static dword GetDWord(const IMemoryR * memory, dword startAddress);
 };
 
 #endif

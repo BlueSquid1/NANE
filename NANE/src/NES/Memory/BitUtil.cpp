@@ -78,3 +78,9 @@ unsigned char BitUtil::GetBits(byte value, unsigned char startBit, unsigned char
     }
     return (value & mask) >> startBit;
 }
+
+
+dword BitUtil::GetDWord(const IMemoryR * memory, dword startAddress)
+{
+    return (memory->Read(startAddress + 1) << 8) | memory->Read(startAddress);
+}

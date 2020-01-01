@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 #include <type_traits> //std::is_pod<>
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "NES/PPU/PpuRegisters.h"
 
 /**

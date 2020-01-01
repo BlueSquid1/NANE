@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 
 /**
  * data structure for a INES rom (i.e. a .nes file)

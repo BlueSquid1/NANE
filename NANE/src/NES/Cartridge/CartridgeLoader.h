@@ -8,7 +8,7 @@
 
 #include "CartridgeMapping/ICartridge.h"
 #include "CartridgeMapping/CartridgeMapping0.h"
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "INes.h"
 
 /**

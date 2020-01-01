@@ -1,7 +1,7 @@
 #ifndef CPU_REGISTERS
 #define CPU_REGISTERS
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 
 /**
  * PPU registers. 

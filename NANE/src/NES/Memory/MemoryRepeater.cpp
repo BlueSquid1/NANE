@@ -17,18 +17,19 @@ MemoryRepeater::MemoryRepeater(dword startAddress, dword endAddress, std::unique
     this->dataLen = dataLen;
 }
 
-dword MemoryRepeater::LowerOffset(dword origionalAddress)
+dword MemoryRepeater::LowerOffset(dword origionalAddress) const
 {
+    dword dataLen = this->dataLen;
     if(this->data != NULL)
     {
-        this->dataLen = this->data->size();
+        dataLen = this->data->size();
     }
     dword offset = origionalAddress - this->startAddress;
-    dword lowerOffset = fmod(offset, this->dataLen);
+    dword lowerOffset = fmod(offset, dataLen);
     return lowerOffset;
 }
 #include <iostream>
-byte MemoryRepeater::Read(dword address)
+byte MemoryRepeater::Read(dword address) const
 {
     //check boundaries
     if(!this->Contains(address))

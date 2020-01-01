@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "../INes.h"
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
 #include "NES/Memory/MemoryRepeater.h"
 
@@ -25,7 +25,7 @@ class ICartridge : public IMemoryRW
     
     virtual bool LoadINes(std::unique_ptr<INes> INesRom) = 0;
 
-    byte Read(dword address);
+    byte Read(dword address) const;
     void Write(dword address, byte value);
 
     //getters and setters

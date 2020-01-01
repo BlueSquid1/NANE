@@ -5,7 +5,7 @@
 
 #include "PpuRegisters.h"
 #include "PpuMemoryMap.h"
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 
 class Ppu
 {

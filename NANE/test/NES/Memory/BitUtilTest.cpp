@@ -1,6 +1,9 @@
 #include <catch2/catch.hpp>
+#include <memory>
+#include <vector>
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
+#include "NES/Memory/MemoryRepeater.h"
 
 /**
  * test valid array to vect
@@ -117,4 +120,15 @@ TEST_CASE("GetBits") {
     //end
     REQUIRE(BitUtil::GetBits(testByte, 7) == false);
     REQUIRE(BitUtil::GetBits(testByte, 6, 7) == 1);
+}
+
+
+/**
+ * tests getDWord
+ */
+TEST_CASE("GetDWord") {
+    std::unique_ptr<std::vector<byte>> vec( new std::vector<byte>{0x36, 0x78, 0x01} );
+    MemoryRepeater memoryRepeater( 0x0000, 0x1FFF, std::move(vec) );
+    REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x0 ) == 0x7836);
+    REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x1 ) == 0x0178);
 }

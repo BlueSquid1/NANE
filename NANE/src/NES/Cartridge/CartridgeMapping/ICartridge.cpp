@@ -11,7 +11,7 @@ ICartridge::~ICartridge()
 
 }
 
-byte ICartridge::Read(dword address)
+byte ICartridge::Read(dword address) const
 {
     if(this->prgRom->Contains(address))
     {

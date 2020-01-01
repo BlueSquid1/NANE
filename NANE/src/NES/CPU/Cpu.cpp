@@ -17,10 +17,24 @@ void Cpu::Step()
 {
     //get optCode from memory
     byte optCode = this->memory->Read(this->registers->name.PC);
+
     std::cout << int(optCode) << std::endl;
-    //Instruction instruction = instructionSet.GetDetails(optCode);
+    Instruction instruction = instructionSet.GetDetails(optCode);
+    union
+    {
+        byte byteVal;
+        dword dwordVal;
+    } optArg;
 
     //get arguments
+    if(instruction.optLength == 2)
+    {
+        optArg.byteVal = this->memory->Read(this->registers->name.PC + 1);
+    }
+    else if(instruction.optLength == 3)
+    {
+        optArg.dwordVal = BitUtil::GetDWord(this->memory.get(), this->registers->name.PC + 1);
+    }
 
     //print instruction
 

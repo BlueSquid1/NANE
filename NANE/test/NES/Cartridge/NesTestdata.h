@@ -1,4 +1,4 @@
-#include "../../../src/NES/Util/BitUtil.h"
+#include "../../../src/NES/Memory/BitUtil.h"
 
 const unsigned int nesTestPrgRomSize = 16384;
 byte nesTestPrgRom[nesTestPrgRomSize] = 

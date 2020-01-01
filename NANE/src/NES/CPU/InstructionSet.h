@@ -1,7 +1,7 @@
 #ifndef INSTRUCTION_SET
 #define INSTRUCTION_SET
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 
 enum InstructionType
 {

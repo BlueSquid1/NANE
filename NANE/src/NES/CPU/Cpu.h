@@ -3,7 +3,7 @@
 
 #include <memory> //std::unique_ptr
 
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "CpuMemoryMap.h"
 #include "CpuRegisters.h"
 #include "InstructionSet.h"

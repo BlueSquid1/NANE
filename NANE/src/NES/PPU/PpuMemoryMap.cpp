@@ -6,7 +6,7 @@ PpuMemoryMap::PpuMemoryMap()
 
 }
 
-byte PpuMemoryMap::Read(dword address)
+byte PpuMemoryMap::Read(dword address) const
 {
 
 }

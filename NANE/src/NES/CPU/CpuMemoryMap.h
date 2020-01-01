@@ -4,7 +4,7 @@
 #include <memory> //std::shared_ptr
 
 #include "CpuRegisters.h"
-#include "NES/Util/BitUtil.h"
+#include "NES/Memory/BitUtil.h"
 #include "NES/PPU/PpuRegisters.h"
 #include "NES/APU/ApuRegisters.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
@@ -29,7 +29,7 @@ class CpuMemoryMap : public IMemoryRW
     CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, 
         std::shared_ptr<ApuRegisters> apuRegisters);
 
-    virtual byte Read(dword address);
+    virtual byte Read(dword address) const;
     virtual void Write(dword address, byte value);
 
     //getters and setters
