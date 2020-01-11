@@ -5,10 +5,8 @@
 #include <exception> //exceptions
 #include <memory> //unique_ptr
 
-#include "IMemoryR.h"
-
-typedef unsigned char byte;
-typedef unsigned short int dword;
+#include "Types.h"
+#include "IMemoryRW.h"
 
 class BitUtil
 {
@@ -53,6 +51,8 @@ class BitUtil
      * @param startAddress the first byte that makes up the dword 
      */
     static dword GetDWord(const IMemoryR * memory, dword startAddress);
+
+    //static void WriteDWord(IMemoryRW * memory, dword startAddress, dword value);
 };
 
 #endif

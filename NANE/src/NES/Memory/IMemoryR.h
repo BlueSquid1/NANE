@@ -1,10 +1,7 @@
 #ifndef I_MEMORY_R
 #define I_MEMORY_R
 
-//unfortunately can't include BitUitl for the definitions as BitUtil depends on IMemoryR.
-//so I have redeclared the typedef to break the cyclic dependancies
-typedef unsigned char byte;
-typedef unsigned short int dword;
+#include "Types.h"
 
 class IMemoryR
 {

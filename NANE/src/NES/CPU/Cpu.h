@@ -6,7 +6,7 @@
 #include "NES/Memory/BitUtil.h"
 #include "CpuMemoryMap.h"
 #include "CpuRegisters.h"
-#include "InstructionSet.h"
+#include "Instructions.h"
 
 class Cpu
 {
@@ -14,13 +14,18 @@ class Cpu
     std::unique_ptr<CpuRegisters> registers = NULL;
     std::unique_ptr<CpuMemoryMap> memory = NULL;
 
-    InstructionSet instructionSet;
-
+    void UpdateRegsForOverflow(byte inputVal);
+    void UpdateRegsForZeroAndNeg(byte inputVal);
+    void UpdateRegsForAccZeroAndNeg(byte inputVal);
+    void UpdateRegsForCompaire(byte value);
+    void Push(dword value);
+    void Push(byte value);
+    byte Pop();
 
     public:
     Cpu(std::unique_ptr<CpuRegisters> cpuRegisters, std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
     bool PowerCycle();
-    void Step();
+    int Step();
     bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
 };
 

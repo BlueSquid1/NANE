@@ -46,3 +46,25 @@ TEST_CASE("CPU registers write to and read from raw") {
     REQUIRE( registers.raw[5] == 0 );
     REQUIRE( registers.raw[6] == 138 );
 }
+
+
+/**
+ * test to make sure proccessor status booleans work as expected
+ */
+TEST_CASE("CPU process state flags") {
+    CpuRegisters registers;
+    
+    //write - start
+    registers.name.P = 217; //1101 1001
+    REQUIRE(registers.name.C == true);
+    REQUIRE(registers.name.Z == false);
+    REQUIRE(registers.name.I == false);
+    REQUIRE(registers.name.D == true);
+    REQUIRE(registers.name.B == true);
+    REQUIRE(registers.name._ == false);
+    REQUIRE(registers.name.V == true);
+    REQUIRE(registers.name.N == true);
+
+    registers.name.B = false;
+    REQUIRE(registers.name.P == 201); //1100 1001
+}

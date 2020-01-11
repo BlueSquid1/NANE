@@ -14,7 +14,7 @@ class CpuRegisters
     {
         union
         {
-            unsigned short int PC; /**< Program Counter (to next instruction) */
+            dword PC; /**< Program Counter (to next instruction) */
             struct
             {
                 byte PCL;
@@ -22,7 +22,21 @@ class CpuRegisters
             };
         };
         byte S; /**< Stack Pointer (to last inserted value) */
-        byte P; /**< Processor status */
+        union
+        {
+            byte P; /**< Processor status */
+            struct
+            {
+                bool C : 1; /**< Carry Flag */
+                bool Z : 1; /**< Zero Flag */
+                bool I : 1; /**< Interrupt Disable */
+                bool D : 1; /**< Decimal Mode Flag */
+                bool B : 1; /**< Break Command */
+                bool _ : 1; /**< EXPANSION */
+                bool V : 1; /**< Overflow Flag */
+                bool N : 1; /**< Negative Result */
+            };
+        };
         byte A; /**< Accumulator */
         byte X; /**< Index Register X */
         byte Y; /**< Index Register Y */
