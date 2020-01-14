@@ -19,7 +19,11 @@ bool Nes::LoadCartridge(std::string pathToRom)
     {
         return false;
     }
-    this->cpu->SetCartridge(this->cartridge);
+    bool setCartRet = this->cpu->SetCartridge(this->cartridge);
+    if(setCartRet == false)
+    {
+        return false;
+    }
 
     return true;
 }
