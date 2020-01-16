@@ -73,10 +73,9 @@ int Cpu::Step()
         case Instructions::AddrM::imm:
         {
             instLen = 2;
-            address = this->memory->Read(this->registers->name.PC + 1);
-            inputVal = this->memory->Read(address);
+            inputVal = this->memory->Read(this->registers->name.PC + 1);
             //ORA #$AA
-            ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << address;
+            ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
             break;
         }
         case Instructions::AddrM::zpg_:
@@ -231,8 +230,9 @@ int Cpu::Step()
     {
         case Instructions::Instr::ADC:
         {
-            this->UpdateRegsForOverflow(inputVal);
+            byte oldA = this->registers->name.A;
             this->registers->name.A = this->registers->name.A + this->registers->name.C + inputVal;
+            this->UpdateRegsForOverflow(oldA, inputVal);
             this->UpdateRegsForZeroAndNeg(this->registers->name.A);
             break;
         }
@@ -289,7 +289,7 @@ int Cpu::Step()
         }
         case Instructions::Instr::BIT:
         {
-            byte result = (this->registers->name.A & inputVal) == 0;
+            byte result = this->registers->name.A & inputVal;
             this->UpdateRegsForZeroAndNeg(result);
             this->registers->name.V = BitUtil::GetBits(inputVal, 6);
             this->registers->name.N = BitUtil::GetBits(inputVal, 7);
@@ -315,6 +315,7 @@ int Cpu::Step()
         }
         case Instructions::Instr::BPL:
         {
+            byte p = this->registers->name.P;
             if( this->registers->name.N == false )
             {
                 cycleCount += 1;
@@ -325,7 +326,7 @@ int Cpu::Step()
         }
         case Instructions::Instr::BRK:
         {
-            throw std::logic_error("Haven't implemented break command");
+            std::cerr << "Haven't implemented break command" << std::endl;
             break;
         }
         case Instructions::Instr::BVC:
@@ -370,20 +371,17 @@ int Cpu::Step()
         }
         case Instructions::Instr::CMP:
         {
-            byte result = this->registers->name.A - inputVal;
-            this->UpdateRegsForCompaire(result);
+            this->UpdateRegsForCompaire(this->registers->name.A, inputVal);
             break;
         }
         case Instructions::Instr::CPX:
         {
-            byte result = this->registers->name.X - inputVal;
-            this->UpdateRegsForCompaire(result);
+            this->UpdateRegsForCompaire(this->registers->name.X, inputVal);
             break;
         }
         case Instructions::Instr::CPY:
         {
-            byte result = this->registers->name.Y - inputVal;
-            this->UpdateRegsForCompaire(result);
+            this->UpdateRegsForCompaire(this->registers->name.Y, inputVal);
             break;
         }
         case Instructions::Instr::DEC:
@@ -443,7 +441,8 @@ int Cpu::Step()
         case Instructions::Instr::JSR:
         {
             //store next address on stack
-            this->Push(this->registers->name.PC);
+            dword returnMinus1 = this->registers->name.PC - 1;
+            this->Push(returnMinus1);
             this->registers->name.PC = address;
             break;
         }
@@ -497,7 +496,9 @@ int Cpu::Step()
         }
         case Instructions::Instr::PHP:
         {
-            this->Push(this->registers->name.P);
+            //magic value from nestest
+            byte setBreakHigh = this->registers->name.P | 0x30;
+            this->Push(setBreakHigh);
             break;
         }
         case Instructions::Instr::PLA:
@@ -508,7 +509,10 @@ int Cpu::Step()
         }
         case Instructions::Instr::PLP:
         {
-            this->registers->name.P = this->Pop();
+            //from nestest rom
+            byte breakBitLow = (this->Pop() & 0xEF) | 0x20;
+            this->registers->name.P = breakBitLow;
+           
             break;
         }
         case Instructions::Instr::ROL:
@@ -545,21 +549,23 @@ int Cpu::Step()
         }
         case Instructions::Instr::RTI:
         {
-            throw std::logic_error("Haven't implemented RTI command");
+            this->registers->name.P = this->Pop() | 0x20; //nestest
+            this->registers->name.PCL = this->Pop();
+            this->registers->name.PCH = this->Pop();
             break;
         }
         case Instructions::Instr::RTS:
         {
-            this->registers->name.PC = this->Pop();
+            this->registers->name.PCL = this->Pop();
+            this->registers->name.PCH = this->Pop();
+            this->registers->name.PC += 1;
             break;
         }
         case Instructions::Instr::SBC:
         {
-            bool oldSign = BitUtil::GetBits(this->registers->name.A, 7);
+            byte oldAVal = this->registers->name.A;
             this->registers->name.A = this->registers->name.A - (inputVal + (1 - this->registers->name.C));
-            bool newSign = BitUtil::GetBits(this->registers->name.A, 7);
-            this->registers->name.V = 0;
-            this->registers->name.C = (oldSign != newSign);
+            this->UpdateRegsForOverflowNeg(oldAVal, inputVal);
             this->UpdateRegsForZeroAndNeg(this->registers->name.A);
             break;
         }
@@ -652,39 +658,61 @@ void Cpu::Push(dword value)
         }bytes;
     }temp;
     temp.orgValue = value;
-    this->Push(temp.bytes.lower);
     this->Push(temp.bytes.upper);
+    this->Push(temp.bytes.lower);
 }
 
 void Cpu::Push(byte value)
 {
+    //write value to stack
+    this->memory->Write( 0x0100 + this->registers->name.S , value);
+
     //update stack to next free byte
     this->registers->name.S -= 1;
-    //write value to stack
-    this->memory->Write(this->registers->name.S, value);
 }
 
 byte Cpu::Pop()
 {
-    byte value = this->memory->Read(this->registers->name.S);
-    this->registers->name.S -= 1;
+    //go back to next byte on the stack
+    this->registers->name.S += 1;
+    //read value from stack
+    byte value = this->memory->Read( 0x0100 + this->registers->name.S);
     return value;
 }
 
 
-void Cpu::UpdateRegsForOverflow(byte inputVal)
+void Cpu::UpdateRegsForOverflow(byte oldAValue, byte inputVal)
 {
     //convert to dwords so can detect overflow
     dword dInputVal = inputVal;
-    dword dA = this->registers->name.A;
+    dword dA = oldAValue;
     dword dC = this->registers->name.C;
-    dword newA = dInputVal + dA + dC;
+    dword dAValue = dInputVal + dA + dC;
+    this->registers->name.C = (dAValue > 255);
 
-    if(newA > 255)
-    {
-        this->registers->name.C = true;
-    }
+    int sInputVal = (sByte)inputVal;
+    int sA = (sByte)oldAValue;
+    int sAValue = sInputVal + sA + dC;
+    this->registers->name.V = (sAValue < -128) || (sAValue > 127);
 }
+
+void Cpu::UpdateRegsForOverflowNeg(byte oldAValue, byte inputVal)
+{
+    //convert to dwords so can detect overflow
+    dword dInputVal = inputVal;
+    dword dA = oldAValue;
+    dword dC = this->registers->name.C;
+    dword dAValue = dA + ~dInputVal + dC;
+    this->registers->name.C = !(dAValue > 255);
+
+
+    int sInputVal = (sByte)inputVal;
+    int sA = (sByte)oldAValue;
+    int sAValue = sA - sInputVal - ( 1 - dC );
+    this->registers->name.V = (sAValue < -128) || (sAValue > 127);
+}
+
+
 
 void Cpu::UpdateRegsForZeroAndNeg(byte inputVal)
 {
@@ -700,13 +728,11 @@ void Cpu::UpdateRegsForAccZeroAndNeg(byte inputVal)
     this->registers->name.N = BitUtil::GetBits(inputVal, 7);
 }
 
-void Cpu::UpdateRegsForCompaire(byte value)
+void Cpu::UpdateRegsForCompaire(byte value, byte inputVal)
 {
-    this->UpdateRegsForZeroAndNeg(value);
-    if(value <= 0)
-    {
-        this->registers->name.C = true;
-    }
+    byte diff = value - inputVal;
+    this->UpdateRegsForZeroAndNeg(diff);
+    this->registers->name.C = (value >= inputVal);
 }
 
 int Cpu::AdditionalCyclesForPageCross(dword address1, dword address2)

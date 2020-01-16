@@ -50,7 +50,7 @@ TEST_CASE("Run NesTest") {
     std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
     cpu.SetCartridge(std::move(cartridge));
 
-    int cpuCycles = 100;
+    int cpuCycles = 26554;
     for(int i = 0; i < cpuCycles; ++i)
     {
         cpu.Step();
@@ -69,7 +69,8 @@ TEST_CASE("Run NesTest") {
         REQUIRE(nesTestLine.substr(0, 73) == coutLine.substr(0, 73));
 
         //clock cycles part
-        REQUIRE(nesTestLine.substr(82) == coutLine.substr(82));
+        REQUIRE(nesTestLine.substr(85) == coutLine.substr(85));
+        //CHECK(nesTestLine.substr(82) == coutLine.substr(82));
     }
 
     //reset to standard output again

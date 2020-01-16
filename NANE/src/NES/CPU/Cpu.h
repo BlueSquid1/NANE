@@ -19,10 +19,11 @@ class Cpu
 
     int totalClockCycles;
 
-    void UpdateRegsForOverflow(byte inputVal);
+    void UpdateRegsForOverflow(byte oldAValue, byte inputVal);
+    void UpdateRegsForOverflowNeg(byte oldAValue, byte inputVal);
     void UpdateRegsForZeroAndNeg(byte inputVal);
     void UpdateRegsForAccZeroAndNeg(byte inputVal);
-    void UpdateRegsForCompaire(byte value);
+    void UpdateRegsForCompaire(byte value, byte inputVal);
     void Push(dword value);
     void Push(byte value);
     byte Pop();

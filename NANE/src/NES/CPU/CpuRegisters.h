@@ -21,7 +21,7 @@ class CpuRegisters
                 byte PCH;
             };
         };
-        byte S; /**< Stack Pointer (to last inserted value) */
+        byte S; /**< Stack Pointer (to next free value) */
         union
         {
             byte P; /**< Processor status */
