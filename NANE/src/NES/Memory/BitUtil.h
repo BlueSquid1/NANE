@@ -50,7 +50,7 @@ class BitUtil
      * @param memory pointer to a piece of readable memory
      * @param startAddress the first byte that makes up the dword 
      */
-    static dword GetDWord(const IMemoryR * memory, dword startAddress);
+    static dword GetDWord(const IMemoryR * memory, dword startAddress, bool pageWrap = false);
 
     //static void WriteDWord(IMemoryRW * memory, dword startAddress, dword value);
 };

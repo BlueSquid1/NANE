@@ -92,9 +92,10 @@ int Cpu::Step()
             instLen = 2;
             dword argAddress = this->memory->Read(this->registers->name.PC + 1);
             address = argAddress + this->registers->name.X;
+            address = address % 0x100;
             inputVal = this->memory->Read(address);
             //ORA $00,X @ 78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << ",X @ " << address << " = " << std::setw(2) << (int)inputVal;
+            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << ",X @ " << std::setw(2) << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
         case Instructions::AddrM::zpgY:
@@ -102,9 +103,10 @@ int Cpu::Step()
             instLen = 2;
             dword argAddress = this->memory->Read(this->registers->name.PC + 1);
             address = argAddress + this->registers->name.Y;
+            address = address % 0x100;
             inputVal = this->memory->Read(address);
             //ORA $00,X @ 78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << ",Y @ " << address << " = " << std::setw(2) << (int)inputVal;
+            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << ",Y @ " << std::setw(2) << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
         case Instructions::AddrM::rel:
@@ -120,18 +122,18 @@ int Cpu::Step()
         {
             instLen = 2;
             byte indirrectAddress = this->memory->Read( this->registers->name.PC + 1);
-            indirrectAddress = indirrectAddress + this->registers->name.X;
-            address = BitUtil::GetDWord(this->memory.get(), indirrectAddress);
+            byte indirrectAddressX = indirrectAddress + this->registers->name.X;
+            address = BitUtil::GetDWord(this->memory.get(), indirrectAddressX, true);
             inputVal = this->memory->Read( address );
             //CMP ($80,X) @ 80 = 0200 = 40
-            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddress << " = " << std::setw(4) << address << " = " << std::setw(4) << (int)inputVal;
+            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
         case Instructions::AddrM::indY:
         {
             instLen = 2;
             byte indirrectAddress = this->memory->Read( this->registers->name.PC + 1);
-            dword inDirAddress = BitUtil::GetDWord(this->memory.get(), indirrectAddress);
+            dword inDirAddress = BitUtil::GetDWord(this->memory.get(), indirrectAddress, true);
             address = inDirAddress + this->registers->name.Y;
             inputVal = this->memory->Read( address );
             if(opcode.instr != Instructions::Instr::STA)
@@ -168,7 +170,7 @@ int Cpu::Step()
                 cycleCount += this->AdditionalCyclesForPageCross(argAddress, address);
             }
             //LDA $05FF,X @ 0689 = BB
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << argAddress << ",X @ " << std::setw(4) << address << " = " << std::setw(2) << (int)inputVal;
+            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress << ",X @ " << std::setw(4) << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
         case Instructions::AddrM::absY:
@@ -182,21 +184,27 @@ int Cpu::Step()
                 cycleCount += this->AdditionalCyclesForPageCross(argAddress, address);
             }
             //LDA $0300,Y @ 0300 = 89
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << argAddress << ",Y @ " << std::setw(4) << address << " = " << std::setw(2) << (int)inputVal;
+            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::uppercase << std::right << argAddress << ",Y @ " << std::setw(4) << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
         case Instructions::AddrM::ind_:
         {
             instLen = 3;
             dword indirrectAddress = BitUtil::GetDWord(this->memory.get(), this->registers->name.PC + 1);
-            address = BitUtil::GetDWord(this->memory.get(), indirrectAddress);
+            address = BitUtil::GetDWord(this->memory.get(), indirrectAddress, true);
             //JMP ($0200) = DB7E
-            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << indirrectAddress << ") = " << std::setw(2) << (int)address;
+            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << address;
             break;
         }
         default:
         {
             std::cerr << "invalid memory mode" << std::endl;
+            //default to zero page addressing
+            instLen = 2;
+            address = this->memory->Read(this->registers->name.PC + 1);
+            inputVal = this->memory->Read(address);
+            //ORA $78 = 00
+            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << address << " = " << std::setw(2) << (int)inputVal;
             break;
         }
     }
@@ -224,7 +232,7 @@ int Cpu::Step()
 
     //increment PC
     this->registers->name.PC += instLen;
-    
+
     //execute instructions
     switch(opcode.instr)
     {
@@ -245,16 +253,17 @@ int Cpu::Step()
         case Instructions::Instr::ASL:
         {
             this->registers->name.C = BitUtil::GetBits(inputVal,7);
+            byte result = inputVal << 1;
             if(outputToAccum)
             {
-                this->registers->name.A = inputVal << 1;
+                this->registers->name.A = result;
             }
             else
             {
-                byte output = inputVal << 1;
-                this->memory->Write(address, output);
+                this->memory->Write(address, result);
             }
-            this->UpdateRegsForAccZeroAndNeg(inputVal);
+            this->UpdateRegsForZeroAndNeg(result);
+            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::BCC:
@@ -299,6 +308,8 @@ int Cpu::Step()
         {
             if( this->registers->name.N == true )
             {
+                cycleCount += 1;
+                cycleCount += this->AdditionalCyclesForPageCross(address, this->registers->name.PC);
                 this->registers->name.PC = address;
             }
             break;
@@ -467,16 +478,16 @@ int Cpu::Step()
         case Instructions::Instr::LSR:
         {
             this->registers->name.C = BitUtil::GetBits(inputVal,0);
+            byte result = inputVal >> 1;
             if(outputToAccum)
             {
-                this->registers->name.A = inputVal >> 1;
+                this->registers->name.A = result;
             }
             else
             {
-                byte output = inputVal >> 1;
-                this->memory->Write(address, output);
+                this->memory->Write(address, result);
             }
-            this->UpdateRegsForZeroAndNeg(inputVal);
+            this->UpdateRegsForZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::NOP:
@@ -518,7 +529,7 @@ int Cpu::Step()
         case Instructions::Instr::ROL:
         {
             byte result = inputVal << 1;
-            result = inputVal | this->registers->name.C;
+            result = result | this->registers->name.C;
             if(outputToAccum)
             {
                 this->registers->name.A = result;
@@ -528,13 +539,14 @@ int Cpu::Step()
                 this->memory->Write(address, result);
             }
             this->registers->name.C = BitUtil::GetBits(inputVal, 7);
-            this->UpdateRegsForAccZeroAndNeg(result);
+            this->UpdateRegsForZeroAndNeg(result);
+            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::ROR:
         {
             byte result = inputVal >> 1;
-            result = inputVal | (this->registers->name.C << 7);
+            result = result | (this->registers->name.C << 7);
             if(outputToAccum)
             {
                 this->registers->name.A = result;
@@ -544,7 +556,8 @@ int Cpu::Step()
                 this->memory->Write(address, result);
             }
             this->registers->name.C = BitUtil::GetBits(inputVal, 0);
-            this->UpdateRegsForAccZeroAndNeg(result);
+            this->UpdateRegsForZeroAndNeg(result);
+            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::RTI:
@@ -636,7 +649,7 @@ int Cpu::Step()
         }
         default:
         {
-            throw std::logic_error("Unknown instruction");
+            std::cerr << "Unknown instruction at pc: " << std::hex << this->registers->name.PC;
             break;
         }
     }
@@ -717,13 +730,6 @@ void Cpu::UpdateRegsForOverflowNeg(byte oldAValue, byte inputVal)
 void Cpu::UpdateRegsForZeroAndNeg(byte inputVal)
 {
     this->registers->name.Z = (inputVal == 0);
-    
-    this->registers->name.N = BitUtil::GetBits(inputVal, 7);
-}
-
-void Cpu::UpdateRegsForAccZeroAndNeg(byte inputVal)
-{
-    this->registers->name.Z = (this->registers->name.A == 0);
     
     this->registers->name.N = BitUtil::GetBits(inputVal, 7);
 }

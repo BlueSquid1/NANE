@@ -50,7 +50,7 @@ TEST_CASE("Run NesTest") {
     std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
     cpu.SetCartridge(std::move(cartridge));
 
-    int cpuCycles = 26554;
+    int cpuCycles = 5003;
     for(int i = 0; i < cpuCycles; ++i)
     {
         cpu.Step();

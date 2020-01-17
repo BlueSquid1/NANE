@@ -80,7 +80,17 @@ unsigned char BitUtil::GetBits(byte value, unsigned char startBit, unsigned char
 }
 
 
-dword BitUtil::GetDWord(const IMemoryR * memory, dword startAddress)
+dword BitUtil::GetDWord(const IMemoryR * memory, dword startAddress, bool pageWrap)
 {
-    return (memory->Read(startAddress + 1) << 8) | memory->Read(startAddress);
+    byte lowerByte = memory->Read(startAddress);
+    dword endAddress = startAddress + 1;
+    if(pageWrap == true)
+    {
+        //wrap around page
+        dword offset = endAddress % 256;
+        dword basePage = startAddress & 0xFF00;
+        endAddress = basePage + offset;
+    }
+    byte upperByte = memory->Read(endAddress);
+    return (upperByte << 8) | lowerByte;
 }
