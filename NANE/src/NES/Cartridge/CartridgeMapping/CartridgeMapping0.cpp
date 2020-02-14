@@ -9,6 +9,7 @@ CartridgeMapping0::CartridgeMapping0()
 bool CartridgeMapping0::LoadINes(std::unique_ptr<INes> INesRom)
 {
     this->prgRom = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x8000, 0xFFFF, INesRom->GetPrgRomData()) );
+    this->chrRom = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x0000, 0x1FFF, INesRom->GetChrRomData()) );
 
     if(INesRom->GetBatteryPresent())
     {

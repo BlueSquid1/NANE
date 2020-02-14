@@ -12,6 +12,15 @@ TEST_CASE("make sure CpuRegisters is Plain-Old Data otherwise") {
 }
 
 /**
+ * test to make sure raw length is right
+ */
+TEST_CASE("make sure CpuRegisters have the right length") {
+    CpuRegisters registers;
+    //TODO
+    REQUIRE(registers.rawLen == 7);
+}
+
+/**
  * test to make sure registers are cleared after constructor
  */
 TEST_CASE("CPU registers cleared by default") {

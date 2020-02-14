@@ -7,7 +7,7 @@ Nes::Nes()
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
 
     this->cpu = std::unique_ptr<Cpu>( new Cpu(std::move(cpuRegisters), ppuRegisters, apuRegisters) );
-    this->ppu = std::unique_ptr<Ppu>( new Ppu(ppuRegisters) );
+    this->ppu = std::unique_ptr<Ppu>( new Ppu(ppuRegisters, apuRegisters) );
 }
 
 
@@ -41,6 +41,7 @@ bool Nes::PowerCycle()
 
 bool Nes::processes()
 {
-    this->cpu->Step();
+    //1 CPU step for 3 PPU steps
+    int cpuCycles = this->cpu->Step();
     return true;
 }

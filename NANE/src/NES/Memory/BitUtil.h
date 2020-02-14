@@ -43,7 +43,7 @@ class BitUtil
      * @param endBit the last bit you want to receive (inclusive). If endBit is not specified then only the single bit specified in starting bit will be returned.
      * @return the resulting value from all the bits between startBit and endBit.
      */
-    static unsigned char GetBits(byte value, unsigned char startBit, unsigned char endBit = 0);
+    static qword GetBits(qword value, unsigned char startBit, unsigned char endBit = 0);
     
     /**
      * intepretes the 2 bytes starts at startAddress as a single dword.

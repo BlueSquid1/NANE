@@ -25,8 +25,8 @@ class ICartridge : public IMemoryRW
     
     virtual bool LoadINes(std::unique_ptr<INes> INesRom) = 0;
 
-    byte Read(dword address) const;
-    void Write(dword address, byte value);
+    byte Read(dword address) const override;
+    void Write(dword address, byte value) override;
 
     //getters and setters
     const unsigned int GetMapNumber();

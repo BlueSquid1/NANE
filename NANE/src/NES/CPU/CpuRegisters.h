@@ -27,14 +27,14 @@ class CpuRegisters
             byte P; /**< Processor status */
             struct
             {
-                bool C : 1; /**< Carry Flag */
-                bool Z : 1; /**< Zero Flag */
-                bool I : 1; /**< Interrupt Disable */
-                bool D : 1; /**< Decimal Mode Flag */
-                bool B : 1; /**< Break Command */
-                bool _ : 1; /**< EXPANSION */
-                bool V : 1; /**< Overflow Flag */
-                bool N : 1; /**< Negative Result */
+                bit C : 1; /**< Carry Flag */
+                bit Z : 1; /**< Zero Flag */
+                bit I : 1; /**< Interrupt Disable */
+                bit D : 1; /**< Decimal Mode Flag */
+                bit B : 1; /**< Break Command */
+                bit _ : 1; /**< EXPANSION */
+                bit V : 1; /**< Overflow Flag */
+                bit N : 1; /**< Negative Result */
             };
         };
         byte A; /**< Accumulator */
@@ -42,13 +42,13 @@ class CpuRegisters
         byte Y; /**< Index Register Y */
     };
 
+    static const int rawLen = 7; //7 bytes worth of registers
     //anonymous union
     union
     {
         RegStruct name;
-        byte raw[sizeof(RegStruct)];
+        byte raw[rawLen];
     };
-    int rawLen = sizeof(RegStruct);
 
     //constructor
     CpuRegisters();

@@ -43,7 +43,7 @@ LOGGING_SERVER_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | gre
 echo "LOGGING IP address = $LOGGING_SERVER_IP"
 
 #build switch project
-#make -C ./$NES_SWITCH_PATH LOG_SERVER_IP=$LOGGING_SERVER_IP
+#make -j4 -C ./$NES_SWITCH_PATH LOG_SERVER_IP=$LOGGING_SERVER_IP
 #ret=$?
 #if [[ $ret != 0 ]]; then
 #    echo "Failed to build switch binary. Exiting."
@@ -52,7 +52,7 @@ echo "LOGGING IP address = $LOGGING_SERVER_IP"
 
 #build desktop project
 cmake -DCMAKE_BUILD_TYPE="$BuiltType" -S ./$NES_DESKTOP_PATH -B ./$NES_DESKTOP_PATH/build/$BuiltType
-make -C ./$NES_DESKTOP_PATH/build/$BuiltType
+make -j4 -C ./$NES_DESKTOP_PATH/build/$BuiltType
 ret=$?
 if [[ $ret != 0 ]]; then
     echo "Failed to build desktop binary. Exiting."
@@ -61,7 +61,7 @@ fi
 
 #build logging server
 cmake -DCMAKE_BUILD_TYPE="Release" -S ./$LOGGING_SERVER_PATH -B ./$LOGGING_SERVER_PATH/build/Release
-make -C ./$LOGGING_SERVER_PATH/build/Release
+make -j4 -C ./$LOGGING_SERVER_PATH/build/Release
 ret=$?
 if [[ $ret != 0 ]]; then
     echo "Failed to build log server. Exiting."

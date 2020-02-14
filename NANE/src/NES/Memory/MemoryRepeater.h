@@ -14,13 +14,14 @@ class MemoryRepeater : public IMemoryRW
 
     public:
     //constructors
+    //TODO make it work with pointers instead of vectors
     MemoryRepeater(dword startAddress, dword endAddress, dword dataLen);
     MemoryRepeater(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data);
 
     dword LowerOffset(dword origionalAddress) const;
 
-    byte Read(dword address) const;
-    void Write(dword address, byte value);
+    virtual byte Read(dword address) const override;
+    virtual void Write(dword address, byte value) override;
 };
 
 #endif

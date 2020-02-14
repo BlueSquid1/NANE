@@ -63,15 +63,10 @@ std::unique_ptr<std::vector<byte>> BitUtil::VecSplit(const std::vector<byte> * v
     return returnVec;
 }
 
-unsigned char BitUtil::GetBits(byte value, unsigned char startBit, unsigned char endBit)
+qword BitUtil::GetBits(qword value, unsigned char startBit, unsigned char endBit)
 {
-    if( startBit > 7 || endBit > 7 )
-    {
-        throw std::invalid_argument("end is greater than 7");
-    }
-
-    byte startMask = 0x1;
-    byte mask = startMask << startBit;
+    qword startMask = 0x1;
+    qword mask = startMask << startBit;
     for(int i = startBit+1; i <= endBit; ++i)
     {
         mask = mask | startMask << i;

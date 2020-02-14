@@ -44,3 +44,6 @@
 
 #deploy cache
 cache.ini
+
+#VS Code counter plugin
+.VSCodeCounter

@@ -14,7 +14,7 @@ MemoryRepeater::MemoryRepeater(dword startAddress, dword endAddress, std::unique
     this->startAddress = startAddress;
     this->endAddress = endAddress;
     this->data = std::move(data);
-    this->dataLen = dataLen;
+    this->dataLen = this->data->size();
 }
 
 dword MemoryRepeater::LowerOffset(dword origionalAddress) const

@@ -12,6 +12,14 @@ TEST_CASE("make sure PpuRegisters is Plain-Old Data otherwise") {
 }
 
 /**
+ * test to make sure raw length is right
+ */
+TEST_CASE("make sure PpuRegisters has correct raw length") {
+    PpuRegisters registers;
+    REQUIRE(registers.rawLen == 8);
+}
+
+/**
  * test to make sure registers are cleared after constructor
  */
 TEST_CASE("registers cleared by default") {

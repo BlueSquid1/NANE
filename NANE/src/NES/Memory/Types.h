@@ -1,8 +1,12 @@
 #ifndef TYPES
 #define TYPES
 
-typedef unsigned char byte;
-typedef signed char sByte;
-typedef unsigned short int dword;
+#include <cstdint>
+
+typedef bool bit;
+typedef uint8_t byte;
+typedef int8_t sByte;
+typedef uint16_t dword;
+typedef uint32_t qword;
 
 #endif
