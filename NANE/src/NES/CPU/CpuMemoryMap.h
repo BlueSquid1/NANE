@@ -9,19 +9,16 @@
 #include "NES/APU/ApuRegisters.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 #include "NES/Memory/IMemoryRW.h"
-#include "NES/Memory/MemoryRepeater.h"
+#include "NES/Memory/MemoryRepeaterVec.h"
+#include "NES/Memory/MemoryRepeaterArray.h"
 
 
 class CpuMemoryMap : public IMemoryRW
 {
     private:
-    std::unique_ptr<MemoryRepeater> cpuRam = NULL;
-    
-    std::shared_ptr<PpuRegisters> ppuRegisters = NULL;
-    std::unique_ptr<MemoryRepeater> ppuRegMem = NULL;
-
-    std::shared_ptr<ApuRegisters> apuRegisters = NULL;
-    std::unique_ptr<MemoryRepeater> apuRegMem = NULL;
+    std::unique_ptr<IMemoryRepeater> cpuRam = NULL;
+    std::unique_ptr<IMemoryRepeater> ppuRegMem = NULL;
+    std::unique_ptr<IMemoryRepeater> apuRegMem = NULL;
 
     std::shared_ptr<ICartridge> cartridge = NULL;
 

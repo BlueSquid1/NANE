@@ -1,12 +1,9 @@
 #ifndef COLOUR_PALETTES
 #define COLOUR_PALETTES
 
-#include <memory>
-#include <vector>
+#include "NES/Memory/BitUtil.h"
 
-#include "NES/Memory/MemoryRepeater.h"
-
-class ColourPalettes : MemoryRepeater
+class ColourPalettes
 {
     struct paletteStruct
     {
@@ -38,8 +35,6 @@ class ColourPalettes : MemoryRepeater
 
     public:
     ColourPalettes();
-    //void Write(dword address, byte value) override;
-    //byte Read(dword address) const override;
 };
 
 #endif

@@ -2,7 +2,6 @@
 #define PPU_REGISTERS
 
 #include "NES/Memory/BitUtil.h"
-#include "NES/Memory/MemoryRepeater.h"
 
 /**
  * PPU registers. 

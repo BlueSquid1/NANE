@@ -10,7 +10,7 @@
 class PpuMemoryMap : public IMemoryRW
 {
     private:
-    std::unique_ptr<MemoryRepeater> vram = NULL;
+    std::unique_ptr<MemoryRepeaterVec> vram = NULL;
     std::shared_ptr<ColourPalettes> ppuPalettes = NULL;
     std::shared_ptr<ICartridge> cartridge = NULL;
 

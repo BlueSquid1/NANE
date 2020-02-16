@@ -4,12 +4,9 @@ CpuMemoryMap::CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, std::shar
     : IMemoryRW(0x0000, 0xFFFF)
 {
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
-    this->cpuRam = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x0000, 0x1FFF, std::move(ramVec)) );
-    this->ppuRegisters = ppuRegisters;
-    this->ppuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x2000, 0x3FFF, this->ppuRegisters->rawLen) );
-
-    this->apuRegisters = apuRegisters;
-    this->apuRegMem = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x4000, 0x4017, this->apuRegisters->rawLen) );
+    this->cpuRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x0000, 0x1FFF, std::move(ramVec)) );
+    this->ppuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x2000, 0x3FFF, ppuRegisters->raw, ppuRegisters->rawLen) );
+    this->apuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x4000, 0x4017, apuRegisters->raw, apuRegisters->rawLen) );
 }
 
 
@@ -26,13 +23,11 @@ byte CpuMemoryMap::Read(dword address) const
     }
     else if(this->ppuRegMem->Contains(address))
     {
-        dword lowerOffset = this->ppuRegMem->LowerOffset(address);
-        return this->ppuRegisters->raw[lowerOffset];
+        return this->ppuRegMem->Read(address);
     }
     else if(this->apuRegMem->Contains(address))
     {
-        dword lowerOffset = this->apuRegMem->LowerOffset(address);
-        return this->apuRegisters->raw[lowerOffset];
+        return this->apuRegMem->Read(address);
     }
     else if(this->cartridge != NULL &&this->cartridge->Contains(address))
     {
@@ -52,13 +47,11 @@ void CpuMemoryMap::Write(dword address, byte value)
     }
     else if(this->ppuRegMem->Contains(address))
     {
-        dword lowerOffset = this->ppuRegMem->LowerOffset(address);
-        this->ppuRegisters->raw[lowerOffset] = value;
+        this->ppuRegMem->Write(address, value);
     }
     else if(this->apuRegMem->Contains(address))
     {
-        dword lowerOffset = this->apuRegMem->LowerOffset(address);
-        this->apuRegisters->raw[lowerOffset] = value;
+        this->apuRegMem->Write(address, value);
     }
     else if(this->cartridge != NULL && this->cartridge->Contains(address))
     {

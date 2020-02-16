@@ -4,7 +4,7 @@ PpuMemoryMap::PpuMemoryMap(std::shared_ptr<ColourPalettes> ppuPalettes)
     : IMemoryRW(0x0000, 0x4017)
 {
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(4096) );
-    this->vram = std::unique_ptr<MemoryRepeater>( new MemoryRepeater(0x2000, 0x27FF, std::move(ramVec)) );
+    this->vram = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x2000, 0x27FF, std::move(ramVec)) );
     this->ppuPalettes = ppuPalettes;
 }
 

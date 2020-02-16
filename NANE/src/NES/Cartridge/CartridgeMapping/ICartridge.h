@@ -6,16 +6,16 @@
 #include "../INes.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
-#include "NES/Memory/MemoryRepeater.h"
+#include "NES/Memory/MemoryRepeaterVec.h"
 
 class ICartridge : public IMemoryRW
 {
     protected:
     const unsigned int mapNumber = 0;
 
-    std::unique_ptr<MemoryRepeater> prgRom = NULL;
-    std::unique_ptr<MemoryRepeater> chrRom = NULL;
-    std::unique_ptr<MemoryRepeater> prgRam = NULL;
+    std::unique_ptr<MemoryRepeaterVec> prgRom = NULL;
+    std::unique_ptr<MemoryRepeaterVec> chrRom = NULL;
+    std::unique_ptr<MemoryRepeaterVec> prgRam = NULL;
 
     public:
     //constructor
