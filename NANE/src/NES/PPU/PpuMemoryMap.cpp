@@ -1,11 +1,11 @@
 #include "PpuMemoryMap.h"
 
-PpuMemoryMap::PpuMemoryMap(std::shared_ptr<ColourPalettes> ppuPalettes)
+PpuMemoryMap::PpuMemoryMap(std::unique_ptr<ColourPalettes>& ppuPalettes)
     : IMemoryRW(0x0000, 0x4017)
 {
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(4096) );
     this->vram = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x2000, 0x27FF, std::move(ramVec)) );
-    this->ppuPalettes = ppuPalettes;
+    this->ppuPalettes = std::unique_ptr<IMemoryRepeater>( new MemoryRepeaterArray(0x3F00, 0x3F1F, ppuPalettes->raw, ppuPalettes->rawLen) );
 }
 
 byte PpuMemoryMap::Read(dword address) const
@@ -18,7 +18,10 @@ byte PpuMemoryMap::Read(dword address) const
     {
         return this->cartridge->Read(address);
     }
-    //TODO: ppuPalettes
+    else if(this->ppuPalettes->Contains(address))
+    {
+        return this->ppuPalettes->Read(address);
+    }
     else
     {
         std::cerr << "PPU Memory Map: failed to read from address: " << address << std::endl;
@@ -36,7 +39,10 @@ void PpuMemoryMap::Write(dword address, byte value)
     {
         this->cartridge->Write(address, value);
     }
-    //TODO: ppuPalettes
+    else if(this->ppuPalettes->Contains(address))
+    {
+        this->ppuPalettes->Write(address, value);
+    }
     else
     {
         std::cerr << "PPU Memory Map: failed to write to address: " << address << std::endl;

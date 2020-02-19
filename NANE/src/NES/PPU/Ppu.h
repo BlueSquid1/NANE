@@ -16,7 +16,7 @@ class Ppu
     std::shared_ptr<PpuRegisters> registers = NULL;
     std::shared_ptr<ApuRegisters> apuRegisters = NULL;
     
-    std::shared_ptr<ColourPalettes> palettes = NULL;
+    std::unique_ptr<ColourPalettes> palettes = NULL;
 
     std::unique_ptr<std::vector<byte>> primOam = NULL; //256 bytes
     std::unique_ptr<std::vector<byte>> secOam = NULL; //32 bytes (8 sprites to render on scanline)
