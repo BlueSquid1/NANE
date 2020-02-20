@@ -9,7 +9,7 @@
  * 
  * https://wiki.nesdev.com/w/index.php/PPU_palettes
  */
-class ColourPalettes : MemoryRepeaterArray
+class ColourPalettes : public MemoryRepeaterArray
 {
     private:
     dword Redirect(dword address) const;
@@ -33,7 +33,7 @@ class ColourPalettes : MemoryRepeaterArray
     };
     const int rawLen = sizeof(paletteStruct);
 
-    ColourPalettes(dword startAddress, dword endAddress);
+    ColourPalettes();
 
     byte Read(dword address) const override;
     void Write(dword address, byte value) override;

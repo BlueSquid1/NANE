@@ -4,8 +4,8 @@ Ppu::Ppu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegister
 {
     this->registers = ppuRegisters;
     this->apuRegisters = apuRegisters;
-    this->palettes = std::unique_ptr<ColourPalettes>( new ColourPalettes(0x3F00, 0x3F1F) );
-    this->memory = std::unique_ptr<PpuMemoryMap>( new PpuMemoryMap(this->palettes) );
+    this->palettes = std::unique_ptr<ColourPalettes>( new ColourPalettes() );
+    this->vram = std::unique_ptr<PpuMemoryMap>( new PpuMemoryMap(this->palettes) );
     this->primOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(256) );
     this->secOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(32) );
     this->framebuffer = std::shared_ptr<std::vector<NesColour>>( new std::vector<NesColour>(256 * 4 * 240) );
@@ -15,20 +15,20 @@ Ppu::Ppu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegister
 NesColour Ppu::calc_background_pixel()
 {
     //get pattern value
-    bit patBit0 = BitUtil::GetBits(this->curBackPatternPlane1, 0);
-    bit patBit1 = BitUtil::GetBits(this->curBackPatternPlane2, 0);
+    bit patBit0 = BitUtil::GetBits(this->bgr.shift.patternPlane1.val, 0);
+    bit patBit1 = BitUtil::GetBits(this->bgr.shift.patternPlane1.val, 0);
     byte patternValue = (patBit1 << 1) | patBit0;
 
     //get palette index
-    bit palBit0 = BitUtil::GetBits(this->curBackPaletteAttribute1, 0);
-    bit palBit1 = BitUtil::GetBits(this->curBackPaletteAttribute2, 0);
+    bit palBit0 = BitUtil::GetBits(this->bgr.shift.paletteAttribute1, 0);
+    bit palBit1 = BitUtil::GetBits(this->bgr.shift.paletteAttribute2, 0);
     byte attributeIndex = (palBit1 << 1) | palBit0;
 
     //shift background specific registers
-    this->curBackPatternPlane1 <<= 1;
-    this->curBackPatternPlane2 <<= 1;
-    this->curBackPaletteAttribute1 <<= 1;
-    this->curBackPaletteAttribute2 <<= 1;
+    this->bgr.shift.patternPlane1.val <<= 1;
+    this->bgr.shift.patternPlane2.val <<= 1;
+    this->bgr.shift.paletteAttribute1 <<= 1;
+    this->bgr.shift.paletteAttribute2 <<= 1;
 
     byte nesColourIndex = this->palettes->name.backgroundPalette[attributeIndex][patternValue];
     return NesColour(nesColourIndex);
@@ -111,6 +111,33 @@ void Ppu::background_fetch()
     if(this->scanCycleNum == 0)
     {
         //NOP for 1 cycle
+    } 
+    else if((this->scanCycleNum >= 1 && this->scanCycleNum < 257)
+            || (this->scanCycleNum >= 321 && this->scanCycleNum < 337 ))
+    {
+        switch(this->scanCycleNum % 8)
+        {
+            case 2:
+            //fetch Nametable byte
+            this->bgr.ntByte = this->vram->Read(0x2000);
+
+
+            // this->bgr.shift.patternPlane1.lower = this->bgr.tileLo;
+            // this->bgr.shift.patternPlane2.lower = this->bgr.tileHi;
+
+            // this->bgr.shift.paletteAttribute1 = BitUtil::GetBits(this->bgr.atByte, 0); //first bit
+            // this->bgr.shift.paletteAttribute2 = BitUtil::GetBits(this->bgr.atByte, 1); //second bit
+            break;
+            
+            case 4:
+            //fetch Attribute Table byte
+            this->bgr.atByte = this->vram->Read( 0x23C0 );
+            break;
+        }
+    }
+    else if(this->scanCycleNum >= 257 && this->scanCycleNum < 321)
+    {
+        //sprite fetch
     }
     //(256 cycles)
     //tile latch = Fetch a nametable entry from $2000-$2FBF.

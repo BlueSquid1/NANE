@@ -5,8 +5,8 @@ CpuMemoryMap::CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, std::shar
 {
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
     this->cpuRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x0000, 0x1FFF, std::move(ramVec)) );
-    this->ppuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x2000, 0x3FFF, ppuRegisters->raw, ppuRegisters->rawLen) );
     this->apuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x4000, 0x4017, apuRegisters->raw, apuRegisters->rawLen) );
+    this->ppuRegMem = ppuRegisters;
 }
 
 

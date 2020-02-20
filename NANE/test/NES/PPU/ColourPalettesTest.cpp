@@ -14,7 +14,7 @@ TEST_CASE("make sure ColourPalettes is Plain-Old Data otherwise") {
  * test to make sure registers are cleared after constructor
  */
 TEST_CASE("ColourPalettes cleared by default") {
-    ColourPalettes palettes(0x3F00, 0x3F1F);
+    ColourPalettes palettes;
 
     REQUIRE(palettes.rawLen > 0);
     for(int i = 0; i < palettes.rawLen; ++i)
@@ -27,7 +27,7 @@ TEST_CASE("ColourPalettes cleared by default") {
  * test to make sure ColourPalettes can read and write properly
  */
 TEST_CASE("ColourPalettes write to and read from raw") {
-    ColourPalettes palettes(0x3F00, 0x3F1F);
+    ColourPalettes palettes;
     byte patternValue = 0;
     for(byte attributeIndex = 0; attributeIndex < 4; ++attributeIndex)
     {
@@ -53,7 +53,7 @@ TEST_CASE("ColourPalettes write to and read from raw") {
  * test to make sure ColourPalettes can read and write properly
  */
 TEST_CASE("ColourPalettes set read and write to mirror addresses") {
-    ColourPalettes palettes(0x3F00, 0x3F1F);
+    ColourPalettes palettes;
     byte patternValue = 0;
     for(byte attributeIndex = 0; attributeIndex < 4; ++attributeIndex)
     {

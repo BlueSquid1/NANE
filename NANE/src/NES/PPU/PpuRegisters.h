@@ -2,12 +2,13 @@
 #define PPU_REGISTERS
 
 #include "NES/Memory/BitUtil.h"
+#include "NES/Memory/MemoryRepeaterArray.h"
 
 /**
  * PPU registers. 
  * Plain-Old Data struct is used so can guarantee that fields of the struct will be laid out in memory in the order they are declared in union.
  */
-class PpuRegisters
+class PpuRegisters : public MemoryRepeaterArray
 {
     public:
     struct RegStruct
@@ -54,9 +55,23 @@ class PpuRegisters
         };
         byte OAMADDR; //Write the address of OAM you want to access here
         byte OAMDATA;
-        byte PPUSCROLL; //fine scroll position (two writes: X scroll, Y scroll) 
-        byte PPUADDR;
-        byte PPUDATA;
+        byte PPUSCROLL; //0x2005 fine scroll position (two writes: X scroll, Y scroll)
+        byte PPUADDR; //0x2006 VRAM address (two writes: upper, lower)
+        byte PPUDATA; //0x2007
+
+        //internal registers
+        //https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
+        union
+        {
+            dword value;
+            struct
+            {
+                byte lower;
+                byte upper;
+            };
+        }V, //holds current VRAM address written into PPUADDR (0x2006)
+        T; //temporary VRAM address to top left title on screen
+        bool vramAddrLatchLower; //false == write to lower curVramAddr, true == write to upper curVramAddr  
     };
 
     static const int rawLen = 8;
@@ -70,6 +85,9 @@ class PpuRegisters
 
     //constructor
     PpuRegisters();
+
+    byte Read(dword address) const override;
+    void Write(dword address, byte value) override;
  };
 
 #endif

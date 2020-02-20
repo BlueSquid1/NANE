@@ -17,7 +17,7 @@ class CpuMemoryMap : public IMemoryRW
 {
     private:
     std::unique_ptr<IMemoryRepeater> cpuRam = NULL;
-    std::unique_ptr<IMemoryRepeater> ppuRegMem = NULL;
+    std::shared_ptr<PpuRegisters> ppuRegMem = NULL;
     std::unique_ptr<IMemoryRepeater> apuRegMem = NULL;
 
     std::shared_ptr<ICartridge> cartridge = NULL;

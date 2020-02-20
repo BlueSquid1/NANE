@@ -1,7 +1,7 @@
 #include "ColourPalettes.h"
 
-ColourPalettes::ColourPalettes(dword startAddress, dword endAddress)
-: MemoryRepeaterArray(startAddress, endAddress, this->raw, this->rawLen)
+ColourPalettes::ColourPalettes()
+: MemoryRepeaterArray(0x3F00, 0x3F1F, this->raw, this->rawLen)
 {
     memset(this->raw, 0, this->rawLen);
 }
