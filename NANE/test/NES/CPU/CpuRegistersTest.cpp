@@ -16,7 +16,6 @@ TEST_CASE("make sure CpuRegisters is Plain-Old Data otherwise") {
  */
 TEST_CASE("make sure CpuRegisters have the right length") {
     CpuRegisters registers;
-    //TODO
     REQUIRE(registers.rawLen == 7);
 }
 

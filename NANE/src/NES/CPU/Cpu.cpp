@@ -661,18 +661,10 @@ int Cpu::Step()
 
 void Cpu::Push(dword value)
 {
-    union
-    {
-        dword orgValue : 16;
-        struct
-        {
-            byte lower : 8;
-            byte upper : 8;
-        }bytes;
-    }temp;
-    temp.orgValue = value;
-    this->Push(temp.bytes.upper);
-    this->Push(temp.bytes.lower);
+    dword_p temp;
+    temp.val = value;
+    this->Push(temp.upper);
+    this->Push(temp.lower);
 }
 
 void Cpu::Push(byte value)

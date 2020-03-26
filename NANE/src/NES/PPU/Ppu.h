@@ -22,7 +22,8 @@ class Ppu
         byte tileHi;
         
         // Shift Registers for background
-        struct {
+        struct 
+        {
             byte paletteAttribute1; //colour attribute 1 (controls bit 0)
             byte paletteAttribute2; //colour attribute 1 (controls bit 1)
             // bool atLatch1;

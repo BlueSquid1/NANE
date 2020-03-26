@@ -48,6 +48,11 @@ bool Ppu::PowerCycle()
     this->registers->name.PPUSCROLL = 0;
     this->registers->name.PPUADDR = 0;
     this->registers->name.PPUDATA = 0;
+    
+    //internal registers
+    this->registers->name.ppuRegLatch = false;
+    this->registers->name.V.value = 0;
+    this->registers->name.T.value = 0;
 
     this->scanlineNum = -1;
     this->scanCycleNum = 0;
@@ -119,7 +124,7 @@ void Ppu::background_fetch()
         {
             case 2:
             //fetch Nametable byte
-            this->bgr.ntByte = this->vram->Read(0x2000);
+            this->bgr.ntByte = this->registers->PPUCTRL;
 
 
             // this->bgr.shift.patternPlane1.lower = this->bgr.tileLo;

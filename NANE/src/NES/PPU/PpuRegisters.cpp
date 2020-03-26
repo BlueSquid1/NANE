@@ -10,14 +10,34 @@ PpuRegisters::PpuRegisters()
 
 byte PpuRegisters::Read(dword address) const
 {
+    if(address == PpuRegisters::PPUSTATUS)
+    {
+        //TODO
+    }
+    else if(address == PpuRegisters::OAMDATA)
+    {
+        //TODO
+    }
+    else if(address == PpuRegisters::PPUDATA)
+    {
+        //TODO
+    }
     return MemoryRepeaterArray::Read(address);
 }
 
 void PpuRegisters::Write(dword address, byte value)
 {
-    if(address == 0x2006) //0x2006 = PPUADDR
+    if(address == PpuRegisters::OAMDATA)
     {
-        if(this->name.vramAddrLatchLower == false)
+        //TODO
+    }
+    else if(address == PpuRegisters::PPUSCROLL)
+    {
+        //TODO
+    }
+    else if(address == PpuRegisters::PPUADDR)
+    {
+        if(this->name.ppuRegLatch == false)
         {
             this->name.T.upper = value & 0x3F;
         }
@@ -27,7 +47,11 @@ void PpuRegisters::Write(dword address, byte value)
             this->name.V.value = this->name.T.value;
         }
         //flip the vram address latch
-        this->name.vramAddrLatchLower = !this->name.vramAddrLatchLower;
+        this->name.ppuRegLatch = !this->name.ppuRegLatch;
+    }
+    else if(address == PpuRegisters::PPUDATA)
+    {
+        //TODO
     }
     return MemoryRepeaterArray::Write(address, value);
 }

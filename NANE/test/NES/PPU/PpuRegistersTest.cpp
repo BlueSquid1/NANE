@@ -34,7 +34,7 @@ TEST_CASE("registers cleared by default") {
     //test the internal registers
     REQUIRE(registers.name.V.value == 0);
     REQUIRE(registers.name.T.value == 0);
-    REQUIRE(registers.name.vramAddrLatchLower == 0);
+    REQUIRE(registers.name.ppuRegLatch == 0);
 }
 
 /**
@@ -66,13 +66,13 @@ TEST_CASE("PPU latching registers") {
     dword ppuAddr = 0x2006;
     registers.Write(ppuAddr, 0x21);
 
-    REQUIRE(registers.name.vramAddrLatchLower == true);
+    REQUIRE(registers.name.ppuRegLatch == true);
     REQUIRE(registers.name.V.value == 0x0);
     REQUIRE(registers.name.T.upper == 0x21);
 
     registers.Write(ppuAddr, 0x08);
 
-    REQUIRE(registers.name.vramAddrLatchLower == false);
+    REQUIRE(registers.name.ppuRegLatch == false);
     REQUIRE(registers.name.V.value == 0x2108);
     REQUIRE(registers.name.T.value == 0x2108);
 }

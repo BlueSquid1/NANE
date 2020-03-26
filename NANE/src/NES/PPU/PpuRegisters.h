@@ -11,6 +11,19 @@
 class PpuRegisters : public MemoryRepeaterArray
 {
     public:
+    enum PpuAddresses : unsigned
+    {
+        PPUCTRL   = 0x2000,
+        PPUMASK   = 0x2001,
+        PPUSTATUS = 0x2002,
+        OAMADDR   = 0x2003,
+        OAMDATA   = 0x2004,
+        PPUSCROLL = 0x2005,
+        PPUADDR   = 0x2006,
+        PPUDATA   = 0x2007,
+        OAMDMA    = 0x4014
+    };
+
     struct RegStruct
     {
         union
@@ -19,7 +32,7 @@ class PpuRegisters : public MemoryRepeaterArray
             struct
             {
                 byte baseNameTable : 2; //Base nametable address (0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)
-                bit vramAddress : 1; //VRAM address increment per CPU read/write of PPUDATA (0: add 1, going across; 1: add 32, going down)
+                bit vramDirrection : 1; //VRAM address increment per CPU read/write of PPUDATA (0: add 1, going across; 1: add 32, going down)
                 bit sprite8x8PatternTable : 1; //Sprite pattern table address for 8x8 sprites (0: $0000; 1: $1000; ignored in 8x16 mode)
                 bit backgroundPatternTable : 1; //Background pattern table address (0: $0000; 1: $1000)
                 bit spriteSize : 1; //Sprite size (0: 8x8 pixels; 1: 8x16 pixels)
@@ -71,7 +84,7 @@ class PpuRegisters : public MemoryRepeaterArray
             };
         }V, //holds current VRAM address written into PPUADDR (0x2006)
         T; //temporary VRAM address to top left title on screen
-        bool vramAddrLatchLower; //false == write to lower curVramAddr, true == write to upper curVramAddr  
+        bool ppuRegLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr  
     };
 
     static const int rawLen = 8;
