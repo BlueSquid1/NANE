@@ -9,10 +9,9 @@
  * test turning on the CPU
  */
 TEST_CASE("Power Cycle") {
-    std::unique_ptr<CpuRegisters> cpuRegisters( new CpuRegisters() );
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
-    Cpu cpu(std::move(cpuRegisters), ppuRegisters, apuRegisters);
+    Cpu cpu(ppuRegisters, apuRegisters);
     bool powerRet = cpu.PowerCycle();
     REQUIRE(powerRet == true);
 }
@@ -32,10 +31,9 @@ TEST_CASE("Run NesTest") {
     std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
     std::cout.rdbuf(outSS.rdbuf()); //redirect std::cout to out.txt!
 
-    std::unique_ptr<CpuRegisters> cpuRegisters( new CpuRegisters() );
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
-    Cpu cpu(std::move(cpuRegisters), ppuRegisters, apuRegisters);
+    Cpu cpu(ppuRegisters, apuRegisters);
     cpu.PowerCycle();
 
     CpuRegisters * registers = cpu.GetRegisters();

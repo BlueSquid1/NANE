@@ -1,14 +1,14 @@
 #include "ColourPalettes.h"
 
 ColourPalettes::ColourPalettes()
-: MemoryRepeaterArray(0x3F00, 0x3F1F, this->raw, this->rawLen)
+: MemoryRepeaterArray(0x3F00, 0x3FFF, this->raw, this->rawLen)
 {
     memset(this->raw, 0, this->rawLen);
 }
 
 dword ColourPalettes::Redirect(dword address) const
 {
-    dword redirrectAddress = address;
+    dword redirrectAddress = this->startAddress + this->LowerOffset(address);
     switch(address)
     {
         case 0x3F10:

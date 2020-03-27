@@ -87,6 +87,36 @@ class PpuRegisters : public MemoryRepeaterArray
         bool ppuRegLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr  
     };
 
+    // this registers don't exist on a real NES but are used to simplify different states of the PPU
+    struct BackgroundRegisters
+    {
+        // Temporary Registers
+        byte ntByte;
+        byte atByte;
+        byte tileLo;
+        byte tileHi;
+        
+        // Shift Registers for background
+        struct 
+        {
+            byte paletteAttribute1; //colour attribute 1 (controls bit 0)
+            byte paletteAttribute2; //colour attribute 1 (controls bit 1)
+            // bool atLatch1;
+            // bool atLatch2;
+            union
+            {
+                dword  val;
+                struct
+                {
+                    byte lower : 8;
+                    byte upper : 8;
+                };
+            }
+            patternPlane1, //background pattern plane 1 (controls bit 0)
+            patternPlane2; //background pattern plane 2 (controls bit 1)
+        } shift;
+    };
+
     static const int rawLen = 8;
 
     //anonymous union
@@ -95,6 +125,8 @@ class PpuRegisters : public MemoryRepeaterArray
         RegStruct name;
         byte raw[rawLen];
     };
+
+    BackgroundRegisters bgr;
 
     //constructor
     PpuRegisters();

@@ -73,6 +73,9 @@
         "regex": "cpp",
         "set": "cpp",
         "stack": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "memory_resource": "cpp",
+        "filesystem": "cpp",
+        "version": "cpp"
     }
 }

@@ -5,7 +5,6 @@
 #include <iostream> //std::string
 
 #include "CPU/Cpu.h"
-#include "CPU/CpuRegisters.h"
 
 #include "PPU/Ppu.h"
 #include "PPU/PpuRegisters.h"

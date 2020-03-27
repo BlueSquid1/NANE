@@ -2,12 +2,7 @@
 
 Ppu::Ppu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters)
 {
-    this->registers = ppuRegisters;
-    this->apuRegisters = apuRegisters;
-    this->palettes = std::unique_ptr<ColourPalettes>( new ColourPalettes() );
-    this->vram = std::unique_ptr<PpuMemoryMap>( new PpuMemoryMap(this->palettes) );
-    this->primOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(256) );
-    this->secOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(32) );
+    this->ppuMemory = std::unique_ptr<PpuMemoryMap>( new PpuMemoryMap(ppuRegisters) );
     this->framebuffer = std::shared_ptr<std::vector<NesColour>>( new std::vector<NesColour>(256 * 4 * 240) );
 
 }
@@ -15,22 +10,22 @@ Ppu::Ppu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegister
 NesColour Ppu::calc_background_pixel()
 {
     //get pattern value
-    bit patBit0 = BitUtil::GetBits(this->bgr.shift.patternPlane1.val, 0);
-    bit patBit1 = BitUtil::GetBits(this->bgr.shift.patternPlane1.val, 0);
+    bit patBit0 = BitUtil::GetBits(this->ppuMemory->GetPpuRegisters()->bgr.shift.patternPlane1.val, 0);
+    bit patBit1 = BitUtil::GetBits(this->ppuMemory->GetPpuRegisters()->bgr.shift.patternPlane1.val, 0);
     byte patternValue = (patBit1 << 1) | patBit0;
 
     //get palette index
-    bit palBit0 = BitUtil::GetBits(this->bgr.shift.paletteAttribute1, 0);
-    bit palBit1 = BitUtil::GetBits(this->bgr.shift.paletteAttribute2, 0);
+    bit palBit0 = BitUtil::GetBits(this->ppuMemory->GetPpuRegisters()->bgr.shift.paletteAttribute1, 0);
+    bit palBit1 = BitUtil::GetBits(this->ppuMemory->GetPpuRegisters()->bgr.shift.paletteAttribute2, 0);
     byte attributeIndex = (palBit1 << 1) | palBit0;
 
     //shift background specific registers
-    this->bgr.shift.patternPlane1.val <<= 1;
-    this->bgr.shift.patternPlane2.val <<= 1;
-    this->bgr.shift.paletteAttribute1 <<= 1;
-    this->bgr.shift.paletteAttribute2 <<= 1;
+    this->ppuMemory->GetPpuRegisters()->bgr.shift.patternPlane1.val <<= 1;
+    this->ppuMemory->GetPpuRegisters()->bgr.shift.patternPlane2.val <<= 1;
+    this->ppuMemory->GetPpuRegisters()->bgr.shift.paletteAttribute1 <<= 1;
+    this->ppuMemory->GetPpuRegisters()->bgr.shift.paletteAttribute2 <<= 1;
 
-    byte nesColourIndex = this->palettes->name.backgroundPalette[attributeIndex][patternValue];
+    byte nesColourIndex = this->ppuMemory->GetPalettes()->name.backgroundPalette[attributeIndex][patternValue];
     return NesColour(nesColourIndex);
 }
 
@@ -41,106 +36,112 @@ NesColour Ppu::calc_sprite_pixel()
 
 bool Ppu::PowerCycle()
 {
-    this->registers->name.PPUCTRL = 0;
-    this->registers->name.PPUMASK = 0;
-    this->registers->name.PPUSTATUS = 0;
-    this->registers->name.OAMADDR = 0;
-    this->registers->name.PPUSCROLL = 0;
-    this->registers->name.PPUADDR = 0;
-    this->registers->name.PPUDATA = 0;
+    //reset registers
+    this->ppuMemory->GetPpuRegisters()->name.PPUCTRL = 0;
+    this->ppuMemory->GetPpuRegisters()->name.PPUMASK = 0;
+    this->ppuMemory->GetPpuRegisters()->name.PPUSTATUS = 0;
+    this->ppuMemory->GetPpuRegisters()->name.OAMADDR = 0;
+    this->ppuMemory->GetPpuRegisters()->name.PPUSCROLL = 0;
+    this->ppuMemory->GetPpuRegisters()->name.PPUADDR = 0;
+    this->ppuMemory->GetPpuRegisters()->name.PPUDATA = 0;
     
     //internal registers
-    this->registers->name.ppuRegLatch = false;
-    this->registers->name.V.value = 0;
-    this->registers->name.T.value = 0;
-
-    this->scanlineNum = -1;
-    this->scanCycleNum = 0;
+    this->ppuMemory->GetPpuRegisters()->name.ppuRegLatch = false;
+    this->ppuMemory->GetPpuRegisters()->name.V.value = 0;
+    this->ppuMemory->GetPpuRegisters()->name.T.value = 0;
+    this->ppuMemory->SetScanLineNum(-1);
+    this->ppuMemory->SetScanCycleNum(0);
     this->frameCountNum = 0;
 }
 
 int Ppu::Step()
 {
-    if(scanlineNum < 239)
+    int curLine = this->ppuMemory->GetScanLineNum();
+    int curCycle = this->ppuMemory->GetScanCycleNum();
+    if(curLine < 239)
     {
         NesColour bPixel = this->calc_background_pixel();
         NesColour sPixel = this->calc_sprite_pixel();
 
         //pick between bPixel and sPixel based on some state
         NesColour pixel = bPixel;
-        //if(this->registers->name.PPUMASK_S.showBackground || this->registers->name.PPUMASK_S.showSprites)
+        //if(this->memory->GetPpuRegisters()->name.PPUMASK_S.showBackground || this->memory->GetPpuRegisters()->name.PPUMASK_S.showSprites)
         {
             this->background_fetch();
             this->sprite_fetch();
         }
 
-        if(scanlineNum != -1) //not the preview scanline
+        if(curLine != -1) //not the preview scanline
         {
             //update right pixel with: 
             //this->framebuffer
         }
     } 
-    else if( scanlineNum == 241 )
+    else if( curLine == 241 )
     {
-        if(this->scanCycleNum == 1)
+        if(curCycle == 1)
         {
             //set VBlank flag to 1 at second cycle of scanline 241
         }
     }
-    else if( scanlineNum == 260 )
+    else if( curLine == 260 )
     {
         //clear the VBlank flag
     }
 
     //update counters
-    ++this->scanCycleNum;
+    ++curCycle;
 
-    if(this->scanCycleNum > 340)
+    if(curCycle > 340)
     {
         //next scanline
-        this->scanCycleNum = 0;
-        ++this->scanlineNum;
+        curCycle = 0;
+        ++curLine;
 
-        if(this->scanlineNum > 260)
+        if(curLine > 260)
         {
             //last scanline
-            this->scanlineNum = -1;
+            curLine = -1;
             ++this->frameCountNum;
         }
     }
+
+    this->ppuMemory->SetScanLineNum(curLine);
+    this->ppuMemory->SetScanCycleNum(curCycle);
 }
 
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
 void Ppu::background_fetch()
 {
-    if(this->scanCycleNum == 0)
+    int curCycle = this->ppuMemory->GetScanCycleNum();
+    if(curCycle == 0)
     {
         //NOP for 1 cycle
     } 
-    else if((this->scanCycleNum >= 1 && this->scanCycleNum < 257)
-            || (this->scanCycleNum >= 321 && this->scanCycleNum < 337 ))
+    else if((curCycle >= 1 && curCycle < 257)
+            || (curCycle >= 321 && curCycle < 337 ))
     {
-        switch(this->scanCycleNum % 8)
+        switch(curCycle % 8)
         {
             case 2:
             //fetch Nametable byte
-            this->bgr.ntByte = this->registers->PPUCTRL;
+            this->ppuMemory->GetPpuRegisters()->bgr.ntByte = this->ppuMemory->GetPpuRegisters()->PPUCTRL;
 
 
-            // this->bgr.shift.patternPlane1.lower = this->bgr.tileLo;
-            // this->bgr.shift.patternPlane2.lower = this->bgr.tileHi;
+            // this->memory->GetPpuRegisters()->bgr.shift.patternPlane1.lower = this->memory->GetPpuRegisters()->bgr.tileLo;
+            // this->memory->GetPpuRegisters()->bgr.shift.patternPlane2.lower = this->memory->GetPpuRegisters()->bgr.tileHi;
 
-            // this->bgr.shift.paletteAttribute1 = BitUtil::GetBits(this->bgr.atByte, 0); //first bit
-            // this->bgr.shift.paletteAttribute2 = BitUtil::GetBits(this->bgr.atByte, 1); //second bit
+            // this->memory->GetPpuRegisters()->bgr.shift.paletteAttribute1 = BitUtil::GetBits(this->memory->GetPpuRegisters()->bgr.atByte, 0); //first bit
+            // this->memory->GetPpuRegisters()->bgr.shift.paletteAttribute2 = BitUtil::GetBits(this->memory->GetPpuRegisters()->bgr.atByte, 1); //second bit
             break;
             
             case 4:
             //fetch Attribute Table byte
-            this->bgr.atByte = this->vram->Read( 0x23C0 );
+            this->ppuMemory->GetPpuRegisters()->bgr.atByte = this->ppuMemory->Read( 0x23C0 );
             break;
         }
     }
-    else if(this->scanCycleNum >= 257 && this->scanCycleNum < 321)
+    else if(curCycle >= 257 && curCycle < 321)
     {
         //sprite fetch
     }

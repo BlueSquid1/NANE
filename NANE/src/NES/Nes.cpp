@@ -2,11 +2,10 @@
 
 Nes::Nes()
 {
-    std::unique_ptr<CpuRegisters> cpuRegisters( new CpuRegisters() );
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
 
-    this->cpu = std::unique_ptr<Cpu>( new Cpu(std::move(cpuRegisters), ppuRegisters, apuRegisters) );
+    this->cpu = std::unique_ptr<Cpu>( new Cpu(ppuRegisters, apuRegisters) );
     this->ppu = std::unique_ptr<Ppu>( new Ppu(ppuRegisters, apuRegisters) );
 }
 
