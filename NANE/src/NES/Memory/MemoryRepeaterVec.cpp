@@ -35,3 +35,8 @@ void MemoryRepeaterVec::Write(dword address, byte value)
     dword lowerOffset = this->LowerOffset(address);
     this->data->at(lowerOffset) = value;
 }
+
+std::unique_ptr<std::vector<byte>>& MemoryRepeaterVec::GetDataVec()
+{
+    return this->data;
+}

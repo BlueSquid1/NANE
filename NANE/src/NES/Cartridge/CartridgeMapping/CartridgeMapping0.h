@@ -12,7 +12,7 @@ class CartridgeMapping0 : public ICartridge
     //constructor
     CartridgeMapping0();
 
-    virtual bool LoadINes(std::unique_ptr<INes> INesRom) override;
+    bool LoadINes(std::unique_ptr<INes> INesRom) override;
 };
 
 #endif

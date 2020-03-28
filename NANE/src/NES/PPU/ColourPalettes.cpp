@@ -1,5 +1,7 @@
 #include "ColourPalettes.h"
 
+const int ColourPalettes::rawLen;
+
 ColourPalettes::ColourPalettes()
 : MemoryRepeaterArray(0x3F00, 0x3FFF, this->raw, this->rawLen)
 {
@@ -8,21 +10,11 @@ ColourPalettes::ColourPalettes()
 
 dword ColourPalettes::Redirect(dword address) const
 {
-    dword redirrectAddress = this->startAddress + this->LowerOffset(address);
-    switch(address)
+    dword redirrectAddress = address;
+    dword offset = this->LowerOffset(address);
+    if(offset % 4 == 0)
     {
-        case 0x3F10:
-            redirrectAddress = 0x3F00;
-            break;
-        case 0x3F14:
-            redirrectAddress = 0x3F04;
-            break;
-        case 0x3F18:
-            redirrectAddress = 0x3F08;
-            break;
-        case 0x3F1C:
-            redirrectAddress = 0x33F0C;
-            break;
+        redirrectAddress = this->startAddress;
     }
     return redirrectAddress;
 }
@@ -37,4 +29,9 @@ void ColourPalettes::Write(dword address, byte value)
 {
     dword redirrectAddress = this->Redirect(address);
     return MemoryRepeaterArray::Write(redirrectAddress, value);
+}
+
+const paletteStruct& ColourPalettes::GetColourPalettes() const
+{
+    return this->name;
 }

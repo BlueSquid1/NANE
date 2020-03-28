@@ -1,7 +1,7 @@
 #include "PpuMemoryMap.h"
 
 PpuMemoryMap::PpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters)
-    : IMemoryRW(0x0000, 0x4017)
+    : IMemoryRW(0x0000, 0x3FFF)
 {
     this->ppuRegMem = ppuRegisters;
 
@@ -52,6 +52,20 @@ void PpuMemoryMap::Write(dword address, byte value)
     {
         std::cerr << "PPU Memory Map: failed to write to address: " << address << std::endl;
     }
+}
+
+PatternTables& PpuMemoryMap::GetChrDataFromRom()
+{
+    if(this->cartridge == NULL)
+    {
+        std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
+    }
+    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
+    std::unique_ptr<std::vector<byte>>& chrVec =  chrRom->GetDataVec();
+    byte * chrRawData = chrVec->data();
+    //do a dynmatic type conversion of the binary
+    PatternTables& patternTables = (PatternTables&) chrRawData;
+    return patternTables;
 }
 
 void PpuMemoryMap::SetCartridge(std::shared_ptr<ICartridge> cartridge)

@@ -17,7 +17,5 @@ bool CartridgeMapping0::LoadINes(std::unique_ptr<INes> INesRom)
         std::unique_ptr<std::vector<byte>> ram = std::unique_ptr<std::vector<byte>>(new std::vector<byte>(ramSize));
         this->prgRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x6000, 0x7FFF, std::move(ram)) );
     }
-    
-    //no chrRom
     return true;
 }

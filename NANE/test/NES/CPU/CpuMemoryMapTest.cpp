@@ -7,7 +7,7 @@
  * Can read and write without loading a cartridge
  */
 
-TEST_CASE("Can read and write without loading a cartridge") {
+TEST_CASE("CPU: Can read and write without loading a cartridge") {
     
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
@@ -47,7 +47,7 @@ TEST_CASE("Can read and write without loading a cartridge") {
  * Can read and write without loading a cartridge
  */
 
-TEST_CASE("Can read and write with loaded cartridge") {
+TEST_CASE("CPU: Can read and write with loaded cartridge") {
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
 
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
@@ -55,8 +55,8 @@ TEST_CASE("Can read and write with loaded cartridge") {
     CpuMemoryMap memoryMap(ppuRegisters, apuRegisters);
 
     CartridgeLoader cartLoader;
-    std::unique_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
-    memoryMap.SetCartridge(std::move(ines));
+    std::shared_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
+    memoryMap.SetCartridge(ines);
 
     //value just before cartridge
     REQUIRE(memoryMap.Read(0x401F) == 0);

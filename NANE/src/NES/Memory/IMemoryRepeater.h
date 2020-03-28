@@ -8,10 +8,9 @@
 
 class IMemoryRepeater : public IMemoryRW
 {
-    private:
+    public:
     dword dataLen = 0;
 
-    public:
     IMemoryRepeater(dword startAddress, dword endAddress, dword dataLen);
     dword LowerOffset(dword origionalAddress) const;
 };

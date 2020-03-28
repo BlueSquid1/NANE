@@ -6,7 +6,7 @@
 typedef bool bit;
 typedef uint8_t byte;
 typedef int8_t sByte;
-typedef uint16_t dword;
+typedef uint16_t dword; //double word
 union dword_p
 {
     dword val;
@@ -16,6 +16,6 @@ union dword_p
         byte upper : 8;
     };
 };
-typedef uint32_t qword;
+typedef uint32_t qword; //quadtuple word
 
 #endif

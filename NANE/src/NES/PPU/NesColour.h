@@ -3,25 +3,25 @@
 
 #include "NES/Memory/Types.h"
 
+union rawColour
+{
+    qword raw;
+    struct
+    {
+        byte red;
+        byte green;
+        byte blue;
+        byte _;
+    }channels;
+};
+
 class NesColour
 {
-    static const int colourIndex [64];
-
-    union
-    {
-        qword raw;
-        struct
-        {
-            byte blue;
-            byte green;
-            byte red;
-            byte alpha;
-        }channels;
-    };
-    byte nesColourIndex = 0;
+    private:
+    static const rawColour colourIndex [64];
 
     public:
-    NesColour(byte nesColourIndex = 63);
+    static rawColour GetRawColour(byte nesColourIndex = 63);
 };
 
 #endif

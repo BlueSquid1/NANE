@@ -18,6 +18,10 @@ byte MemoryRepeaterArray::Read(dword address) const
         throw std::invalid_argument("try to read when the data field hasn't been set");
     }
     dword lowerOffset = this->LowerOffset(address);
+    if(lowerOffset < 0 || lowerOffset >= this->dataLen)
+    {
+        throw std::range_error("try to read outside the boundary of the array");
+    }
     return this->data[lowerOffset];
 }
 

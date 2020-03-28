@@ -1,7 +1,7 @@
 #include "ICartridge.h"
 
 ICartridge::ICartridge(int mapNum)
-    : IMemoryRW(0x4020, 0xFFFF),
+    : IMemoryRW(0x0000, 0xFFFF),
       mapNumber(mapNum)
 {
 }
@@ -9,6 +9,25 @@ ICartridge::ICartridge(int mapNum)
 ICartridge::~ICartridge()
 {
 
+}
+
+bool ICartridge::Contains(dword address) const
+{
+    bool result = false;
+    if(this->prgRom != NULL && this->prgRom->Contains(address))
+    {
+        return true;
+    }
+    else if(this->chrRom != NULL && this->chrRom->Contains(address))
+    {
+        return true;
+    }
+    else if(this->prgRam != NULL && this->prgRam->Contains(address))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 byte ICartridge::Read(dword address) const
@@ -52,7 +71,12 @@ void ICartridge::Write(dword address, byte value)
     }
 }
 
-const unsigned int ICartridge::GetMapNumber()
+const unsigned int ICartridge::GetMapNumber() const
 {
     return this->mapNumber;
+}
+
+std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetChrRom()
+{
+    return this->chrRom;
 }

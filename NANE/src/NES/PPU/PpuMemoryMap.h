@@ -9,6 +9,22 @@
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 #include "NES/APU/ApuRegisters.h"
 
+struct Title
+{
+    byte LsbPlane[8];
+    byte MsbPlane[8];
+};
+
+struct PatternTable
+{
+    Title titles[16][16];
+};
+
+struct PatternTables
+{
+    PatternTable patternTables[2];
+};
+
 class PpuMemoryMap : public IMemoryRW
 {
     private:
@@ -29,6 +45,8 @@ class PpuMemoryMap : public IMemoryRW
     PpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters);
     virtual byte Read(dword address) const override;
     virtual void Write(dword address, byte value) override;
+
+    PatternTables& GetChrDataFromRom();
 
     //getters and setters
     void SetCartridge(std::shared_ptr<ICartridge> cartridge);

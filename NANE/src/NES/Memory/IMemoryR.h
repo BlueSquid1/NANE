@@ -5,13 +5,12 @@
 
 class IMemoryR
 {
-    protected:
+    public:
     //first valid address
     dword startAddress = 0;
     //last valid address
     dword endAddress = 0;
 
-    public:
     //constructor
     IMemoryR(dword startAddress, dword endAddress);
 

@@ -13,15 +13,15 @@ class PpuRegisters : public MemoryRepeaterArray
     public:
     enum PpuAddresses : unsigned
     {
-        PPUCTRL   = 0x2000,
-        PPUMASK   = 0x2001,
-        PPUSTATUS = 0x2002,
-        OAMADDR   = 0x2003,
-        OAMDATA   = 0x2004,
-        PPUSCROLL = 0x2005,
-        PPUADDR   = 0x2006,
-        PPUDATA   = 0x2007,
-        OAMDMA    = 0x4014
+        PPUCTRL_ADDR   = 0x2000,
+        PPUMASK_ADDR   = 0x2001,
+        PPUSTATUS_ADDR = 0x2002,
+        OAMADDR_ADDR   = 0x2003,
+        OAMDATA_ADDR   = 0x2004,
+        PPUSCROLL_ADDR = 0x2005,
+        PPUADDR_ADDR   = 0x2006,
+        PPUDATA_ADDR   = 0x2007,
+        OAMDMA_ADDR    = 0x4014
     };
 
     struct RegStruct

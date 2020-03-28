@@ -17,18 +17,21 @@ class ICartridge : public IMemoryRW
     std::unique_ptr<MemoryRepeaterVec> chrRom = NULL;
     std::unique_ptr<MemoryRepeaterVec> prgRam = NULL;
 
-    public:
-    //constructor
+    //protected constructor to prevent constructing this interface
     ICartridge(int mapNum);
+    
+    public:
     //virtual deconstructor
     virtual ~ICartridge();
-    
+
     virtual bool LoadINes(std::unique_ptr<INes> INesRom) = 0;
 
+    bool Contains(dword address) const final;
     byte Read(dword address) const override;
     void Write(dword address, byte value) override;
 
     //getters and setters
-    const unsigned int GetMapNumber();
+    const unsigned int GetMapNumber() const;
+    std::unique_ptr<MemoryRepeaterVec>& GetChrRom();
 };
 #endif

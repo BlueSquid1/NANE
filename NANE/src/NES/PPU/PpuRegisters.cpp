@@ -10,15 +10,15 @@ PpuRegisters::PpuRegisters()
 
 byte PpuRegisters::Read(dword address) const
 {
-    if(address == PpuRegisters::PPUSTATUS)
+    if(address == PpuRegisters::PPUSTATUS_ADDR)
     {
         //TODO
     }
-    else if(address == PpuRegisters::OAMDATA)
+    else if(address == PpuRegisters::OAMDATA_ADDR)
     {
         //TODO
     }
-    else if(address == PpuRegisters::PPUDATA)
+    else if(address == PpuRegisters::PPUDATA_ADDR)
     {
         //TODO
     }
@@ -27,15 +27,15 @@ byte PpuRegisters::Read(dword address) const
 
 void PpuRegisters::Write(dword address, byte value)
 {
-    if(address == PpuRegisters::OAMDATA)
+    if(address == PpuRegisters::OAMDATA_ADDR)
     {
         //TODO
     }
-    else if(address == PpuRegisters::PPUSCROLL)
+    else if(address == PpuRegisters::PPUSCROLL_ADDR)
     {
         //TODO
     }
-    else if(address == PpuRegisters::PPUADDR)
+    else if(address == PpuRegisters::PPUADDR_ADDR)
     {
         if(this->name.ppuRegLatch == false)
         {
@@ -49,7 +49,7 @@ void PpuRegisters::Write(dword address, byte value)
         //flip the vram address latch
         this->name.ppuRegLatch = !this->name.ppuRegLatch;
     }
-    else if(address == PpuRegisters::PPUDATA)
+    else if(address == PpuRegisters::PPUDATA_ADDR)
     {
         //TODO
     }
