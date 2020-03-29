@@ -197,21 +197,25 @@ std::unique_ptr<Matrix<rawColour>> Ppu::GeneratePatternTables()
                             pixelVal.channels.red = 0x00;
                             pixelVal.channels.green = 0x00;
                             pixelVal.channels.blue = 0x00;
+                            pixelVal.channels.alpha = 0xFF;
                             break;
                             case(1):
                             pixelVal.channels.red = 0xFF;
                             pixelVal.channels.green = 0xFF;
                             pixelVal.channels.blue = 0xFF;
+                            pixelVal.channels.alpha = 0xFF;
                             break;
                             case(2):
                             pixelVal.channels.red = 0x00;
                             pixelVal.channels.green = 0xFF;
                             pixelVal.channels.blue = 0x00;
+                            pixelVal.channels.alpha = 0xFF;
                             break;
                             case(3):
                             pixelVal.channels.red = 0x00;
                             pixelVal.channels.green = 0x00;
                             pixelVal.channels.blue = 0xFF;
+                            pixelVal.channels.alpha = 0xFF;
                             break;
                         }
                         int yPos = (y * PatternTables::TILE_HEIGHT) + row;

@@ -17,7 +17,7 @@ PatternTables::PatternTables(std::unique_ptr<std::vector<byte>>& chrRomVec)
     for(int tableNum = 0; tableNum < NUM_OF_TABLES; ++tableNum)
     {
         BitPatternTable curInputTable = patternTables.tables[tableNum];
-        PatternTable curOutputTable = patternTableData.at(tableNum);
+        PatternTable& curOutputTable = patternTableData.at(tableNum);
         for(int y = 0; y < TABLE_HEIGHT; ++y)
         {
             for(int x = 0; x < TABLE_WIDTH; ++x)

@@ -23,7 +23,7 @@ bool GraphicsEngine::Init()
 		return false;
 	}
 
-	this->nesTexture = SDL_CreateTexture(this->gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
+	this->nesTexture = SDL_CreateTexture(this->gRenderer, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 	if(!this->nesTexture)
 	{
 		std::cerr << "can't create NES texture for rendering. SDL error: " << SDL_GetError() << std::endl;
@@ -44,8 +44,8 @@ bool GraphicsEngine::Display(std::unique_ptr<Matrix<rawColour>>& nesFrame)
 	SDL_Rect screen_rect;
 	screen_rect.x = 0;
 	screen_rect.y = 0;
-	screen_rect.w = 256 ;
-	screen_rect.h = 240;
+	screen_rect.w = 256 * 3;
+	screen_rect.h = 240 * 3;
 	SDL_RenderCopy(this->gRenderer, this->nesTexture, nullptr, &screen_rect);
 
 	//SDL_SetRenderDrawColor(this->gRenderer, 0xFF, 0x00, 0x00, 0xFF);

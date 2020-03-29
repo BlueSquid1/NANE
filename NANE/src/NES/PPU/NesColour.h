@@ -10,10 +10,10 @@ union rawColour
     qword raw;
     struct
     {
+        byte alpha;
         byte red;
         byte green;
         byte blue;
-        byte _;
     }channels;
 };
 

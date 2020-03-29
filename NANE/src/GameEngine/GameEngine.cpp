@@ -60,7 +60,7 @@ bool GameEngine::UserInput()
             this->shouldExit = true;
         }
         if (e.type == SDL_KEYDOWN){
-            this->shouldExit = true;
+            //this->shouldExit = true;
         }
     }
 	return true;
