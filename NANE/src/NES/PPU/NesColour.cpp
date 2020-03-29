@@ -2,7 +2,7 @@
 
 // colours came from:
 // https://wiki.nesdev.com/w/index.php/PPU_palettes
-const rawColour NesColour::colourIndex [64] = {
+const rawColour NesColour::colourLookupIndex [64] = {
     0x545454, 0x001e74, 0x081090, 0x300088, 0x440064, 0x5c0030, 0x540400, 0x3c1800, 
     0x202a00, 0x083a00, 0x004000, 0x003c00, 0x00323c, 0x000000, 0x000000, 0x000000, 
     0x989698, 0x084cc4, 0x3032ec, 0x5c1ee4, 0x8814b0, 0xa01464, 0x982220, 0x783c00, 
@@ -13,7 +13,7 @@ const rawColour NesColour::colourIndex [64] = {
     0xccd278, 0xb4de78, 0xa8e290, 0x98e2b4, 0xa0d6e4, 0xa0a2a0, 0x000000, 0x000000
 };
 
-rawColour NesColour::GetRawColour(byte nesColourIndex)
+rawColour NesColour::GetRawColour(colourIndex nesColourIndex)
 {
-    return colourIndex[nesColourIndex];
+    return colourLookupIndex[nesColourIndex];
 }

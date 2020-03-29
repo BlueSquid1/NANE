@@ -89,5 +89,5 @@ TEST_CASE("PPU: test reading chr rom data") {
     std::shared_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
     memoryMap.SetCartridge(ines);
 
-    PatternTables& patternTables = memoryMap.GetChrDataFromRom();
+    std::unique_ptr<PatternTables> patternTables = memoryMap.GeneratePatternTablesFromRom();
 }

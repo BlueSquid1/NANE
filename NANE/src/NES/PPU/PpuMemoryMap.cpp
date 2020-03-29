@@ -54,17 +54,15 @@ void PpuMemoryMap::Write(dword address, byte value)
     }
 }
 
-PatternTables& PpuMemoryMap::GetChrDataFromRom()
+std::unique_ptr<PatternTables> PpuMemoryMap::GeneratePatternTablesFromRom()
 {
     if(this->cartridge == NULL)
     {
         std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
     }
     std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
-    std::unique_ptr<std::vector<byte>>& chrVec =  chrRom->GetDataVec();
-    byte * chrRawData = chrVec->data();
-    //do a dynmatic type conversion of the binary
-    PatternTables& patternTables = (PatternTables&) chrRawData;
+    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
+    std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
     return patternTables;
 }
 

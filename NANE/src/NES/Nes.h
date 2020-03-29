@@ -33,5 +33,8 @@ class Nes
     bool PowerCycle();
 
     bool processes();
+
+    //dissassmbly methods
+    std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
 };
 #endif

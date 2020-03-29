@@ -168,13 +168,64 @@ bool Ppu::SetCartridge(std::shared_ptr<ICartridge> cartridge)
     return true;
 }
 
-const Screen& Ppu::GetFrameDisplay()
+std::unique_ptr<Matrix<rawColour>> Ppu::GeneratePatternTables()
 {
-    return this->framebuffer;
+    int outputWidth = PatternTables::NUM_OF_TABLES * PatternTables::TILE_WIDTH * PatternTables::TABLE_WIDTH;
+    int outputHeight = PatternTables::TILE_HEIGHT * PatternTables::TABLE_HEIGHT;
+    std::unique_ptr<Matrix<rawColour>> outputPatterns = std::unique_ptr<Matrix<rawColour>>( new Matrix<rawColour>(outputWidth, outputHeight) );
+
+    std::unique_ptr<PatternTables> patternTables = this->ppuMemory.GeneratePatternTablesFromRom();
+    for(int tableNum = 0; tableNum < PatternTables::NUM_OF_TABLES; ++tableNum)
+    {
+        for(int y = 0; y < PatternTables::TABLE_HEIGHT; ++y)
+        {
+            for(int x = 0; x < PatternTables::TABLE_WIDTH; ++x)
+            {
+                Matrix<byte> tilePattern = patternTables->GetTile(tableNum, y, x);
+                for(int row = 0; row < PatternTables::TILE_HEIGHT; ++row)
+                {
+                    for(int col = 0; col < PatternTables::TILE_WIDTH; ++col)
+                    {
+                        byte paletteVal = tilePattern.Get(row, col);
+
+                        //translate using a colour palette
+                        //TODO
+                        rawColour pixelVal;
+                        switch(paletteVal)
+                        {
+                            case(0):
+                            pixelVal.channels.red = 0x00;
+                            pixelVal.channels.green = 0x00;
+                            pixelVal.channels.blue = 0x00;
+                            break;
+                            case(1):
+                            pixelVal.channels.red = 0xFF;
+                            pixelVal.channels.green = 0xFF;
+                            pixelVal.channels.blue = 0xFF;
+                            break;
+                            case(2):
+                            pixelVal.channels.red = 0x00;
+                            pixelVal.channels.green = 0xFF;
+                            pixelVal.channels.blue = 0x00;
+                            break;
+                            case(3):
+                            pixelVal.channels.red = 0x00;
+                            pixelVal.channels.green = 0x00;
+                            pixelVal.channels.blue = 0xFF;
+                            break;
+                        }
+                        int yPos = (y * PatternTables::TILE_HEIGHT) + row;
+                        int xPos = (tableNum * PatternTables::TILE_WIDTH * PatternTables::TABLE_WIDTH) + (x * PatternTables::TILE_WIDTH) + col;
+                        outputPatterns->Set(yPos, xPos, pixelVal);
+                    }
+                }
+            }
+        }
+    }
+    return outputPatterns;
 }
 
-const Screen& Ppu::GetChrRom()
+const Matrix<rawColour>& Ppu::GetFrameDisplay()
 {
-    PatternTables& chrRom = this->ppuMemory.GetChrDataFromRom();
-    chrRom.patternTables[0].titles[0][0].LsbPlane;
+    return this->framebuffer;
 }

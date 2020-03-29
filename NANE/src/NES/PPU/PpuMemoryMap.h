@@ -1,29 +1,17 @@
 #ifndef PPU_MEMORY_MAP
 #define PPU_MEMORY_MAP
 
+#include <memory>
+
 #include "PpuRegisters.h"
 #include "ColourPalettes.h"
+#include "PatternTables.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 #include "NES/APU/ApuRegisters.h"
 
-struct Title
-{
-    byte LsbPlane[8];
-    byte MsbPlane[8];
-};
-
-struct PatternTable
-{
-    Title titles[16][16];
-};
-
-struct PatternTables
-{
-    PatternTable patternTables[2];
-};
 
 class PpuMemoryMap : public IMemoryRW
 {
@@ -46,7 +34,7 @@ class PpuMemoryMap : public IMemoryRW
     virtual byte Read(dword address) const override;
     virtual void Write(dword address, byte value) override;
 
-    PatternTables& GetChrDataFromRom();
+    std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 
     //getters and setters
     void SetCartridge(std::shared_ptr<ICartridge> cartridge);

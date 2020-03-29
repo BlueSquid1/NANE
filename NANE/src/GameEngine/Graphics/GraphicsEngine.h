@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <SDL.h>
+#include <memory>
+
+#include "NES/PPU/Matrix.h"
+#include "NES/PPU/NesColour.h"
 
 /**
  * responsible for updating the graphical display of the game.
@@ -19,6 +23,8 @@ class GraphicsEngine
     //SDL local renderer for the window
     SDL_Renderer *gRenderer;
 
+    SDL_Texture * nesTexture;
+
     public:
     /**
      * Initalizes the graphics engine.
@@ -28,7 +34,7 @@ class GraphicsEngine
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display();
+    bool Display(std::unique_ptr<Matrix<rawColour>>& nesFrame);
 
     /**
      * Close the graphics engine.

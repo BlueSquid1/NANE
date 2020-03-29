@@ -3,6 +3,7 @@
 
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
+#include "NesColour.h"
 
 /**
  * Manages the PPU colour palettes
@@ -12,8 +13,8 @@
 
 struct paletteStruct
 {
-    byte backgroundPalettes[4][4];
-    byte spritePalettes[4][4];
+    colourIndex backgroundPalettes[4][4];
+    colourIndex spritePalettes[4][4];
 };
 
 class ColourPalettes : public MemoryRepeaterArray

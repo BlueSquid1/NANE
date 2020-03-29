@@ -50,3 +50,8 @@ bool Nes::processes()
     int cpuCycles = this->cpu->Step();
     return true;
 }
+
+std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
+{
+    return this->ppu->GeneratePatternTables();
+}

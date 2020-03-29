@@ -73,7 +73,8 @@ bool GameEngine::Processing()
 
 bool GameEngine::Display()
 {
-	bool graphicsRet = this->graphics->Display();
+	std::unique_ptr<Matrix<rawColour>> patternTables = this->nesEmulator->GeneratePatternTables();
+	bool graphicsRet = this->graphics->Display(patternTables);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;

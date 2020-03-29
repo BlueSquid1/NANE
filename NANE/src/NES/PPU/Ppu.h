@@ -3,7 +3,7 @@
 
 #include <memory> //std::shared_ptr
 
-#include "Screen.h"
+#include "Matrix.h"
 #include "NesColour.h"
 #include "PpuRegisters.h"
 #include "NES/APU/ApuRegisters.h"
@@ -18,7 +18,7 @@ class Ppu
     //the actual output
     // length  x  scanlines
     //  256    x   240
-    Screen framebuffer;
+    Matrix<rawColour> framebuffer;
 
     long long int frameCountNum; //how many frames have been rendered
 
@@ -36,9 +36,13 @@ class Ppu
     int Step();
 
     bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
-    
-    const Screen& GetFrameDisplay();
-    const Screen& GetChrRom();
+
+    /**
+     * just for dissassembly purposes
+     */
+    std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
+
+    const Matrix<rawColour>& GetFrameDisplay();
 };
 
 #endif
