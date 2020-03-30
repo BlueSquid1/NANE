@@ -6,7 +6,7 @@
 #include <SDL.h> //graphics library
 
 #include "Network/Logger.h"
-#include "Graphics/GraphicsEngine.h"
+#include "Graphics/WindowsManager.h"
 #include "NES/Nes.h"
 
 /**
@@ -16,8 +16,8 @@ class GameEngine
 {
     private:
     //graphics module
-    std::unique_ptr<GraphicsEngine> graphics = NULL;
-    std::unique_ptr<Nes> nesEmulator = NULL;
+    WindowManager windowsMgr;
+    Nes nesEmulator;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;

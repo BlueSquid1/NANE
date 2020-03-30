@@ -73,6 +73,16 @@ class Matrix
 
         this->vecData.at(index) = value;
     }
+
+    //getters/setters
+    int GetWidth() const
+    {
+        return this->maxWidth;
+    }
+    int GetHeight() const
+    {
+        return this->maxHeight;
+    }
 };
 
 #endif

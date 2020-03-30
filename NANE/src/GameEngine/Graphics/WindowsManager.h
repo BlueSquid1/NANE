@@ -5,13 +5,13 @@
 #include <SDL.h>
 #include <memory>
 
-#include "NES/PPU/Matrix.h"
-#include "NES/PPU/NesColour.h"
+#include "NES/Nes.h"
+#include "Window.h"
 
 /**
  * responsible for updating the graphical display of the game.
  */
-class GraphicsEngine
+class WindowManager
 {
     private:
     //screen resolution
@@ -23,7 +23,8 @@ class GraphicsEngine
     //SDL local renderer for the window
     SDL_Renderer *gRenderer;
 
-    SDL_Texture * nesTexture;
+    Window mainWindow;
+    Window chrRomWindow;
 
     public:
     /**
@@ -34,7 +35,7 @@ class GraphicsEngine
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display(std::unique_ptr<Matrix<rawColour>>& nesFrame);
+    bool Display(Nes& nesEmulator);
 
     /**
      * Close the graphics engine.

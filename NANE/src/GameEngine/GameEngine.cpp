@@ -2,8 +2,7 @@
 
 GameEngine::GameEngine()
 {
-	this->graphics = std::unique_ptr<GraphicsEngine>(new GraphicsEngine());
-	this->nesEmulator = std::unique_ptr<Nes>(new Nes());
+
 }
 
 
@@ -18,7 +17,7 @@ bool GameEngine::Init(const std::string & serverIp)
 
 	std::cout << "initalizing game engine" << std::endl;
 
-	bool isGraphicsInit = this->graphics->Init();
+	bool isGraphicsInit = this->windowsMgr.Init();
 	if(isGraphicsInit == false)
 	{
 		std::cerr << "failed to initalize graphics engine" << std::endl;
@@ -31,7 +30,7 @@ bool GameEngine::Init(const std::string & serverIp)
 bool GameEngine::LoadMedia()
 {
 	std::string romPath = "./NANE/test/resources/nestest.nes";
-	if(this->nesEmulator->LoadCartridge(romPath) == false)
+	if(this->nesEmulator.LoadCartridge(romPath) == false)
 	{
 		return false;
 	}
@@ -41,13 +40,13 @@ bool GameEngine::LoadMedia()
 
 bool GameEngine::PostInit()
 {
-	if(this->nesEmulator->PowerCycle() == false)
+	if(this->nesEmulator.PowerCycle() == false)
 	{
 		return false;
 	}
 
 	//TODO delete
-	this->nesEmulator->processes();
+	this->nesEmulator.processes();
 
 	return true;
 }
@@ -73,8 +72,7 @@ bool GameEngine::Processing()
 
 bool GameEngine::Display()
 {
-	std::unique_ptr<Matrix<rawColour>> patternTables = this->nesEmulator->GeneratePatternTables();
-	bool graphicsRet = this->graphics->Display(patternTables);
+	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;
@@ -85,7 +83,7 @@ bool GameEngine::Display()
 void GameEngine::Close()
 {
 	std::cout << "closing game engine" << std::endl;
-	this->graphics->Close();
+	this->windowsMgr.Close();
 	Logger::Close();
 }
 

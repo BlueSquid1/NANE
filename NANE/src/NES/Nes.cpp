@@ -51,6 +51,11 @@ bool Nes::processes()
     return true;
 }
 
+const Matrix<rawColour>& Nes::GetFrameDisplay()
+{
+    return this->ppu->GetFrameDisplay();
+}
+
 std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
     return this->ppu->GeneratePatternTables();

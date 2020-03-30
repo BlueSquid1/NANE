@@ -34,6 +34,8 @@ class Nes
 
     bool processes();
 
+    const Matrix<rawColour>& GetFrameDisplay();
+
     //dissassmbly methods
     std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
 };

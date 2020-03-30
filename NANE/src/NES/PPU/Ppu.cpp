@@ -52,6 +52,8 @@ bool Ppu::PowerCycle()
     this->ppuMemory.SetScanLineNum(-1);
     this->ppuMemory.SetScanCycleNum(0);
     this->frameCountNum = 0;
+
+    return true;
 }
 
 int Ppu::Step()
@@ -108,6 +110,8 @@ int Ppu::Step()
 
     this->ppuMemory.SetScanLineNum(curLine);
     this->ppuMemory.SetScanCycleNum(curCycle);
+
+    return true;
 }
 
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
