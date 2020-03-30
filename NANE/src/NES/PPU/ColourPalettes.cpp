@@ -31,6 +31,20 @@ void ColourPalettes::Write(dword address, byte value)
     return MemoryRepeaterArray::Write(redirrectAddress, value);
 }
 
+rawColour ColourPalettes::PatternValueToColour(byte palletteId, byte patternVal) const
+{
+    if(palletteId < 0 || palletteId >= 8)
+    {
+        throw std::invalid_argument("palletteId is outside boundary for a ColourPalette");
+    }
+    else if(patternVal < 0 || patternVal >= 4)
+    {
+        throw std::invalid_argument("patternVal is outside boundary for a ColourPalette");
+    }
+    colourIndex colourIndex = this->name.palettes[palletteId][patternVal];
+    return NesColour::GetRawColour(colourIndex);
+}
+
 const paletteStruct& ColourPalettes::GetColourPalettes() const
 {
     return this->name;

@@ -21,6 +21,7 @@ class Ppu
     Matrix<rawColour> framebuffer;
 
     long long int frameCountNum; //how many frames have been rendered
+    byte defaultPalette = 0;
 
     rawColour calc_background_pixel();
     rawColour calc_sprite_pixel();

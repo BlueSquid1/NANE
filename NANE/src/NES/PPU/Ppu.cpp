@@ -186,38 +186,10 @@ std::unique_ptr<Matrix<rawColour>> Ppu::GeneratePatternTables()
                 {
                     for(int col = 0; col < PatternTables::TILE_WIDTH; ++col)
                     {
-                        byte paletteVal = tilePattern.Get(row, col);
+                        byte patternVal = tilePattern.Get(row, col);
 
-                        //translate using a colour palette
-                        //TODO
-                        rawColour pixelVal;
-                        switch(paletteVal)
-                        {
-                            case(0):
-                            pixelVal.channels.red = 0x00;
-                            pixelVal.channels.green = 0x00;
-                            pixelVal.channels.blue = 0x00;
-                            pixelVal.channels.alpha = 0xFF;
-                            break;
-                            case(1):
-                            pixelVal.channels.red = 0xFF;
-                            pixelVal.channels.green = 0xFF;
-                            pixelVal.channels.blue = 0xFF;
-                            pixelVal.channels.alpha = 0xFF;
-                            break;
-                            case(2):
-                            pixelVal.channels.red = 0x00;
-                            pixelVal.channels.green = 0xFF;
-                            pixelVal.channels.blue = 0x00;
-                            pixelVal.channels.alpha = 0xFF;
-                            break;
-                            case(3):
-                            pixelVal.channels.red = 0x00;
-                            pixelVal.channels.green = 0x00;
-                            pixelVal.channels.blue = 0xFF;
-                            pixelVal.channels.alpha = 0xFF;
-                            break;
-                        }
+                        rawColour pixelVal = this->ppuMemory.GetPalettes()->PatternValueToColour(this->defaultPalette, patternVal);
+
                         int yPos = (y * PatternTables::TILE_HEIGHT) + row;
                         int xPos = (tableNum * PatternTables::TILE_WIDTH * PatternTables::TABLE_WIDTH) + (x * PatternTables::TILE_WIDTH) + col;
                         outputPatterns->Set(yPos, xPos, pixelVal);

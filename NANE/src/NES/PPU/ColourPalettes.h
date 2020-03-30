@@ -13,8 +13,15 @@
 
 struct paletteStruct
 {
-    colourIndex backgroundPalettes[4][4];
-    colourIndex spritePalettes[4][4];
+    union
+    {
+        colourIndex palettes[8][4];
+        struct
+        {
+            colourIndex backgroundPalettes[4][4];
+            colourIndex spritePalettes[4][4];
+        };
+    };
 };
 
 class ColourPalettes : public MemoryRepeaterArray
@@ -41,6 +48,8 @@ class ColourPalettes : public MemoryRepeaterArray
 
     byte Read(dword address) const override;
     void Write(dword address, byte value) override;
+
+    rawColour PatternValueToColour(byte palletteId, byte patternVal) const;
 
     //getters and setters
     const paletteStruct& GetColourPalettes() const;
