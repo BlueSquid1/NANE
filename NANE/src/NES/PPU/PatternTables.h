@@ -9,10 +9,10 @@ class PatternTables
 {
     public:
     static const byte NUM_OF_TABLES = 2;
-    static const byte TABLE_WIDTH = 16;
-    static const byte TABLE_HEIGHT = 16;
-    static const byte TILE_WIDTH = 8;
-    static const byte TILE_HEIGHT = 8;
+    static const byte TABLE_WIDTH = 16; //tiles
+    static const byte TABLE_HEIGHT = 16; //titles
+    static const byte TILE_WIDTH = 8; //pixels
+    static const byte TILE_HEIGHT = 8; //pixels
 
     
     private:

@@ -76,3 +76,50 @@ TEST_CASE("PPU latching registers") {
     REQUIRE(registers.name.V.value == 0x2108);
     REQUIRE(registers.name.T.value == 0x2108);
 }
+
+/**
+ * test PPUCTRL, PPUMASK and PPUSTATUS which all use unions with there bits
+ */
+TEST_CASE("PPUCTRL, PPUMASK and PPUSTATUS union tests") {
+    PpuRegisters registers;
+    
+    //PPUCTRL
+    registers.name.PPUCTRL = 167; //1010 0111
+    REQUIRE(registers.name.baseNameTable == 3);
+    REQUIRE(registers.name.vramDirrection == 1);
+    REQUIRE(registers.name.sprite8x8PatternTable == 0);
+    REQUIRE(registers.name.backgroundPatternTable == 0);
+    REQUIRE(registers.name.spriteSize == 1);
+    REQUIRE(registers.name.ppuMaster == 0);
+    REQUIRE(registers.name.generateNmi == 1);
+
+    registers.name.baseNameTable = 1;
+    registers.name.sprite8x8PatternTable = 1;
+    REQUIRE(registers.name.PPUCTRL == 173);
+
+    //PPUMASK
+    registers.name.PPUMASK = 89; //0101 1001
+    REQUIRE(registers.name.greyscale == 1);
+    REQUIRE(registers.name.showBackgroundLeftmost == 0);
+    REQUIRE(registers.name.showSpritesLeftmost == 0);
+    REQUIRE(registers.name.showBackground == 1);
+    REQUIRE(registers.name.showSprites == 1);
+    REQUIRE(registers.name.emphasizeRed == 0);
+    REQUIRE(registers.name.emphasizeGreen == 1);
+    REQUIRE(registers.name.emphasizeBlue == 0);
+
+    registers.name.showSprites = 0;
+    registers.name.emphasizeRed = 1;
+    REQUIRE(registers.name.PPUMASK == 105);
+    
+    //PPUSTATUS
+    registers.name.PPUSTATUS = 178; //1011 0010
+    REQUIRE(registers.name.lsbRegWritten == 18);
+    REQUIRE(registers.name.spriteOverflow == 1);
+    REQUIRE(registers.name.sprite0Hit == 0);
+    REQUIRE(registers.name.verticalBlank == 1);
+
+    registers.name.lsbRegWritten = 7;
+    registers.name.verticalBlank = 0;
+    REQUIRE(registers.name.PPUSTATUS == 39); //0010 0111
+}

@@ -34,7 +34,10 @@ PatternTables::PatternTables(std::unique_ptr<std::vector<byte>>& chrRomVec)
                         bit lsbit = BitUtil::GetBits(lsbyte, col);
 
                         byte paletteValue = (msbit << 1) | lsbit;
-                        curOutputTitle.Set(row, col, paletteValue);
+
+                        int pixelY = row;
+                        int pixelX = 7 - col; //NES draws from right to left but we will be drawing from left to right
+                        curOutputTitle.Set(pixelY, pixelX, paletteValue);
                     }
                 }
             }
