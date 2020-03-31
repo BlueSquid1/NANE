@@ -44,22 +44,26 @@ bool GameEngine::PostInit()
 	{
 		return false;
 	}
-
-	//TODO delete
-	this->nesEmulator.processes();
-
 	return true;
 }
 
 bool GameEngine::UserInput()
 {
 	SDL_Event e;
-	while (SDL_PollEvent(&e)){
-        if (e.type == SDL_QUIT){
+	while (SDL_PollEvent(&e))
+	{
+        if (e.type == SDL_QUIT)
+		{
             this->shouldExit = true;
         }
-        if (e.type == SDL_KEYDOWN){
-            //this->shouldExit = true;
+        if (e.type == SDL_KEYDOWN)
+		{
+			switch( e.key.keysym.sym )
+			{
+				case SDLK_p:
+				this->stepCpu = true;
+				break;
+			}
         }
     }
 	return true;
@@ -67,6 +71,11 @@ bool GameEngine::UserInput()
 
 bool GameEngine::Processing()
 {
+	if(this->stepCpu == true)
+	{
+		this->nesEmulator.processes();
+		this->stepCpu = false;
+	}
 	return true;
 }
 

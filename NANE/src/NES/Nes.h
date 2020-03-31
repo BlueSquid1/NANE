@@ -38,5 +38,6 @@ class Nes
 
     //dissassmbly methods
     std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
+    std::string GenerateCpuScreen();
 };
 #endif

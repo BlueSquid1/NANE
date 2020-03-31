@@ -28,6 +28,7 @@ log out and back in to refresh evironment variables
 For MacOS:
 ```
 brew install sdl2
+brew install sdl2_ttf
 ```
 
 ### install Catch2 (for unit tests only)

@@ -19,7 +19,7 @@ class CpuMemoryMap : public IMemoryRW
     std::unique_ptr<CpuRegisters> cpuRegMem = NULL;
     std::shared_ptr<PpuRegisters> ppuRegMem = NULL;
     std::unique_ptr<IMemoryRepeater> apuRegMem = NULL;
-    std::unique_ptr<IMemoryRepeater> cpuRam = NULL;
+    std::unique_ptr<MemoryRepeaterVec> cpuRam = NULL;
 
     std::shared_ptr<ICartridge> cartridge = NULL;
 
@@ -32,6 +32,7 @@ class CpuMemoryMap : public IMemoryRW
 
     //getters and setters
     void SetCartridge(std::shared_ptr<ICartridge> cartridge);
+    std::shared_ptr<ICartridge> GetCartridge() const;
     std::unique_ptr<CpuRegisters>& GetRegisters();
 };
 #endif

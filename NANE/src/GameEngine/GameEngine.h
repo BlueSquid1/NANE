@@ -22,6 +22,8 @@ class GameEngine
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
 
+    bool stepCpu = false;
+
     public:
     /**
      * constructor

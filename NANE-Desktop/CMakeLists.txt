@@ -9,6 +9,10 @@ project(NANE)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
+find_package(SDL2_ttf REQUIRED)
+include_directories(${SDL2_TTF_INCLUDE_DIRS})
+
 find_package(Catch2 REQUIRED)
 
 #where source code is kept
@@ -20,6 +24,7 @@ file(GLOB_RECURSE SOURCES
 #NANE library
 add_library(NANE_Lib ${SOURCES})
 target_link_libraries(NANE_Lib ${SDL2_LIBRARIES})
+target_link_libraries(NANE_Lib ${SDL2_TTF_LIBRARIES})
 
 #NANE executable
 add_executable(NANE ../NANE/src/main.cpp)

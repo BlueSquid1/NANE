@@ -9,6 +9,12 @@ bool WindowManager::Init()
 		return false;
 	}
 
+	if(TTF_Init() < 0)
+	{
+		std::cerr << "can't start SDL_TTF. TTF error: " << TTF_GetError() << std::endl;
+		return false;
+	}
+
     this->gWindow = SDL_CreateWindow("NES-NX", 0, 0, this->xPixelRes, this->yPixelRes, SDL_WINDOW_SHOWN);
 	if (!this->gWindow)
 	{
@@ -23,6 +29,13 @@ bool WindowManager::Init()
 		return false;
 	}
 
+	this->gFont = TTF_OpenFont( "Arial.ttf", 25 );
+	if(!this->gFont)
+	{
+		std::cerr << "failed to open 'Arial.tff'. SDL error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+
 	bool mainWindowResult = this->mainWindow.Init(this->gRenderer, 256, 240, 0, 0);
 	if(mainWindowResult == false)
 	{
@@ -30,10 +43,17 @@ bool WindowManager::Init()
 		return false;
 	}
 
-	bool chrRomWindowResult = this->chrRomWindow.Init(this->gRenderer, 256, 128, 256, 0);
+	bool chrRomWindowResult = this->chrRomWindow.Init(this->gRenderer, 256, 128, 256 + BORDER_WIDTH, 0);
 	if(chrRomWindowResult == false)
 	{
 		std::cerr << "can't create chr rom window. SDL error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+
+	bool cpuWindowResult = this->cpuWindow.Init(this->gRenderer, 256, 128, 256 + BORDER_WIDTH, 128 + BORDER_WIDTH);
+	if(cpuWindowResult == false)
+	{
+		std::cerr << "can't create cpu window. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
@@ -48,10 +68,13 @@ bool WindowManager::Display(Nes& nesEmulator)
 
 	//render windows
 	const Matrix<rawColour>& mainDisplay = nesEmulator.GetFrameDisplay();
-	mainWindow.Display(mainDisplay);
+	this->mainWindow.Display(mainDisplay);
 
 	std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
-	chrRomWindow.Display(*chrRomDisplay);
+	this->chrRomWindow.Display(*chrRomDisplay);
+
+	std::string cpuText = nesEmulator.GenerateCpuScreen();
+	this->cpuWindow.Display(cpuText, this->gFont);
 
 	//Update the surface
 	SDL_RenderPresent( this->gRenderer );
@@ -65,5 +88,7 @@ void WindowManager::Close()
 	this->gWindow = NULL;
 	SDL_DestroyRenderer(this->gRenderer);
 	this->gRenderer = NULL;
+	TTF_CloseFont(this->gFont);
+	this->gFont = NULL;
     SDL_Quit();
 }

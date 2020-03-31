@@ -33,5 +33,6 @@ class ICartridge : public IMemoryRW
     //getters and setters
     const unsigned int GetMapNumber() const;
     std::unique_ptr<MemoryRepeaterVec>& GetChrRom();
+    std::unique_ptr<MemoryRepeaterVec>& GetPrgRom();
 };
 #endif

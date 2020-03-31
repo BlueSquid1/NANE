@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/opt/devkitpro/libnx/include/**",
                 "/opt/devkitpro/portlibs/switch/include/**",
-                "/usr/local/Cellar/catch2/2.11.1/include/**"
+                "/usr/local/Cellar/catch2/2.11.1/include/**",
+                "/usr/local/Cellar/sdl2_ttf/2.0.15/include/**"
             ],
             "defines": [],
             "macFrameworkPath": [

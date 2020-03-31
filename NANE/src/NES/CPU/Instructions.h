@@ -45,6 +45,20 @@ struct Opcode {
   const char* addrm_type; // Addressing Mode Name
 };
 
+class Instruction
+{
+  public:
+    Opcode opcode;
+    byte inputVal;
+    dword pcAddress;
+    dword argAddress;
+    std::string addressModeText;
+    int instLen;
+    int cycleCount;
+    bool outputToAccum;
+};
+
+
 // This macro magic makes the Opcode definition list look a lot nicer comapred
 // to the raw alternative.
 // Just compare a raw definition to a corresponding macro'd definition:

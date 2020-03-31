@@ -9,6 +9,8 @@
 #include "NES/Memory/BitUtil.h"
 #include "CpuMemoryMap.h"
 #include "Instructions.h"
+#include "NES/PPU/Matrix.h"
+#include "NES/PPU/NesColour.h"
 
 class Cpu
 {
@@ -26,15 +28,18 @@ class Cpu
     byte Pop();
     int AdditionalCyclesForPageCross(dword address1, dword address2);
 
+    std::unique_ptr<Instructions::Instruction> DecodeInstruction(dword address);
+
     public:
     Cpu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
-    bool PowerCycle();
+    bool PowerCycle(dword newPcAddress = 0x8000);
     int Step();
     bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
+
+    std::string GenerateCpuScreen();
     
     //getters and setters
     CpuRegisters * GetRegisters();
-
     void SetTotalClockCycles(int totalCycles);
 };
 

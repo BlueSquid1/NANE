@@ -34,7 +34,7 @@ TEST_CASE("Run NesTest") {
     std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
     std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
     Cpu cpu(ppuRegisters, apuRegisters);
-    cpu.PowerCycle();
+    cpu.PowerCycle(0xC000);
 
     CpuRegisters * registers = cpu.GetRegisters();
     registers->name.Y = 0;

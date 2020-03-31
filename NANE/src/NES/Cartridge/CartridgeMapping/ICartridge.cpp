@@ -80,3 +80,8 @@ std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetChrRom()
 {
     return this->chrRom;
 }
+
+std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetPrgRom()
+{
+    return this->prgRom;
+}

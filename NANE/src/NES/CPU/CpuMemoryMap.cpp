@@ -16,6 +16,11 @@ void CpuMemoryMap::SetCartridge(std::shared_ptr<ICartridge> cartridge)
     this->cartridge = cartridge;
 }
 
+std::shared_ptr<ICartridge> CpuMemoryMap::GetCartridge() const
+{
+    return this->cartridge;
+}
+
 byte CpuMemoryMap::Read(dword address) const
 {
     if(this->cpuRam->Contains(address))

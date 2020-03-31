@@ -60,3 +60,8 @@ std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
     return this->ppu->GeneratePatternTables();
 }
+
+std::string Nes::GenerateCpuScreen()
+{
+    return this->cpu->GenerateCpuScreen();
+}
