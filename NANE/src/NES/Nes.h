@@ -1,16 +1,12 @@
 #ifndef NES
 #define NES
 
-#include <memory> //std::unique_ptr
-#include <iostream> //std::string
-
 #include "CPU/Cpu.h"
-
 #include "PPU/Ppu.h"
-#include "PPU/PpuRegisters.h"
+#include "Memory/Dma.h"
 
-#include "Cartridge/CartridgeLoader.h"
-#include "Cartridge/CartridgeMapping/ICartridge.h"
+#include <memory> //std::unique_ptr
+#include <string> //std::string
 
 /**
  * assembles a virtual NES
@@ -18,9 +14,9 @@
 class Nes
 {
     private:
-    std::unique_ptr<Cpu> cpu = NULL;
-    std::unique_ptr<Ppu> ppu = NULL;
-    std::shared_ptr<ICartridge> cartridge = NULL;
+    Dma dma;
+    Cpu cpu;
+    Ppu ppu;
 
     public:
     Nes();
@@ -37,8 +33,8 @@ class Nes
     const Matrix<rawColour>& GetFrameDisplay();
 
     //dissassmbly methods
-    std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
-    std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
-    std::string GenerateCpuScreen();
+    const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
+    const std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
+    const std::string GenerateCpuScreen();
 };
 #endif

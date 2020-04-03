@@ -30,7 +30,7 @@ bool ICartridge::Contains(dword address) const
     return false;
 }
 
-byte ICartridge::Read(dword address) const
+byte ICartridge::Read(dword address)
 {
     if(this->prgRom->Contains(address))
     {

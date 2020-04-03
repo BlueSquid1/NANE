@@ -1,38 +1,27 @@
 #ifndef CPU_MEMORY_MAP
 #define CPU_MEMORY_MAP
 
-#include <memory> //std::shared_ptr
+#include <memory> //std::unique_ptr
 
 #include "CpuRegisters.h"
 #include "NES/Memory/BitUtil.h"
-#include "NES/PPU/PpuRegisters.h"
-#include "NES/APU/ApuRegisters.h"
-#include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 #include "NES/Memory/IMemoryRW.h"
 #include "NES/Memory/MemoryRepeaterVec.h"
-#include "NES/Memory/MemoryRepeaterArray.h"
 
 
 class CpuMemoryMap : public IMemoryRW
 {
     private:
-    std::unique_ptr<CpuRegisters> cpuRegMem = NULL;
-    std::shared_ptr<PpuRegisters> ppuRegMem = NULL;
-    std::unique_ptr<IMemoryRepeater> apuRegMem = NULL;
+    CpuRegisters cpuRegMem;
     std::unique_ptr<MemoryRepeaterVec> cpuRam = NULL;
 
-    std::shared_ptr<ICartridge> cartridge = NULL;
-
     public:
-    CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, 
-        std::shared_ptr<ApuRegisters> apuRegisters);
+    CpuMemoryMap();
 
-    virtual byte Read(dword address) const override;
+    virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
 
     //getters and setters
-    void SetCartridge(std::shared_ptr<ICartridge> cartridge);
-    std::shared_ptr<ICartridge> GetCartridge() const;
-    std::unique_ptr<CpuRegisters>& GetRegisters();
+    CpuRegisters& GetRegisters();
 };
 #endif

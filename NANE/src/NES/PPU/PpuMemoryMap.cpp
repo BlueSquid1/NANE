@@ -1,31 +1,25 @@
 #include "PpuMemoryMap.h"
 
-PpuMemoryMap::PpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters)
-    : IMemoryRW(0x0000, 0x3FFF)
-{
-    this->ppuRegMem = ppuRegisters;
+#include <iostream> //std::cerr
 
+PpuMemoryMap::PpuMemoryMap()
+    : IMemoryRW(0x2000, 0x3FFF),
+    primOam( 256 ),
+    secOam( 32 )
+{
     std::unique_ptr<std::vector<byte>> nametableVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(4096) );
     this->nametableMem = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x2000, 0x3EFF, std::move(nametableVec)) );
-    this->palettesMem = std::unique_ptr<ColourPalettes>( new ColourPalettes() );
-
-    this->primOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(256) );
-    this->secOam = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(32) );
 }
 
-byte PpuMemoryMap::Read(dword address) const
+byte PpuMemoryMap::Read(dword address)
 {
     if(this->nametableMem->Contains(address))
     {
         return this->nametableMem->Read(address);
     }
-    else if(this->cartridge != NULL &&this->cartridge->Contains(address))
+    else if(this->palettesMem.Contains(address))
     {
-        return this->cartridge->Read(address);
-    }
-    else if(this->palettesMem->Contains(address))
-    {
-        return this->palettesMem->Read(address);
+        return this->palettesMem.Read(address);
     }
     else
     {
@@ -40,13 +34,9 @@ void PpuMemoryMap::Write(dword address, byte value)
     {
         this->nametableMem->Write(address, value);
     }
-    else if(this->cartridge != NULL && this->cartridge->Contains(address))
+    else if(this->palettesMem.Contains(address))
     {
-        this->cartridge->Write(address, value);
-    }
-    else if(this->palettesMem->Contains(address))
-    {
-        this->palettesMem->Write(address, value);
+        this->palettesMem.Write(address, value);
     }
     else
     {
@@ -54,29 +44,12 @@ void PpuMemoryMap::Write(dword address, byte value)
     }
 }
 
-std::unique_ptr<PatternTables> PpuMemoryMap::GeneratePatternTablesFromRom()
-{
-    if(this->cartridge == NULL)
-    {
-        std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
-    }
-    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
-    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
-    std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
-    return patternTables;
-}
-
-void PpuMemoryMap::SetCartridge(std::shared_ptr<ICartridge> cartridge)
-{
-    this->cartridge = cartridge;
-}
-
-std::unique_ptr<ColourPalettes>& PpuMemoryMap::GetPalettes()
+ColourPalettes& PpuMemoryMap::GetPalettes()
 {
     return this->palettesMem;
 }
 
-std::shared_ptr<PpuRegisters>& PpuMemoryMap::GetPpuRegisters()
+PpuRegisters& PpuMemoryMap::GetRegisters()
 {
     return this->ppuRegMem;
 }

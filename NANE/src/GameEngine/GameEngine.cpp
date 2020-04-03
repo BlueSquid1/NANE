@@ -63,11 +63,8 @@ bool GameEngine::UserInput()
 				case SDLK_n:
 				this->step = true;
 				break;
-				case SDLK_r:
-				this->run = true;
-				break;
 				case SDLK_p:
-				this->run = false;
+				this->run = !this->run;
 				break;
 			}
         }

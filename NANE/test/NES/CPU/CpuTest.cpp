@@ -1,17 +1,18 @@
 #include <catch2/catch.hpp>
 #include <iostream> //std::string
 #include <fstream> //std::ofstream
+#include <sstream>
 
 #include "NES/CPU/Cpu.h"
 #include "NES/Cartridge/CartridgeLoader.h"
+#include "NES/Memory/Dma.h"
 
 /**
  * test turning on the CPU
  */
 TEST_CASE("Power Cycle") {
-    std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
-    std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
-    Cpu cpu(ppuRegisters, apuRegisters);
+    Dma dma;
+    Cpu cpu(dma);
     bool powerRet = cpu.PowerCycle();
     REQUIRE(powerRet == true);
 }
@@ -29,24 +30,23 @@ TEST_CASE("Run NesTest") {
     std::cout.flush();
     std::stringstream outSS;
     std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-    std::cout.rdbuf(outSS.rdbuf()); //redirect std::cout to out.txt!
+    std::cout.rdbuf(outSS.rdbuf()); //redirect std::cout to outSS
 
-    std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
-    std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
-    Cpu cpu(ppuRegisters, apuRegisters);
+    Dma dma;
+    Cpu cpu(dma);
     cpu.PowerCycle(0xC000);
 
-    CpuRegisters * registers = cpu.GetRegisters();
-    registers->name.Y = 0;
-    registers->name.P = 0x24;
-    registers->name.S = 0xFD;
+    CpuRegisters& registers = dma.GetCpuMemory().GetRegisters();
+    registers.name.Y = 0;
+    registers.name.P = 0x24;
+    registers.name.S = 0xFD;
     
     cpu.SetTotalClockCycles(7);
 
     CartridgeLoader cartridgeLoader;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
     std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
-    cpu.SetCartridge(std::move(cartridge));
+    dma.SetCartridge(std::move(cartridge));
 
     int cpuCycles = 5003;
     for(int i = 0; i < cpuCycles; ++i)

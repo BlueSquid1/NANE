@@ -8,7 +8,7 @@ PpuRegisters::PpuRegisters()
     memset(this->raw, 0, sizeof(this->name));
 }
 
-byte PpuRegisters::Read(dword address) const
+byte PpuRegisters::Read(dword address)
 {
     if(address == PpuRegisters::PPUSTATUS_ADDR)
     {
@@ -20,38 +20,52 @@ byte PpuRegisters::Read(dword address) const
     }
     else if(address == PpuRegisters::PPUDATA_ADDR)
     {
-        //TODO
+        dword address = this->name.curPpuAddress.val;
+        this->name.ppuReadBuffer;
     }
     return MemoryRepeaterArray::Read(address);
 }
 
 void PpuRegisters::Write(dword address, byte value)
 {
-    if(address == PpuRegisters::OAMDATA_ADDR)
+    switch(address)
     {
-        //TODO
-    }
-    else if(address == PpuRegisters::PPUSCROLL_ADDR)
-    {
-        //TODO
-    }
-    else if(address == PpuRegisters::PPUADDR_ADDR)
-    {
-        if(this->name.ppuRegLatch == false)
+        case PpuRegisters::OAMDATA_ADDR:
         {
-            this->name.T.upper = value & 0x3F;
+            //TODO
+            break;
         }
-        else
+        case PpuRegisters::PPUSCROLL_ADDR:
         {
-            this->name.T.lower = value;
-            this->name.V.value = this->name.T.value;
+            //TODO
+            break;
         }
-        //flip the vram address latch
-        this->name.ppuRegLatch = !this->name.ppuRegLatch;
+        case PpuRegisters::PPUADDR_ADDR:
+        {
+            if(this->name.ppuAddressLatch == false)
+            {
+                this->name.curPpuAddress.upper = value;
+            }
+            else
+            {
+                this->name.curPpuAddress.lower = value;
+            }
+            //flip the vram address latch
+            this->name.ppuAddressLatch = !this->name.ppuAddressLatch;
+            break;
+            case PpuRegisters::PPUDATA_ADDR:
+            {
+                //TODO
+            }
+            case PpuRegisters::OAMDMA_ADDR:
+            {
+                //TODO
+            }
+        }
+        default:
+        {
+            MemoryRepeaterArray::Write(address, value);
+            break;
+        }
     }
-    else if(address == PpuRegisters::PPUDATA_ADDR)
-    {
-        //TODO
-    }
-    return MemoryRepeaterArray::Write(address, value);
 }

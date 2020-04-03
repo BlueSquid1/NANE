@@ -2,6 +2,7 @@
 #define INSTRUCTIONS
 
 #include "NES/Memory/BitUtil.h"
+#include <string>
 
 //take from https://github.com/daniel5151/ANESE/blob/master/src/nes/cpu/instructions.h
 

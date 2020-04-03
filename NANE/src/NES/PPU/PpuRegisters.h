@@ -74,17 +74,12 @@ class PpuRegisters : public MemoryRepeaterArray
 
         //internal registers
         //https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
-        union
-        {
-            dword value;
-            struct
-            {
-                byte lower;
-                byte upper;
-            };
-        }V, //holds current VRAM address written into PPUADDR (0x2006)
-        T; //temporary VRAM address to top left title on screen
-        bool ppuRegLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr  
+        dword_p curPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
+        //TODO dword_p tempPpuAddress; //temporary VRAM address to top left title on screen
+        bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
+        
+        //https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
+        byte ppuReadBuffer;
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
@@ -131,7 +126,7 @@ class PpuRegisters : public MemoryRepeaterArray
     //constructor
     PpuRegisters();
 
-    byte Read(dword address) const override;
+    byte Read(dword address) override;
     void Write(dword address, byte value) override;
  };
 

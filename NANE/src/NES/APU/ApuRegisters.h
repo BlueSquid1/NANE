@@ -2,6 +2,7 @@
 #define APU_REGISTERS
 
 #include "NES/Memory/BitUtil.h"
+#include "NES/Memory/MemoryRepeaterArray.h"
 
 /**
  * APU registers. 
@@ -9,7 +10,7 @@
  * https://wiki.nesdev.com/w/index.php/APU#Registers
  * https://wiki.nesdev.com/w/index.php/2A03
  */
-class ApuRegisters
+class ApuRegisters: public MemoryRepeaterArray
 {
     public:
     struct RegStruct
@@ -54,9 +55,9 @@ class ApuRegisters
     union
     {
         RegStruct name;
-        byte raw[sizeof(RegStruct)];
+        byte raw[24];
     };
-    int rawLen = sizeof(RegStruct);
+    int rawLen = 24;
 
     //constructor
     ApuRegisters();

@@ -19,7 +19,7 @@ class IMemoryR
 
     virtual bool Contains(dword address) const;
 
-    virtual byte Read(dword address) const = 0;
+    virtual byte Read(dword address) = 0;
 };
 
 #endif

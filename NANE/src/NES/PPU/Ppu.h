@@ -1,19 +1,18 @@
 #ifndef PPU
 #define PPU
 
-#include <memory> //std::shared_ptr
-
+#include "PpuRegisters.h"
 #include "Matrix.h"
 #include "NesColour.h"
-#include "PpuRegisters.h"
-#include "NES/APU/ApuRegisters.h"
-#include "PpuMemoryMap.h"
 #include "NES/Memory/BitUtil.h"
+#include "NES/Memory/Dma.h"
+
+#include <memory> //std::unique_ptr
 
 class Ppu
 {
     private:
-    PpuMemoryMap ppuMemory;
+    Dma& dma;
 
     //the actual output
     // length  x  scanlines
@@ -29,14 +28,14 @@ class Ppu
     void background_fetch();
     void sprite_fetch();
 
+    PpuRegisters& GetRegs();
+
     public:
     //constructor
-    Ppu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
+    Ppu(Dma& dma);
 
     bool PowerCycle();
     int Step();
-
-    bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
 
     /**
      * just for dissassembly purposes

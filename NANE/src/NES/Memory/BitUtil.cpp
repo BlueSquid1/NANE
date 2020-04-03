@@ -75,7 +75,7 @@ qword BitUtil::GetBits(qword value, unsigned char startBit, unsigned char endBit
 }
 
 
-dword BitUtil::GetDWord(const IMemoryR * memory, dword startAddress, bool pageWrap)
+dword BitUtil::GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap)
 {
     byte lowerByte = memory->Read(startAddress);
     dword endAddress = startAddress + 1;

@@ -6,7 +6,7 @@ MemoryRepeaterVec::MemoryRepeaterVec(dword startAddress, dword endAddress, std::
     this->data = std::move(data);
 }
 
-byte MemoryRepeaterVec::Read(dword address) const
+byte MemoryRepeaterVec::Read(dword address)
 {
     //check boundaries
     if(!this->Contains(address))

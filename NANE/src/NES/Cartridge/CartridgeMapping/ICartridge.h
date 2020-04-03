@@ -27,7 +27,7 @@ class ICartridge : public IMemoryRW
     virtual bool LoadINes(std::unique_ptr<INes> INesRom) = 0;
 
     bool Contains(dword address) const final;
-    byte Read(dword address) const override;
+    byte Read(dword address) override;
     void Write(dword address, byte value) override;
 
     //getters and setters

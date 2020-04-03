@@ -15,7 +15,7 @@ class MemoryRepeaterVec : public IMemoryRepeater
     //constructors
     MemoryRepeaterVec(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data);
 
-    virtual byte Read(dword address) const override;
+    virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
 
     //getters and setters

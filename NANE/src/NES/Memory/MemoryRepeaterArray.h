@@ -15,7 +15,7 @@ class MemoryRepeaterArray : public IMemoryRepeater
     //constructors
     MemoryRepeaterArray(dword startAddress, dword endAddress, byte * data, dword length);
 
-    virtual byte Read(dword address) const override;
+    virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
 };
 

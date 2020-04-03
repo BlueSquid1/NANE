@@ -1,41 +1,33 @@
 #include "Nes.h"
 
-Nes::Nes()
-{
-    std::shared_ptr<PpuRegisters> ppuRegisters( new PpuRegisters() );
-    std::shared_ptr<ApuRegisters> apuRegisters( new ApuRegisters() );
+#include "Cartridge/CartridgeLoader.h"
 
-    this->cpu = std::unique_ptr<Cpu>( new Cpu(ppuRegisters, apuRegisters) );
-    this->ppu = std::unique_ptr<Ppu>( new Ppu(ppuRegisters, apuRegisters) );
+Nes::Nes()
+: dma(), cpu(dma), ppu(dma)
+{
+
 }
 
 
 bool Nes::LoadCartridge(std::string pathToRom)
 {
     CartridgeLoader cartridgeLoader;
-    this->cartridge = cartridgeLoader.LoadCartridge(pathToRom);
-    if(this->cartridge == NULL)
+    std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(pathToRom);
+    if(cartridge == NULL)
     {
         return false;
     }
-    bool setCartRetCpu = this->cpu->SetCartridge(this->cartridge);
-    if(setCartRetCpu == false)
+    bool setCartDma = this->dma.SetCartridge(std::move(cartridge));
+    if(setCartDma == false)
     {
         return false;
     }
-
-    bool setCartRetPpu = this->ppu->SetCartridge(this->cartridge);
-    if(setCartRetPpu == false)
-    {
-        return false;
-    }
-
     return true;
 }
 
 bool Nes::PowerCycle()
 {
-    bool cputRet = this->cpu->PowerCycle();
+    bool cputRet = this->cpu.PowerCycle();
     if(cputRet == false)
     {
         return false;
@@ -46,27 +38,45 @@ bool Nes::PowerCycle()
 
 bool Nes::processes(bool verbose)
 {
-    //1 CPU step for 3 PPU steps
-    int cpuCycles = this->cpu->Step(verbose);
+    //it takes 29606 cpu cycles to render a whole frame
+    int cpuCyclesToRun = 29606;
+
+    if(verbose)
+    {
+        cpuCyclesToRun = 1;
+    }
+
+    int cpuCycles = 0;
+    while(cpuCycles < cpuCyclesToRun )
+    {
+        //1 CPU step for 3 PPU steps
+        cpuCycles += this->cpu.Step(verbose);
+        for(int i = 0; i < cpuCycles; ++i)
+        {
+            this->ppu.Step();
+            this->ppu.Step();
+            this->ppu.Step();
+        }
+    }
     return true;
 }
 
 const Matrix<rawColour>& Nes::GetFrameDisplay()
 {
-    return this->ppu->GetFrameDisplay();
+    return this->ppu.GetFrameDisplay();
 }
 
-std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
+const std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
-    return this->ppu->GeneratePatternTables();
+    return this->ppu.GeneratePatternTables();
 }
 
-std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
+const std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
 {
-    return this->ppu->GenerateColourPalettes();
+    return this->ppu.GenerateColourPalettes();
 }
 
-std::string Nes::GenerateCpuScreen()
+const std::string Nes::GenerateCpuScreen()
 {
-    return this->cpu->GenerateCpuScreen();
+    return this->cpu.GenerateCpuScreen();
 }

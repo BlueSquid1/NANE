@@ -19,7 +19,7 @@ dword ColourPalettes::Redirect(dword address) const
     return redirrectAddress;
 }
 
-byte ColourPalettes::Read(dword address) const
+byte ColourPalettes::Read(dword address)
 {
     dword redirrectAddress = this->Redirect(address);
     return MemoryRepeaterArray::Read(redirrectAddress);
