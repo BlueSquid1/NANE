@@ -590,6 +590,10 @@ CpuRegisters& Cpu::GetRegs()
 
 std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress)
 {
+    if(pcAddress == 0xCFA9)
+    {
+        int i = 0;
+    }
     try
     {
         byte optCode = this->dma.CpuRead(pcAddress);

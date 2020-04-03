@@ -17,13 +17,13 @@ byte Dma::CpuRead(dword address)
     {
         return this->apuRegisters.Read(address);
     }
-    else if(this->cartridge != NULL &&this->cartridge->Contains(address))
-    {
-        return this->cartridge->Read(address);
-    }
     else if(this->cpuMemory.Contains(address))
     {
         return this->cpuMemory.Read(address);
+    }
+    else if(this->cartridge != NULL &&this->cartridge->Contains(address))
+    {
+        return this->cartridge->Read(address);
     }
     else
     {
@@ -41,13 +41,13 @@ void Dma::CpuWrite(dword address, byte value)
     {
         this->apuRegisters.Write(address, value);
     }
-    else if(this->cartridge != NULL && this->cartridge->Contains(address))
-    {
-        this->cartridge->Write(address, value);
-    }
     else if(this->cpuMemory.Contains(address))
     {
         this->cpuMemory.Write(address, value);
+    }
+    else if(this->cartridge != NULL && this->cartridge->Contains(address))
+    {
+        this->cartridge->Write(address, value);
     }
     else
     {
