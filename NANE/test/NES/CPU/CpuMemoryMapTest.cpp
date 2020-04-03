@@ -60,10 +60,6 @@ TEST_CASE("CPU: Can read and write with loaded cartridge") {
 
     //value just before cartridge
     REQUIRE(memoryMap.Read(0x401F) == 0);
-    
-    //first values in cartridge
-    REQUIRE(memoryMap.Read(0x4020) == 0);
-    REQUIRE(memoryMap.Read(0x4021) == 0);
 
     //start of PRG ROM
     REQUIRE(memoryMap.Read(0x8000) == 0x4c);

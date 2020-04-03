@@ -6,7 +6,8 @@
 #include <memory>
 
 #include "NES/Nes.h"
-#include "Window.h"
+#include "TextureWindow.h"
+#include "TextWindow.h"
 
 /**
  * responsible for updating the graphical display of the game.
@@ -14,11 +15,8 @@
 class WindowManager
 {
     private:
-    const int BORDER_WIDTH = 10; //pixels
-
-    //screen resolution
-    const int xPixelRes = 1920;
-    const int yPixelRes = 1080;
+    const int BORDER_WIDTH = 5; //pixels
+    int windowScale = 2;
 
     //SDL window handler
     SDL_Window * gWindow = NULL;
@@ -27,9 +25,10 @@ class WindowManager
     //Globally used font
     TTF_Font * gFont = NULL;
 
-    Window mainWindow;
-    Window chrRomWindow;
-    Window cpuWindow;
+    TextureWindow mainWindow;
+    TextureWindow chrRomWindow;
+    TextWindow cpuWindow;
+    TextureWindow colourDisplayWindow;
 
     public:
     /**
@@ -37,10 +36,12 @@ class WindowManager
      */
     bool Init();
     
+    void ChangeScaleFactor(int newScaleFactor);
+    
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display(Nes& nesEmulator);
+    bool Display(Nes& nesEmulator, bool showDisassembly);
 
     /**
      * Close the graphics engine.

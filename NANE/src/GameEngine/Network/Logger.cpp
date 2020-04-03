@@ -74,7 +74,7 @@ void Logger::Close()
     Logger::stdOutLogger = NULL;
     Logger::stdErrLogger = NULL;
     
-    #ifdef SWITCH
+    #ifdef __SWITCH__
     socketExit();
     #endif
 }

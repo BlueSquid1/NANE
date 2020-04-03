@@ -60,8 +60,14 @@ bool GameEngine::UserInput()
 		{
 			switch( e.key.keysym.sym )
 			{
+				case SDLK_n:
+				this->step = true;
+				break;
+				case SDLK_r:
+				this->run = true;
+				break;
 				case SDLK_p:
-				this->stepCpu = true;
+				this->run = false;
 				break;
 			}
         }
@@ -71,17 +77,18 @@ bool GameEngine::UserInput()
 
 bool GameEngine::Processing()
 {
-	if(this->stepCpu == true)
+	if(this->step == true || this->run == true)
 	{
-		this->nesEmulator.processes();
-		this->stepCpu = false;
+		this->nesEmulator.processes(this->verbose);
+		this->step = false;
 	}
 	return true;
 }
 
 bool GameEngine::Display()
 {
-	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator);
+	bool showDisassembly = true;
+	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, showDisassembly);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;

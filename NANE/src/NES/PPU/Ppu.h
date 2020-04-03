@@ -43,6 +43,8 @@ class Ppu
      */
     std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
 
+    std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
+
     const Matrix<rawColour>& GetFrameDisplay();
 };
 

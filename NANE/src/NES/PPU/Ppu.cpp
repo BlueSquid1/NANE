@@ -205,6 +205,31 @@ std::unique_ptr<Matrix<rawColour>> Ppu::GeneratePatternTables()
     return outputPatterns;
 }
 
+std::unique_ptr<Matrix<rawColour>> Ppu::GenerateColourPalettes()
+{
+    const int colourWidth = 3;
+    const int borderWidth = 2;
+    rawColour backgroundColour;
+    backgroundColour.raw = 0x000000FF;
+
+    std::unique_ptr<Matrix<rawColour>> colourOutput = std::unique_ptr<Matrix<rawColour>>( new Matrix<rawColour>(borderWidth * 9 + colourWidth * 8, borderWidth + colourWidth * 4 + borderWidth, backgroundColour) );
+
+    int curCol = borderWidth;
+    std::unique_ptr<ColourPalettes>& palettes = this->ppuMemory.GetPalettes();
+    for(int paletteId = 0; paletteId < 8; ++paletteId)
+    {
+        for(int colourNum = 0; colourNum < 4; ++colourNum)
+        {
+            rawColour colour = palettes->PatternValueToColour(paletteId, colourNum);
+            colourOutput->SetRegion(borderWidth + (colourWidth * colourNum), curCol, colourWidth, colourWidth, colour);
+        }
+        curCol += colourWidth;
+        curCol += borderWidth;
+    }
+
+    return colourOutput;
+}
+
 const Matrix<rawColour>& Ppu::GetFrameDisplay()
 {
     return this->framebuffer;

@@ -27,9 +27,15 @@ bool Cpu::PowerCycle(dword newPcAddress)
     return true;
 }
 
-int Cpu::Step()
+int Cpu::Step(bool verbose)
 {
     std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->cpuMemory->GetRegisters()->name.PC);
+    if(decodedInst == NULL)
+    {
+        std::cerr << "failed to decode instruction at " << this->cpuMemory->GetRegisters()->name.PC << std::endl;
+        ++this->cpuMemory->GetRegisters()->name.PC;
+        return 0;
+    }
     Instructions::Opcode opcode = decodedInst->opcode;
     byte inputVal = decodedInst->inputVal;
     dword argAddress = decodedInst->argAddress;
@@ -39,24 +45,27 @@ int Cpu::Step()
     std::string addressModeText = decodedInst->addressModeText;
 
     //print to display
-    std::stringstream instCodeSS;
-    for(int i = 0; i < instLen; ++i)
+    if(verbose == true)
     {
-        instCodeSS << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + i) << " ";
+        std::stringstream instCodeSS;
+        for(int i = 0; i < instLen; ++i)
+        {
+            instCodeSS << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + i) << " ";
+        }
+        std::string instCodeText = instCodeSS.str();
+        std::cout<< std::hex << std::setfill('0') << std::setw(4) << std::right << std::uppercase << this->cpuMemory->GetRegisters()->name.PC << "  ";
+        std::cout << std::setw (10) << std::left << std::setfill(' ') << instCodeText;
+        std::cout << std::setw (32) << std::left << addressModeText;
+        std::cout << "A:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.A << " ";
+        std::cout << "X:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.X << " ";
+        std::cout << "Y:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.Y << " ";
+        std::cout << "P:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.P << " ";
+        std::cout << "SP:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.S << " ";
+        std::cout << "PPU:" << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << ",";
+        std::cout << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << " ";
+        std::cout << "CYC:" << std::dec << (int) this->totalClockCycles;
+        std::cout << std::endl;
     }
-    std::string instCodeText = instCodeSS.str();
-    std::cout<< std::hex << std::setfill('0') << std::setw(4) << std::right << std::uppercase << this->cpuMemory->GetRegisters()->name.PC << "  ";
-    std::cout << std::setw (10) << std::left << std::setfill(' ') << instCodeText;
-    std::cout << std::setw (32) << std::left << addressModeText;
-    std::cout << "A:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.A << " ";
-    std::cout << "X:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.X << " ";
-    std::cout << "Y:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.Y << " ";
-    std::cout << "P:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.P << " ";
-    std::cout << "SP:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.S << " ";
-    std::cout << "PPU:" << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << ",";
-    std::cout << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << " ";
-    std::cout << "CYC:" << std::dec << (int) this->totalClockCycles;
-    std::cout << std::endl;
 
     //increment PC
     this->cpuMemory->GetRegisters()->name.PC += instLen;
@@ -572,192 +581,199 @@ int Cpu::AdditionalCyclesForPageCross(dword address1, dword address2)
 
 std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress)
 {
-    byte optCode = this->cpuMemory->Read(pcAddress);
-    Instructions::Opcode opcode = Instructions::Opcodes[optCode];
-    if( opcode.addrm == Instructions::AddrM::INVALID )
+    try
     {
-        std::cerr << "failed to read instruction" << std::endl;
+        byte optCode = this->cpuMemory->Read(pcAddress);
+        Instructions::Opcode opcode = Instructions::Opcodes[optCode];
+        if( opcode.addrm == Instructions::AddrM::INVALID )
+        {
+            throw std::logic_error("not a valid instruction");
+        }
+
+        byte inputVal = 0;
+        dword argAddress = 0;
+        std::stringstream ss;
+        int instLen = 0;
+        int cycleCount = opcode.cycles;
+        bool outputToAccum = false;
+
+        //work out input value and input size
+        switch(opcode.addrm)
+        {
+            //1 byte instructions
+            case Instructions::AddrM::impl:
+            {
+                instLen = 1;
+                //DEX
+                ss << opcode.instr_name;
+                break;
+            }
+            case Instructions::AddrM::acc:
+            {
+                instLen = 1;
+                inputVal = this->cpuMemory->GetRegisters()->name.A;
+                outputToAccum = true;
+                //LSR A
+                ss << opcode.instr_name << " A";
+                break;
+            }
+
+            //2 byte instructions
+            case Instructions::AddrM::imm:
+            {
+                instLen = 2;
+                inputVal = this->cpuMemory->Read(pcAddress + 1);
+                //ORA #$AA
+                ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::zpg_:
+            {
+                instLen = 2;
+                argAddress = this->cpuMemory->Read(pcAddress + 1);
+                inputVal = this->cpuMemory->Read(argAddress);
+                //ORA $78 = 00
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::zpgX:
+            {
+                instLen = 2;
+                dword lookupAddress = this->cpuMemory->Read(pcAddress + 1);
+                argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.X;
+                argAddress = argAddress % 0x100;
+                inputVal = this->cpuMemory->Read(argAddress);
+                //ORA $00,X @ 78 = 00
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::zpgY:
+            {
+                instLen = 2;
+                dword lookupAddress = this->cpuMemory->Read(pcAddress + 1);
+                argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.Y;
+                argAddress = argAddress % 0x100;
+                inputVal = this->cpuMemory->Read(argAddress);
+                //ORA $00,X @ 78 = 00
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",Y @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::rel:
+            {
+                instLen = 2;
+                sByte offset = this->cpuMemory->Read(pcAddress + 1);
+                argAddress = offset + pcAddress + 2;
+                //BCS $F815
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
+                break;
+            }
+            case Instructions::AddrM::Xind:
+            {
+                instLen = 2;
+                byte indirrectAddress = this->cpuMemory->Read( pcAddress + 1);
+                byte indirrectAddressX = indirrectAddress + this->cpuMemory->GetRegisters()->name.X;
+                argAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddressX, true);
+                inputVal = this->cpuMemory->Read( argAddress );
+                //CMP ($80,X) @ 80 = 0200 = 40
+                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::indY:
+            {
+                instLen = 2;
+                byte indirrectAddress = this->cpuMemory->Read( pcAddress + 1);
+                dword inDirAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddress, true);
+                argAddress = inDirAddress + this->cpuMemory->GetRegisters()->name.Y;
+                inputVal = this->cpuMemory->Read( argAddress );
+                if(opcode.instr != Instructions::Instr::STA)
+                {
+                    cycleCount += this->AdditionalCyclesForPageCross(inDirAddress, argAddress);
+                }
+                //LDA ($97),Y = FFFF @ 0033 = A3
+                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << "),Y = " << std::setw(4) << inDirAddress << " @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+
+            //3 byte instructions
+            case Instructions::AddrM::abs_:
+            {
+                instLen = 3;
+                argAddress = BitUtil::GetDWord(this->cpuMemory.get(), pcAddress + 1);
+                inputVal = this->cpuMemory->Read(argAddress);
+                //LDA $0400 = 87
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
+                if(opcode.instr != Instructions::Instr::JMP && opcode.instr != Instructions::Instr::JSR)
+                {
+                    ss << " = " << std::hex << std::setw(2) << std::uppercase << (int) inputVal;
+                }
+                break;
+            }
+            case Instructions::AddrM::absX:
+            {
+                instLen = 3;
+                dword lookupAddress = BitUtil::GetDWord(this->cpuMemory.get(), pcAddress + 1);
+                argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.X;
+                inputVal = this->cpuMemory->Read(argAddress);
+                if(opcode.instr != Instructions::Instr::STA)
+                {
+                    cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
+                }
+                //LDA $05FF,X @ 0689 = BB
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::absY:
+            {
+                instLen = 3;
+                dword lookupAddress = BitUtil::GetDWord(this->cpuMemory.get(), pcAddress + 1);
+                argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.Y;
+                inputVal = this->cpuMemory->Read(argAddress);
+                if(opcode.instr != Instructions::Instr::STA)
+                {
+                    cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
+                }
+                //LDA $0300,Y @ 0300 = 89
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::uppercase << std::right << lookupAddress << ",Y @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+            case Instructions::AddrM::ind_:
+            {
+                instLen = 3;
+                dword indirrectAddress = BitUtil::GetDWord(this->cpuMemory.get(), pcAddress + 1);
+                argAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddress, true);
+                //JMP ($0200) = DB7E
+                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << argAddress;
+                break;
+            }
+            default:
+            {
+                std::cerr << "invalid memory mode" << std::endl;
+                //default to zero page addressing
+                instLen = 2;
+                argAddress = this->cpuMemory->Read(pcAddress + 1);
+                inputVal = this->cpuMemory->Read(argAddress);
+                //ORA $78 = 00
+                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
+                break;
+            }
+        }
+        std::string addressModeText = ss.str();
+
+        std::unique_ptr<Instructions::Instruction> decodedInst = std::unique_ptr<Instructions::Instruction>( new Instructions::Instruction() );
+        decodedInst->opcode = opcode;
+        decodedInst->inputVal = inputVal;
+        decodedInst->pcAddress = pcAddress;
+        decodedInst->argAddress = argAddress;
+        decodedInst->instLen = instLen;
+        decodedInst->cycleCount = cycleCount;
+        decodedInst->outputToAccum = outputToAccum;
+        decodedInst->addressModeText = addressModeText;
+        return decodedInst;
     }
-
-    byte inputVal = 0;
-    dword argAddress = 0;
-    std::stringstream ss;
-    int instLen = 0;
-    int cycleCount = opcode.cycles;
-    bool outputToAccum = false;
-
-    //work out input value and input size
-    switch(opcode.addrm)
+    catch(const std::exception& e)
     {
-        //1 byte instructions
-        case Instructions::AddrM::impl:
-        {
-            instLen = 1;
-            //DEX
-            ss << opcode.instr_name;
-            break;
-        }
-        case Instructions::AddrM::acc:
-        {
-            instLen = 1;
-            inputVal = this->cpuMemory->GetRegisters()->name.A;
-            outputToAccum = true;
-            //LSR A
-            ss << opcode.instr_name << " A";
-            break;
-        }
-
-        //2 byte instructions
-        case Instructions::AddrM::imm:
-        {
-            instLen = 2;
-            inputVal = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            //ORA #$AA
-            ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::zpg_:
-        {
-            instLen = 2;
-            argAddress = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            inputVal = this->cpuMemory->Read(argAddress);
-            //ORA $78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::zpgX:
-        {
-            instLen = 2;
-            dword lookupAddress = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.X;
-            argAddress = argAddress % 0x100;
-            inputVal = this->cpuMemory->Read(argAddress);
-            //ORA $00,X @ 78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::zpgY:
-        {
-            instLen = 2;
-            dword lookupAddress = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.Y;
-            argAddress = argAddress % 0x100;
-            inputVal = this->cpuMemory->Read(argAddress);
-            //ORA $00,X @ 78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",Y @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::rel:
-        {
-            instLen = 2;
-            sByte offset = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = offset + this->cpuMemory->GetRegisters()->name.PC + 2;
-            //BCS $F815
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
-            break;
-        }
-        case Instructions::AddrM::Xind:
-        {
-            instLen = 2;
-            byte indirrectAddress = this->cpuMemory->Read( this->cpuMemory->GetRegisters()->name.PC + 1);
-            byte indirrectAddressX = indirrectAddress + this->cpuMemory->GetRegisters()->name.X;
-            argAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddressX, true);
-            inputVal = this->cpuMemory->Read( argAddress );
-            //CMP ($80,X) @ 80 = 0200 = 40
-            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::indY:
-        {
-            instLen = 2;
-            byte indirrectAddress = this->cpuMemory->Read( this->cpuMemory->GetRegisters()->name.PC + 1);
-            dword inDirAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddress, true);
-            argAddress = inDirAddress + this->cpuMemory->GetRegisters()->name.Y;
-            inputVal = this->cpuMemory->Read( argAddress );
-            if(opcode.instr != Instructions::Instr::STA)
-            {
-                cycleCount += this->AdditionalCyclesForPageCross(inDirAddress, argAddress);
-            }
-            //LDA ($97),Y = FFFF @ 0033 = A3
-            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << "),Y = " << std::setw(4) << inDirAddress << " @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-
-        //3 byte instructions
-        case Instructions::AddrM::abs_:
-        {
-            instLen = 3;
-            argAddress = BitUtil::GetDWord(this->cpuMemory.get(), this->cpuMemory->GetRegisters()->name.PC + 1);
-            inputVal = this->cpuMemory->Read(argAddress);
-            //LDA $0400 = 87
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
-            if(opcode.instr != Instructions::Instr::JMP && opcode.instr != Instructions::Instr::JSR)
-            {
-                ss << " = " << std::hex << std::setw(2) << std::uppercase << (int) inputVal;
-            }
-            break;
-        }
-        case Instructions::AddrM::absX:
-        {
-            instLen = 3;
-            dword lookupAddress = BitUtil::GetDWord(this->cpuMemory.get(), this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.X;
-            inputVal = this->cpuMemory->Read(argAddress);
-            if(opcode.instr != Instructions::Instr::STA)
-            {
-                cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
-            }
-            //LDA $05FF,X @ 0689 = BB
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::absY:
-        {
-            instLen = 3;
-            dword lookupAddress = BitUtil::GetDWord(this->cpuMemory.get(), this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = lookupAddress + this->cpuMemory->GetRegisters()->name.Y;
-            inputVal = this->cpuMemory->Read(argAddress);
-            if(opcode.instr != Instructions::Instr::STA)
-            {
-                cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
-            }
-            //LDA $0300,Y @ 0300 = 89
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::uppercase << std::right << lookupAddress << ",Y @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
-        case Instructions::AddrM::ind_:
-        {
-            instLen = 3;
-            dword indirrectAddress = BitUtil::GetDWord(this->cpuMemory.get(), this->cpuMemory->GetRegisters()->name.PC + 1);
-            argAddress = BitUtil::GetDWord(this->cpuMemory.get(), indirrectAddress, true);
-            //JMP ($0200) = DB7E
-            ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << argAddress;
-            break;
-        }
-        default:
-        {
-            std::cerr << "invalid memory mode" << std::endl;
-            //default to zero page addressing
-            instLen = 2;
-            argAddress = this->cpuMemory->Read(this->cpuMemory->GetRegisters()->name.PC + 1);
-            inputVal = this->cpuMemory->Read(argAddress);
-            //ORA $78 = 00
-            ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
-            break;
-        }
+        return NULL;
     }
-    std::string addressModeText = ss.str();
-
-    std::unique_ptr<Instructions::Instruction> decodedInst = std::unique_ptr<Instructions::Instruction>( new Instructions::Instruction() );
-    decodedInst->opcode = opcode;
-    decodedInst->inputVal = inputVal;
-    decodedInst->pcAddress = pcAddress;
-    decodedInst->argAddress = argAddress;
-    decodedInst->instLen = instLen;
-    decodedInst->cycleCount = cycleCount;
-    decodedInst->outputToAccum = outputToAccum;
-    decodedInst->addressModeText = addressModeText;
-    return decodedInst;
 }
 
 
@@ -767,7 +783,7 @@ bool Cpu::SetCartridge(std::shared_ptr<ICartridge> cartridge)
     return true;
 }
 
-std::string Cpu::GenerateCpuScreen()
+std::string Cpu::GenerateCpuScreen(int instructionsBefore, int instructionsAfter)
 {
     dword pc = this->cpuMemory->GetRegisters()->name.PC;
     std::vector<Instructions::Instruction> decodedInstructions;
@@ -776,27 +792,45 @@ std::string Cpu::GenerateCpuScreen()
     int i = prgRom->startAddress;
     while(i < prgRom->endAddress)
     {
-        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i);
-        if(decodedInstr->pcAddress == pc)
+        if(i == pc)
         {
             currentInstrIndex = decodedInstructions.size();
+        }
+
+        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i);
+        if(decodedInstr == NULL)
+        {
+            decodedInstr = std::unique_ptr<Instructions::Instruction>(new Instructions::Instruction());
+            decodedInstr->pcAddress = i;
+            decodedInstr->opcode.instr_name = "NOP*";
+            decodedInstr->instLen = 1;
         }
         decodedInstructions.push_back(*decodedInstr);
         i += decodedInstr->instLen;
     }
-    int last10Instructions = std::max(currentInstrIndex - 10, 0);
-    int next10Instructions = std::min(currentInstrIndex + 10, (int)decodedInstructions.size());
+    int lastInstructions = std::max(currentInstrIndex - instructionsBefore, 0);
+    int nextInstructions = std::min(currentInstrIndex + instructionsAfter, (int)decodedInstructions.size());
     
     std::stringstream ss;
-    for(int i = last10Instructions; i < next10Instructions; ++i)
+    for(int i = lastInstructions; i < nextInstructions; ++i)
     {
         const Instructions::Instruction& curInstr = decodedInstructions.at(i);
         if(i == currentInstrIndex)
         {
-            ss << "-> ";
+            ss << "->";
         }
-        ss << curInstr.pcAddress << " " << curInstr.addressModeText << std::endl;
+        else
+        {
+            ss << "  ";
+        }
+        ss << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << std::right << "0x" << curInstr.pcAddress << " " << curInstr.addressModeText << std::endl;
     }
+    ss << "CYC:" << std::dec << (int) this->totalClockCycles << " ";
+    ss << "A:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.A << " ";
+    ss << "X:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.X << " ";
+    ss << "Y:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.Y << " ";
+    ss << "P:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.P << " ";
+    ss << "SP:" << std::hex << std::setfill('0') << std::setw(2) << std::right << (int) this->cpuMemory->GetRegisters()->name.S << " ";
     return ss.str();
 }
 

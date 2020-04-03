@@ -44,10 +44,10 @@ bool Nes::PowerCycle()
     return true;
 }
 
-bool Nes::processes()
+bool Nes::processes(bool verbose)
 {
     //1 CPU step for 3 PPU steps
-    int cpuCycles = this->cpu->Step();
+    int cpuCycles = this->cpu->Step(verbose);
     return true;
 }
 
@@ -59,6 +59,11 @@ const Matrix<rawColour>& Nes::GetFrameDisplay()
 std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
     return this->ppu->GeneratePatternTables();
+}
+
+std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
+{
+    return this->ppu->GenerateColourPalettes();
 }
 
 std::string Nes::GenerateCpuScreen()

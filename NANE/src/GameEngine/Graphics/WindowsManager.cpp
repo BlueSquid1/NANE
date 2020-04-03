@@ -15,7 +15,19 @@ bool WindowManager::Init()
 		return false;
 	}
 
-    this->gWindow = SDL_CreateWindow("NES-NX", 0, 0, this->xPixelRes, this->yPixelRes, SDL_WINDOW_SHOWN);
+	int mainWindowWidth = 256 * this->windowScale;
+	int mainWindowHeight = 240 * this->windowScale;
+	int chrRomWidth = 256 * this->windowScale;
+	int chrRomHeight = 128 * this->windowScale;
+	int cpuDisplayWidth = 256 * this->windowScale;
+	int cpuDisplayHeight = 200 * this->windowScale;
+	int colourDisplayWidth = 42 * this->windowScale;
+	int colourDisplayHeight = 16 * this->windowScale;
+
+	int totalWidth = this->BORDER_WIDTH + mainWindowWidth + this->BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
+	int totalHeight = this->BORDER_WIDTH + chrRomHeight + this->BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
+
+    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, totalWidth, totalHeight, SDL_WINDOW_SHOWN);
 	if (!this->gWindow)
 	{
 		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
@@ -29,52 +41,97 @@ bool WindowManager::Init()
 		return false;
 	}
 
-	this->gFont = TTF_OpenFont( "Arial.ttf", 25 );
+	this->gFont = TTF_OpenFont( "VeraMono.ttf", 15 );
 	if(!this->gFont)
 	{
-		std::cerr << "failed to open 'Arial.tff'. SDL error: " << SDL_GetError() << std::endl;
+		std::cerr << "failed to open 'VeraMono.tff'. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
-	bool mainWindowResult = this->mainWindow.Init(this->gRenderer, 256, 240, 0, 0);
+	//create windows
+	bool mainWindowResult = this->mainWindow.Init(this->gRenderer, mainWindowWidth, mainWindowHeight, BORDER_WIDTH, BORDER_WIDTH);
 	if(mainWindowResult == false)
 	{
 		std::cerr << "can't create main window. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
-
-	bool chrRomWindowResult = this->chrRomWindow.Init(this->gRenderer, 256, 128, 256 + BORDER_WIDTH, 0);
+	bool chrRomWindowResult = this->chrRomWindow.Init(this->gRenderer, chrRomWidth, chrRomHeight, mainWindowWidth + 2 * BORDER_WIDTH, BORDER_WIDTH);
 	if(chrRomWindowResult == false)
 	{
 		std::cerr << "can't create chr rom window. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
-
-	bool cpuWindowResult = this->cpuWindow.Init(this->gRenderer, 256, 128, 256 + BORDER_WIDTH, 128 + BORDER_WIDTH);
+	bool cpuWindowResult = this->cpuWindow.Init(this->gRenderer, cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + 2 * BORDER_WIDTH, chrRomHeight + 2 * BORDER_WIDTH);
 	if(cpuWindowResult == false)
 	{
 		std::cerr << "can't create cpu window. SDL error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+	bool colourDisplayWindow = this->colourDisplayWindow.Init(this->gRenderer, colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
+	if(chrRomWindowResult == false)
+	{
+		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
 	return true;
 }
 
-bool WindowManager::Display(Nes& nesEmulator)
+void WindowManager::ChangeScaleFactor(int newScaleFactor)
+{
+	int mainWindowWidth = 256 * this->windowScale;
+	int mainWindowHeight = 240 * this->windowScale;
+	int chrRomWidth = 256 * this->windowScale;
+	int chrRomHeight = 128 * this->windowScale;
+	int cpuDisplayWidth = 256 * this->windowScale;
+	int cpuDisplayHeight = 200 * this->windowScale;
+	int colourDisplayWidth = 42 * this->windowScale;
+	int colourDisplayHeight = 16 * this->windowScale;
+
+	int totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
+	int totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
+
+	this->windowScale = newScaleFactor;
+	this->mainWindow.ChangeDimensions(mainWindowWidth, mainWindowHeight, BORDER_WIDTH, BORDER_WIDTH);
+	this->chrRomWindow.ChangeDimensions(chrRomWidth, chrRomHeight, mainWindowWidth + BORDER_WIDTH, BORDER_WIDTH);
+	this->cpuWindow.ChangeDimensions(cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + BORDER_WIDTH, chrRomHeight + 2 * BORDER_WIDTH);
+	this->colourDisplayWindow.ChangeDimensions(colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + BORDER_WIDTH);
+
+	//update window size
+	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
+}
+
+bool WindowManager::Display(Nes& nesEmulator, bool showDisassembly)
 {
     //clear the screen
-	SDL_SetRenderDrawColor(this->gRenderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_SetRenderDrawColor(this->gRenderer, 0x80, 0x80, 0x80, 0xFF);
 	SDL_RenderClear(this->gRenderer);
 
 	//render windows
 	const Matrix<rawColour>& mainDisplay = nesEmulator.GetFrameDisplay();
 	this->mainWindow.Display(mainDisplay);
 
-	std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
-	this->chrRomWindow.Display(*chrRomDisplay);
+	if(showDisassembly == true)
+	{
+		std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
+		this->chrRomWindow.Display(*chrRomDisplay);
 
-	std::string cpuText = nesEmulator.GenerateCpuScreen();
-	this->cpuWindow.Display(cpuText, this->gFont);
+		std::string cpuText = nesEmulator.GenerateCpuScreen();
+		SDL_Color foregroundColor;
+		foregroundColor.r = 0xFF;
+		foregroundColor.g = 0xFF;
+		foregroundColor.b = 0xFF;
+		foregroundColor.a = 0xFF;
+		SDL_Color backgroundColor;
+		backgroundColor.r = 0x00;
+		backgroundColor.g = 0x00;
+		backgroundColor.b = 0x00;
+		backgroundColor.a = 0xFF;
+		this->cpuWindow.Display(cpuText, this->gFont, foregroundColor, backgroundColor);
+
+		std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
+		this->colourDisplayWindow.Display(*colourPalettesDisplay);
+	}
 
 	//Update the surface
 	SDL_RenderPresent( this->gRenderer );

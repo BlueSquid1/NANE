@@ -1,11 +1,12 @@
 #include "CpuMemoryMap.h"
+#include <exception>
 
 CpuMemoryMap::CpuMemoryMap(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters)
     : IMemoryRW(0x0000, 0xFFFF)
 {
     std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
     this->cpuRegMem = std::unique_ptr<CpuRegisters>( new CpuRegisters() );
-    this->apuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x4000, 0x4017, apuRegisters->raw, apuRegisters->rawLen) );
+    this->apuRegMem = std::unique_ptr<MemoryRepeaterArray>( new MemoryRepeaterArray(0x4000, 0x401F, apuRegisters->raw, apuRegisters->rawLen) );
     this->ppuRegMem = ppuRegisters;
     this->cpuRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x0000, 0x1FFF, std::move(ramVec)) );
 }
@@ -41,7 +42,7 @@ byte CpuMemoryMap::Read(dword address) const
     }
     else
     {
-        std::cerr << "CPU Memory Map: failed to read from address: " << address << std::endl;
+        throw std::out_of_range("CPU Memory Map: tried to read from an invalid memory address.");
     }
     return 0;
 }
@@ -65,7 +66,7 @@ void CpuMemoryMap::Write(dword address, byte value)
     }
     else
     {
-        std::cerr << "CPU Memory Map: failed to write to address: " << address << std::endl;
+        throw std::out_of_range("CPU Memory Map: tried to write to an invalid memory address.");
     }
 }
 

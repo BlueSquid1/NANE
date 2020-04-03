@@ -33,10 +33,14 @@ class Cpu
     public:
     Cpu(std::shared_ptr<PpuRegisters> ppuRegisters, std::shared_ptr<ApuRegisters> apuRegisters);
     bool PowerCycle(dword newPcAddress = 0x8000);
-    int Step();
+    int Step(bool verbose);
     bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
 
-    std::string GenerateCpuScreen();
+    /**
+     * @param instructionsBefore how many instructions to print before current instructions
+     * @param instructionsAfter how many instructions to print after current instructions
+     */
+    std::string GenerateCpuScreen(int instructionsBefore = 10, int instructionsAfter = 10);
     
     //getters and setters
     CpuRegisters * GetRegisters();

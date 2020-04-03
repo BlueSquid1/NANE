@@ -51,7 +51,7 @@ TEST_CASE("Run NesTest") {
     int cpuCycles = 5003;
     for(int i = 0; i < cpuCycles; ++i)
     {
-        cpu.Step();
+        cpu.Step(true);
 
         int logLineMaxSize = 10000;
         char coutLineC[logLineMaxSize];

@@ -74,6 +74,21 @@ class Matrix
         this->vecData.at(index) = value;
     }
 
+    void SetRegion(int y, int x, int width, int height, T& value)
+    {
+        if(width <= 0 || height <= 0)
+        {
+            throw std::invalid_argument("height and width must be greater than 0 for a matrix SetRegion.");
+        }
+        for(int yNum = 0; yNum < height; ++yNum)
+        {
+            for(int xNum = 0; xNum < width; ++xNum)
+            {
+                this->Set(y + yNum, x + xNum, value);
+            }
+        }
+    }
+
     //getters/setters
     int GetWidth() const
     {

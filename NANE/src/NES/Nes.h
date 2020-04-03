@@ -32,12 +32,13 @@ class Nes
 
     bool PowerCycle();
 
-    bool processes();
+    bool processes(bool verbose);
 
     const Matrix<rawColour>& GetFrameDisplay();
 
     //dissassmbly methods
     std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
+    std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
     std::string GenerateCpuScreen();
 };
 #endif
