@@ -22,8 +22,9 @@ class Cpu
     void Push(byte value);
     byte Pop();
     int AdditionalCyclesForPageCross(dword address1, dword address2);
-    std::unique_ptr<Instructions::Instruction> DecodeInstruction(dword pcAddress, bool seekOnly = false);
+    std::unique_ptr<Instructions::Instruction> DecodeInstruction(dword pcAddress, bool seekOnly = false, bool verbose = false);
     CpuRegisters& GetRegs();
+    byte SeekOrRead(dword address, bool seekOnly);
 
     public:
     Cpu(Dma& dma);

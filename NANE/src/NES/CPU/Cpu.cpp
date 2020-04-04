@@ -33,7 +33,7 @@ bool Cpu::PowerCycle(dword newPcAddress)
 
 int Cpu::Step(bool verbose)
 {
-    std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->GetRegs().name.PC);
+    std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->GetRegs().name.PC, false, verbose);
     if(decodedInst == NULL)
     {
         std::cerr << "failed to decode instruction at " << this->GetRegs().name.PC << std::endl;
@@ -45,11 +45,12 @@ int Cpu::Step(bool verbose)
     int instLen = decodedInst->instLen;
     int cycleCount = decodedInst->cycleCount;
     bool outputToAccum = decodedInst->outputToAccum;
-    std::string addressModeText = decodedInst->addressModeText;
 
     //print to display
     if(verbose == true)
     {
+        std::string addressModeText = decodedInst->addressModeText;
+
         std::stringstream instCodeSS;
         for(int i = 0; i < instLen; ++i)
         {
@@ -636,7 +637,19 @@ CpuRegisters& Cpu::GetRegs()
     return this->dma.GetCpuMemory().GetRegisters();
 }
 
-std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress, bool seekOnly)
+byte Cpu::SeekOrRead(dword address, bool seekOnly)
+{
+    if(seekOnly)
+    {
+        return this->dma.Seek(address);
+    }
+    else
+    {
+        return this->dma.Read(address);
+    }
+}
+
+std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress, bool seekOnly, bool verbose)
 {
     try
     {
@@ -647,176 +660,192 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             throw std::logic_error("not a valid instruction");
         }
 
-        byte inputVal = 0;
         dword argAddress = 0;
-        std::stringstream ss;
         int instLen = 0;
         int cycleCount = opcode.cycles;
         bool outputToAccum = false;
+        std::stringstream ss;
 
         //work out input value and input size
         switch(opcode.addrm)
         {
             //1 byte instructions
-            case Instructions::AddrM::impl:
+            case Instructions::AddrM::impl: //DEX
             {
                 instLen = 1;
-                //DEX
-                ss << opcode.instr_name;
+                if(verbose)
+                {
+                    ss << opcode.instr_name;
+                }
                 break;
             }
-            case Instructions::AddrM::acc:
+            case Instructions::AddrM::acc: //LSR A
             {
                 instLen = 1;
-                inputVal = this->GetRegs().name.A;
                 outputToAccum = true;
-                //LSR A
-                ss << opcode.instr_name << " A";
+                if(verbose)
+                {
+                    ss << opcode.instr_name << " A";
+                }
                 break;
             }
 
             //2 byte instructions
-            case Instructions::AddrM::imm:
+            case Instructions::AddrM::imm: //ORA #$AA
             {
                 instLen = 2;
                 argAddress = pcAddress + 1;
-                inputVal = this->dma.Seek(argAddress);
-                //ORA #$AA
-                ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress);
+                    ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::zpg_:
+            case Instructions::AddrM::zpg_: //ORA $78 = 00
             {
                 instLen = 2;
-                argAddress = this->dma.Seek(pcAddress + 1);
-                inputVal = this->dma.Seek(argAddress);
-                //ORA $78 = 00
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
+                argAddress = this->SeekOrRead(pcAddress + 1, seekOnly);
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress);
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::zpgX:
+            case Instructions::AddrM::zpgX: //ORA $00,X @ 78 = 00
             {
                 instLen = 2;
-                dword lookupAddress = this->dma.Seek(pcAddress + 1);
+                dword lookupAddress = this->SeekOrRead(pcAddress + 1, seekOnly);
                 argAddress = lookupAddress + this->GetRegs().name.X;
                 argAddress = argAddress % 0x100;
-                inputVal = this->dma.Seek(argAddress);
-                //ORA $00,X @ 78 = 00
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress);
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::zpgY:
+            case Instructions::AddrM::zpgY: //ORA $00,X @ 78 = 00
             {
                 instLen = 2;
-                dword lookupAddress = this->dma.Seek(pcAddress + 1);
+                dword lookupAddress = this->SeekOrRead(pcAddress + 1, seekOnly);
                 argAddress = lookupAddress + this->GetRegs().name.Y;
                 argAddress = argAddress % 0x100;
-                inputVal = this->dma.Seek(argAddress);
-                //ORA $00,X @ 78 = 00
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",Y @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress);
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",Y @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::rel:
+            case Instructions::AddrM::rel: //BCS $F815
             {
                 instLen = 2;
-                sByte offset = this->dma.Seek(pcAddress + 1);
+                sByte offset = this->SeekOrRead(pcAddress + 1, seekOnly);
                 argAddress = offset + pcAddress + 2;
-                //BCS $F815
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
+                if(verbose)
+                {
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
+                }
                 break;
             }
-            case Instructions::AddrM::Xind:
+            case Instructions::AddrM::Xind: //CMP ($80,X) @ 80 = 0200 = 40
             {
                 instLen = 2;
-                //purposely want an overflow here which is why using byte instead of dword
-                byte indirrectAddress = this->dma.Seek( pcAddress + 1);
+                byte indirrectAddress = this->SeekOrRead( pcAddress + 1, seekOnly);
                 byte indirrectAddressX = indirrectAddress + this->GetRegs().name.X;
                 argAddress = BitUtil::GetDWord(&this->dma, indirrectAddressX, true, !seekOnly);
-                inputVal = this->dma.Seek( argAddress ); 
-                //CMP ($80,X) @ 80 = 0200 = 40
-                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek( argAddress ); 
+                    ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::indY:
+            case Instructions::AddrM::indY: //LDA ($97),Y = FFFF @ 0033 = A3
             {
                 instLen = 2;
-                byte indirrectAddress = this->dma.Seek( pcAddress + 1);
+                byte indirrectAddress = this->SeekOrRead( pcAddress + 1, seekOnly);
                 dword inDirAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true, !seekOnly);
                 argAddress = inDirAddress + this->GetRegs().name.Y;
-                inputVal = this->dma.Seek( argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(inDirAddress, argAddress);
                 }
-                //LDA ($97),Y = FFFF @ 0033 = A3
-                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << "),Y = " << std::setw(4) << inDirAddress << " @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress); 
+                    ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << "),Y = " << std::setw(4) << inDirAddress << " @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
 
             //3 byte instructions
-            case Instructions::AddrM::abs_:
+            case Instructions::AddrM::abs_: //LDA $0400 = 87
             {
                 instLen = 3;
-                argAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
-                inputVal = this->dma.Seek(argAddress);
-                //LDA $0400 = 87
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
-                if(opcode.instr != Instructions::Instr::JMP && opcode.instr != Instructions::Instr::JSR)
+                argAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1, false, !seekOnly);
+                if(verbose)
                 {
-                    ss << " = " << std::hex << std::setw(2) << std::uppercase << (int) inputVal;
+                    byte inputVal = this->dma.Seek(argAddress);
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
+                    if(opcode.instr != Instructions::Instr::JMP && opcode.instr != Instructions::Instr::JSR)
+                    {
+                        ss << " = " << std::hex << std::setw(2) << std::uppercase << (int) inputVal;
+                    }
                 }
                 break;
             }
-            case Instructions::AddrM::absX:
+            case Instructions::AddrM::absX: //LDA $05FF,X @ 0689 = BB
             {
                 instLen = 3;
-                dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
+                dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1, false, !seekOnly);
                 argAddress = lookupAddress + this->GetRegs().name.X;
-                inputVal = this->dma.Seek(argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
                 }
-                //LDA $05FF,X @ 0689 = BB
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress); 
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::absY:
+            case Instructions::AddrM::absY: //LDA $0300,Y @ 0300 = 89
             {
                 instLen = 3;
-                dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
+                dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1, false, !seekOnly);
                 argAddress = lookupAddress + this->GetRegs().name.Y;
-                inputVal = this->dma.Seek(argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
                 }
-                //LDA $0300,Y @ 0300 = 89
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::uppercase << std::right << lookupAddress << ",Y @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                if(verbose)
+                {
+                    byte inputVal = this->dma.Seek(argAddress); 
+                    ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::uppercase << std::right << lookupAddress << ",Y @ " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
+                }
                 break;
             }
-            case Instructions::AddrM::ind_:
+            case Instructions::AddrM::ind_: //JMP ($0200) = DB7E
             {
                 instLen = 3;
                 dword indirrectAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1, false, !seekOnly);
                 argAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true, !seekOnly);
-                //JMP ($0200) = DB7E
-                ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << argAddress;
+                if(verbose)
+                {
+                    ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << argAddress;
+                }
                 break;
             }
             default:
             {
                 std::cerr << "invalid memory mode" << std::endl;
-                //default to zero page addressing
-                instLen = 2;
-                argAddress = this->dma.Seek(pcAddress + 1);
-                inputVal = this->dma.Seek(argAddress);
-                //ORA $78 = 00
-                ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
             }
         }
-        std::string addressModeText = ss.str();
 
         std::unique_ptr<Instructions::Instruction> decodedInst = std::unique_ptr<Instructions::Instruction>( new Instructions::Instruction() );
         decodedInst->opcode = opcode;
@@ -825,7 +854,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
         decodedInst->instLen = instLen;
         decodedInst->cycleCount = cycleCount;
         decodedInst->outputToAccum = outputToAccum;
-        decodedInst->addressModeText = addressModeText;
+        decodedInst->addressModeText = ss.str();
         return decodedInst;
     }
     catch(const std::exception& e)
@@ -848,7 +877,7 @@ std::string Cpu::GenerateCpuScreen(int instructionsBefore, int instructionsAfter
             currentInstrIndex = decodedInstructions.size();
         }
 
-        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i, true);
+        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i, true, true);
         if(decodedInstr == NULL)
         {
             decodedInstr = std::unique_ptr<Instructions::Instruction>(new Instructions::Instruction());

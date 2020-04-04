@@ -24,7 +24,7 @@ class GameEngine
 
     bool step = false;
     bool run = false;
-    bool verbose = true;
+    bool verbose = false;
 
     public:
     /**
