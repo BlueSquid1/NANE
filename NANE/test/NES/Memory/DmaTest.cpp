@@ -89,30 +89,26 @@ TEST_CASE("DMA: Can read and write without loading a cartridge") {
     Dma dma;
 
     //RAM
-    dma.CpuWrite(0x0000, 24);
-    REQUIRE(dma.CpuRead(0x1800) == 24);
+    dma.Write(0x0000, 24);
+    REQUIRE(dma.Read(0x1800) == 24);
 
-    dma.CpuWrite(0x07FF, 43);
-    REQUIRE(dma.CpuRead(0x1FFF) == 43);
+    dma.Write(0x07FF, 43);
+    REQUIRE(dma.Read(0x1FFF) == 43);
 
     //PPU Registers
-    dma.CpuWrite(0x2000, 122);
-    REQUIRE(dma.CpuRead(0x2008) == 122);
+    dma.Write(0x2000, 122);
+    REQUIRE(dma.Read(0x2008) == 122);
     REQUIRE(dma.GetPpuMemory().GetRegisters().name.PPUCTRL == 122);
 
-    dma.CpuWrite(0x2007, 73);
-    REQUIRE(dma.CpuRead(0x3FFF) == 73);
-    REQUIRE(dma.GetPpuMemory().GetRegisters().name.PPUDATA == 73);
-
     //APU Registers
-    dma.CpuWrite(0x4000, 39);
+    dma.Write(0x4000, 39);
     REQUIRE(dma.GetApuRegisters().name.SQ1.VOL == 39);
 
-    dma.CpuWrite(0x4017, 61);
+    dma.Write(0x4017, 61);
     REQUIRE(dma.GetApuRegisters().name.JOY2 == 61);
 
     //value just before cartridge
-    REQUIRE(dma.CpuRead(0x401F) == 0);
+    REQUIRE(dma.Read(0x401F) == 0);
 }
 
 
@@ -128,13 +124,13 @@ TEST_CASE("DMA: Can read and write with loaded cartridge - CPU") {
     dma.SetCartridge(std::move(ines));
 
     //value just before cartridge
-    REQUIRE(dma.CpuRead(0x401F) == 0);
+    REQUIRE(dma.Read(0x401F) == 0);
 
     //start of PRG ROM
-    REQUIRE(dma.CpuRead(0x8000) == 0x4c);
-    REQUIRE(dma.CpuRead(0xC000) == 0x4c);
+    REQUIRE(dma.Read(0x8000) == 0x4c);
+    REQUIRE(dma.Read(0xC000) == 0x4c);
 
     //end of PRG ROM
-    REQUIRE(dma.CpuRead(0xBFFF) == 0xc5);
-    REQUIRE(dma.CpuRead(0xFFFF) == 0xc5);
+    REQUIRE(dma.Read(0xBFFF) == 0xc5);
+    REQUIRE(dma.Read(0xFFFF) == 0xc5);
 }

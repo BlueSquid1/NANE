@@ -66,6 +66,9 @@ bool GameEngine::UserInput()
 				case SDLK_p:
 				this->run = !this->run;
 				break;
+				case SDLK_c:
+				this->nesEmulator.IncrementDefaultColourPalette();
+				break;
 			}
         }
     }

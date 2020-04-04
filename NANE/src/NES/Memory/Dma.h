@@ -4,7 +4,6 @@
 #include "NES/CPU/CpuMemoryMap.h"
 #include "NES/PPU/PpuMemoryMap.h"
 #include "NES/APU/ApuRegisters.h"
-#include "NES/Memory/IMemoryRW.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 
 #include <memory> //std::unique_ptr
@@ -14,23 +13,23 @@
 //in other words its the memory bus
 class Dma : public IMemoryRW
 {
+    private:
     CpuMemoryMap cpuMemory;
     PpuMemoryMap ppuMemory;
     ApuRegisters apuRegisters;
     std::unique_ptr<ICartridge> cartridge = NULL;
 
+    void IncrementPpuAddress();
+
     public:
     Dma();
     
-    byte CpuRead(dword address);
-    void CpuWrite(dword address, byte value);
+    byte Read(dword address) override;
+    void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
 
     byte PpuRead(dword address);
     void PpuWrite(dword address, byte value);
-
-    //defaults to CPU read/write
-    virtual byte Read(dword address) override;
-    virtual void Write(dword address, byte value) override;
 
     std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 

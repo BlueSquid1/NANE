@@ -50,7 +50,6 @@ class Instruction
 {
   public:
     Opcode opcode;
-    byte inputVal;
     dword pcAddress;
     dword argAddress;
     std::string addressModeText;

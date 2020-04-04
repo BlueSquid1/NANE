@@ -71,20 +71,20 @@ class PpuRegisters : public MemoryRepeaterArray
         byte PPUSCROLL; //0x2005 fine scroll position (two writes: X scroll, Y scroll)
         byte PPUADDR; //0x2006 VRAM address (two writes: upper, lower)
         byte PPUDATA; //0x2007
-
-        //internal registers
-        //https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
-        dword_p curPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
-        //TODO dword_p tempPpuAddress; //temporary VRAM address to top left title on screen
-        bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
-        
-        //https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
-        byte ppuReadBuffer;
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
     struct BackgroundRegisters
     {
+        // internal registers
+        // https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
+        dword_p curPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
+        bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
+        
+        // buffer used for:
+        // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
+        byte ppuDataReadBuffer;
+
         // Temporary Registers
         byte ntByte;
         byte atByte;
@@ -98,17 +98,8 @@ class PpuRegisters : public MemoryRepeaterArray
             byte paletteAttribute2; //colour attribute 1 (controls bit 1)
             // bool atLatch1;
             // bool atLatch2;
-            union
-            {
-                dword  val;
-                struct
-                {
-                    byte lower : 8;
-                    byte upper : 8;
-                };
-            }
-            patternPlane1, //background pattern plane 1 (controls bit 0)
-            patternPlane2; //background pattern plane 2 (controls bit 1)
+            dword_p patternPlane1; //background pattern plane 1 (controls bit 0)
+            dword_p patternPlane2; //background pattern plane 2 (controls bit 1)
         } shift;
     };
 
@@ -123,11 +114,13 @@ class PpuRegisters : public MemoryRepeaterArray
 
     BackgroundRegisters bgr;
 
+    public:
     //constructor
     PpuRegisters();
 
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
  };
 
 #endif

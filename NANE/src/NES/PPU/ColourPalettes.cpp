@@ -21,14 +21,19 @@ dword ColourPalettes::Redirect(dword address) const
 
 byte ColourPalettes::Read(dword address)
 {
-    dword redirrectAddress = this->Redirect(address);
-    return MemoryRepeaterArray::Read(redirrectAddress);
+    return this->Seek(address);
 }
 
 void ColourPalettes::Write(dword address, byte value)
 {
     dword redirrectAddress = this->Redirect(address);
     return MemoryRepeaterArray::Write(redirrectAddress, value);
+}
+
+byte ColourPalettes::Seek(dword address) const
+{
+    dword redirrectAddress = this->Redirect(address);
+    return MemoryRepeaterArray::Seek(redirrectAddress);
 }
 
 rawColour ColourPalettes::PatternValueToColour(byte palletteId, byte patternVal) const

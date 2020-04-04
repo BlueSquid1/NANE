@@ -45,9 +45,9 @@ bool Ppu::PowerCycle()
     this->GetRegs().name.PPUDATA = 0;
     
     //internal registers
-    this->GetRegs().name.ppuAddressLatch = false;
-    this->GetRegs().name.curPpuAddress.val = 0;
-    this->GetRegs().name.ppuReadBuffer = 0;
+    this->GetRegs().bgr.ppuAddressLatch = false;
+    this->GetRegs().bgr.curPpuAddress.val = 0;
+    this->GetRegs().bgr.ppuDataReadBuffer = 0;
     this->dma.GetPpuMemory().SetScanLineNum(-1);
     this->dma.GetPpuMemory().SetScanCycleNum(0);
     this->frameCountNum = 0;
@@ -140,7 +140,7 @@ void Ppu::background_fetch()
             
             case 4:
             //fetch Attribute Table byte
-            this->GetRegs().bgr.atByte = this->dma.GetPpuMemory().Read( 0x23C0 );
+            this->GetRegs().bgr.atByte = this->dma.GetPpuMemory().Seek( 0x23C0 );
             break;
         }
     }
@@ -231,4 +231,14 @@ std::unique_ptr<Matrix<rawColour>> Ppu::GenerateColourPalettes()
 const Matrix<rawColour>& Ppu::GetFrameDisplay()
 {
     return this->framebuffer;
+}
+
+byte Ppu::GetDefaultPalette() const
+{
+    return this->defaultPalette;
+}
+
+void Ppu::SetDefaultPalette(byte palette)
+{
+    this->defaultPalette = palette;
 }

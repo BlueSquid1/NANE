@@ -19,7 +19,12 @@ class IMemoryR
 
     virtual bool Contains(dword address) const;
 
+    /**
+     * @param address the address to loopup
+     */
     virtual byte Read(dword address) = 0;
+    
+    virtual byte Seek(dword address) const = 0;
 };
 
 #endif

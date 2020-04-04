@@ -45,6 +45,10 @@ class Ppu
     std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
 
     const Matrix<rawColour>& GetFrameDisplay();
+
+    //getters/setters
+    byte GetDefaultPalette() const;
+    void SetDefaultPalette(byte palette);
 };
 
 #endif

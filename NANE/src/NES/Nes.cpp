@@ -27,7 +27,7 @@ bool Nes::LoadCartridge(std::string pathToRom)
 
 bool Nes::PowerCycle()
 {
-    bool cputRet = this->cpu.PowerCycle();
+    bool cputRet = this->cpu.PowerCycle(0xC004);
     if(cputRet == false)
     {
         return false;
@@ -39,11 +39,12 @@ bool Nes::PowerCycle()
 bool Nes::processes(bool verbose)
 {
     //it takes 29606 cpu cycles to render a whole frame
-    int cpuCyclesToRun = 29606;
+    //int cpuCyclesToRun = 29606;
+    int cpuCyclesToRun = 296;
 
     if(verbose)
     {
-        cpuCyclesToRun = 1;
+        //cpuCyclesToRun = 1;
     }
 
     int cpuCycles = 0;
@@ -79,4 +80,15 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
 const std::string Nes::GenerateCpuScreen()
 {
     return this->cpu.GenerateCpuScreen();
+}
+
+void Nes::IncrementDefaultColourPalette()
+{
+    byte palette = this->ppu.GetDefaultPalette();
+    ++palette;
+    if(palette < 8)
+    {
+        palette = 0;
+    }
+    this->ppu.SetDefaultPalette(palette);
 }

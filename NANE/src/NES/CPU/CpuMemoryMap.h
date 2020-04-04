@@ -8,7 +8,9 @@
 #include "NES/Memory/IMemoryRW.h"
 #include "NES/Memory/MemoryRepeaterVec.h"
 
-
+/**
+ * handles the cpu address space
+ */
 class CpuMemoryMap : public IMemoryRW
 {
     private:
@@ -18,8 +20,9 @@ class CpuMemoryMap : public IMemoryRW
     public:
     CpuMemoryMap();
 
-    virtual byte Read(dword address) override;
-    virtual void Write(dword address, byte value) override;
+    byte Read(dword address) override;
+    void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
 
     //getters and setters
     CpuRegisters& GetRegisters();

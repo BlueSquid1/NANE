@@ -29,6 +29,7 @@ class ICartridge : public IMemoryRW
     bool Contains(dword address) const final;
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
 
     //getters and setters
     const unsigned int GetMapNumber() const;

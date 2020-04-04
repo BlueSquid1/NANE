@@ -48,6 +48,7 @@ class ColourPalettes : public MemoryRepeaterArray
 
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
 
     rawColour PatternValueToColour(byte palletteId, byte patternVal) const;
 

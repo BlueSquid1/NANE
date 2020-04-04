@@ -71,6 +71,27 @@ void ICartridge::Write(dword address, byte value)
     }
 }
 
+byte ICartridge::Seek(dword address) const
+{
+    if(this->prgRom->Contains(address))
+    {
+        return this->prgRom->Seek(address);
+    }
+    else if(this->chrRom != NULL && this->chrRom->Contains(address))
+    {
+        return this->chrRom->Seek(address);
+    }
+    else if(this->prgRam != NULL && this->prgRam->Contains(address))
+    {
+        return this->prgRam->Seek(address);
+    }
+    else
+    {
+        std::cerr << "cartridge: couldn't seek to memory address: " << address << std::endl;
+    }
+    return 0;
+}
+
 const unsigned int ICartridge::GetMapNumber() const
 {
     return this->mapNumber;

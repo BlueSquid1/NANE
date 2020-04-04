@@ -29,10 +29,12 @@ class PpuMemoryMap : public IMemoryRW
     PpuMemoryMap();
     virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
+    byte Seek(dword address) const override;
 
     //getters and setters
     ColourPalettes& GetPalettes();
     PpuRegisters& GetRegisters();
+    const PpuRegisters& GetRegisters() const;
     void SetScanLineNum(int scanLineNum);
     int GetScanLineNum() const;
     void SetScanCycleNum(int scanCycleNum);

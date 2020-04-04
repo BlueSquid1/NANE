@@ -44,12 +44,34 @@ void PpuMemoryMap::Write(dword address, byte value)
     }
 }
 
+byte PpuMemoryMap::Seek(dword address) const
+{
+    if(this->nametableMem->Contains(address))
+    {
+        return this->nametableMem->Seek(address);
+    }
+    else if(this->palettesMem.Contains(address))
+    {
+        return this->palettesMem.Seek(address);
+    }
+    else
+    {
+        std::cerr << "PPU Memory Map: failed to seek to address: " << address << std::endl;
+    }
+    return 0;
+}
+
 ColourPalettes& PpuMemoryMap::GetPalettes()
 {
     return this->palettesMem;
 }
 
 PpuRegisters& PpuMemoryMap::GetRegisters()
+{
+    return this->ppuRegMem;
+}
+
+const PpuRegisters& PpuMemoryMap::GetRegisters() const
 {
     return this->ppuRegMem;
 }

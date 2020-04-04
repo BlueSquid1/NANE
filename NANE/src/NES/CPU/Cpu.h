@@ -22,7 +22,7 @@ class Cpu
     void Push(byte value);
     byte Pop();
     int AdditionalCyclesForPageCross(dword address1, dword address2);
-    std::unique_ptr<Instructions::Instruction> DecodeInstruction(dword address);
+    std::unique_ptr<Instructions::Instruction> DecodeInstruction(dword pcAddress, bool seekOnly = false);
     CpuRegisters& GetRegs();
 
     public:

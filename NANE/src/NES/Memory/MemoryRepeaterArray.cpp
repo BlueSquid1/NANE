@@ -8,6 +8,11 @@ MemoryRepeaterArray::MemoryRepeaterArray(dword startAddress, dword endAddress, b
 
 byte MemoryRepeaterArray::Read(dword address)
 {
+    return this->Seek(address);
+}
+
+byte MemoryRepeaterArray::Seek(dword address) const
+{
     //check boundaries
     if(!this->Contains(address))
     {

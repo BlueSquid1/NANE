@@ -17,15 +17,15 @@ bool Cpu::PowerCycle(dword newPcAddress)
     this->GetRegs().name.X = 0x0;
     this->GetRegs().name.Y = 0x0;
     this->GetRegs().name.Y = 0xFD;
-    this->dma.CpuWrite(0x4017, 0x0);
-    this->dma.CpuWrite(0x4015, 0x0);
+    this->dma.Write(0x4017, 0x0);
+    this->dma.Write(0x4015, 0x0);
     for(int i = 0x4000; i < 0x400F; ++i)
     {
-        this->dma.CpuWrite(i, 0x0);
+        this->dma.Write(i, 0x0);
     }
     for(int i = 0x4010; i < 0x4013; ++i)
     {
-        this->dma.CpuWrite(i, 0x0);
+        this->dma.Write(i, 0x0);
     }
     this->GetRegs().name.PC = newPcAddress;
     return true;
@@ -41,7 +41,6 @@ int Cpu::Step(bool verbose)
         return 0;
     }
     Instructions::Opcode opcode = decodedInst->opcode;
-    byte inputVal = decodedInst->inputVal;
     dword argAddress = decodedInst->argAddress;
     int instLen = decodedInst->instLen;
     int cycleCount = decodedInst->cycleCount;
@@ -54,7 +53,7 @@ int Cpu::Step(bool verbose)
         std::stringstream instCodeSS;
         for(int i = 0; i < instLen; ++i)
         {
-            instCodeSS << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << std::right << (int) this->dma.CpuRead(this->GetRegs().name.PC + i) << " ";
+            instCodeSS << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << std::right << (int) this->dma.Seek(this->GetRegs().name.PC + i) << " ";
         }
         std::string instCodeText = instCodeSS.str();
         std::cout<< std::hex << std::setfill('0') << std::setw(4) << std::right << std::uppercase << this->GetRegs().name.PC << "  ";
@@ -79,6 +78,7 @@ int Cpu::Step(bool verbose)
     {
         case Instructions::Instr::ADC:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte oldA = this->GetRegs().name.A;
             this->GetRegs().name.A = this->GetRegs().name.A + this->GetRegs().name.C + inputVal;
             this->UpdateRegsForOverflow(oldA, inputVal);
@@ -87,12 +87,22 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::AND:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->GetRegs().name.A = this->GetRegs().name.A & inputVal;
             this->UpdateRegsForZeroAndNeg(this->GetRegs().name.A);
             break;
         }
         case Instructions::Instr::ASL:
         {
+            byte inputVal;
+            if(outputToAccum)
+            {
+                inputVal = this->GetRegs().name.A;
+            }
+            else
+            {
+                inputVal = this->dma.Read( argAddress );
+            }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal,7);
             byte result = inputVal << 1;
             if(outputToAccum)
@@ -101,10 +111,9 @@ int Cpu::Step(bool verbose)
             }
             else
             {
-                this->dma.CpuWrite(argAddress, result);
+                this->dma.Write(argAddress, result);
             }
             this->UpdateRegsForZeroAndNeg(result);
-            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::BCC:
@@ -139,6 +148,7 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::BIT:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte result = this->GetRegs().name.A & inputVal;
             this->UpdateRegsForZeroAndNeg(result);
             this->GetRegs().name.V = BitUtil::GetBits(inputVal, 6);
@@ -223,23 +233,27 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::CMP:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->UpdateRegsForCompaire(this->GetRegs().name.A, inputVal);
             break;
         }
         case Instructions::Instr::CPX:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->UpdateRegsForCompaire(this->GetRegs().name.X, inputVal);
             break;
         }
         case Instructions::Instr::CPY:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->UpdateRegsForCompaire(this->GetRegs().name.Y, inputVal);
             break;
         }
         case Instructions::Instr::DEC:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte result = inputVal - 1;
-            this->dma.CpuWrite(argAddress, result);
+            this->dma.Write(argAddress, result);
             this->UpdateRegsForZeroAndNeg(result);
             break;
         }
@@ -259,6 +273,7 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::EOR:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte result = this->GetRegs().name.A ^ inputVal;
             this->GetRegs().name.A = result;
             this->UpdateRegsForZeroAndNeg(result);
@@ -266,8 +281,9 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::INC:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte result = inputVal + 1;
-            this->dma.CpuWrite(argAddress, result);
+            this->dma.Write(argAddress, result);
             this->UpdateRegsForZeroAndNeg(result);
             break;
         }
@@ -300,24 +316,36 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::LDA:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->GetRegs().name.A = inputVal;
             this->UpdateRegsForZeroAndNeg(this->GetRegs().name.A);
             break;
         }
         case Instructions::Instr::LDX:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->GetRegs().name.X = inputVal;
             this->UpdateRegsForZeroAndNeg(this->GetRegs().name.X);
             break;
         }
         case Instructions::Instr::LDY:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->GetRegs().name.Y = inputVal;
             this->UpdateRegsForZeroAndNeg(this->GetRegs().name.Y);
             break;
         }
         case Instructions::Instr::LSR:
         {
+            byte inputVal;
+            if(outputToAccum)
+            {
+                inputVal = this->GetRegs().name.A;
+            }
+            else
+            {
+                inputVal = this->dma.Read( argAddress );
+            }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal,0);
             byte result = inputVal >> 1;
             if(outputToAccum)
@@ -326,7 +354,7 @@ int Cpu::Step(bool verbose)
             }
             else
             {
-                this->dma.CpuWrite(argAddress, result);
+                this->dma.Write(argAddress, result);
             }
             this->UpdateRegsForZeroAndNeg(result);
             break;
@@ -337,6 +365,7 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::ORA:
         {
+            byte inputVal = this->dma.Read( argAddress );
             this->GetRegs().name.A = this->GetRegs().name.A | inputVal;
             this->UpdateRegsForZeroAndNeg(this->GetRegs().name.A);
             break;
@@ -369,6 +398,15 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::ROL:
         {
+            byte inputVal;
+            if(outputToAccum)
+            {
+                inputVal = this->GetRegs().name.A;
+            }
+            else
+            {
+                inputVal = this->dma.Read( argAddress );
+            }
             byte result = inputVal << 1;
             result = result | this->GetRegs().name.C;
             if(outputToAccum)
@@ -377,7 +415,7 @@ int Cpu::Step(bool verbose)
             }
             else
             {
-                this->dma.CpuWrite(argAddress, result);
+                this->dma.Write(argAddress, result);
             }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal, 7);
             this->UpdateRegsForZeroAndNeg(result);
@@ -386,6 +424,15 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::ROR:
         {
+            byte inputVal;
+            if(outputToAccum)
+            {
+                inputVal = this->GetRegs().name.A;
+            }
+            else
+            {
+                inputVal = this->dma.Read( argAddress );
+            }
             byte result = inputVal >> 1;
             result = result | (this->GetRegs().name.C << 7);
             if(outputToAccum)
@@ -394,7 +441,7 @@ int Cpu::Step(bool verbose)
             }
             else
             {
-                this->dma.CpuWrite(argAddress, result);
+                this->dma.Write(argAddress, result);
             }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal, 0);
             this->UpdateRegsForZeroAndNeg(result);
@@ -417,6 +464,7 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::SBC:
         {
+            byte inputVal = this->dma.Read( argAddress );
             byte oldAVal = this->GetRegs().name.A;
             this->GetRegs().name.A = this->GetRegs().name.A - (inputVal + (1 - this->GetRegs().name.C));
             this->UpdateRegsForOverflowNeg(oldAVal, inputVal);
@@ -440,17 +488,17 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::STA:
         {
-            this->dma.CpuWrite(argAddress, this->GetRegs().name.A);
+            this->dma.Write(argAddress, this->GetRegs().name.A);
             break;
         }
         case Instructions::Instr::STX:
         {
-            this->dma.CpuWrite(argAddress, this->GetRegs().name.X);
+            this->dma.Write(argAddress, this->GetRegs().name.X);
             break;
         }
         case Instructions::Instr::STY:
         {
-            this->dma.CpuWrite(argAddress, this->GetRegs().name.Y);
+            this->dma.Write(argAddress, this->GetRegs().name.Y);
             break;
         }
         case Instructions::Instr::TAX:
@@ -511,7 +559,7 @@ void Cpu::Push(dword value)
 void Cpu::Push(byte value)
 {
     //write value to stack
-    this->dma.CpuWrite(0x0100 + this->GetRegs().name.S , value);
+    this->dma.Write(0x0100 + this->GetRegs().name.S , value);
 
     //update stack to next free byte
     this->GetRegs().name.S -= 1;
@@ -522,7 +570,7 @@ byte Cpu::Pop()
     //go back to next byte on the stack
     this->GetRegs().name.S += 1;
     //read value from stack
-    byte value = this->dma.CpuRead( 0x0100 + this->GetRegs().name.S);
+    byte value = this->dma.Read( 0x0100 + this->GetRegs().name.S);
     return value;
 }
 
@@ -588,15 +636,11 @@ CpuRegisters& Cpu::GetRegs()
     return this->dma.GetCpuMemory().GetRegisters();
 }
 
-std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress)
+std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddress, bool seekOnly)
 {
-    if(pcAddress == 0xCFA9)
-    {
-        int i = 0;
-    }
     try
     {
-        byte optCode = this->dma.CpuRead(pcAddress);
+        byte optCode = this->dma.Seek(pcAddress);
         Instructions::Opcode opcode = Instructions::Opcodes[optCode];
         if( opcode.addrm == Instructions::AddrM::INVALID )
         {
@@ -635,7 +679,8 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::imm:
             {
                 instLen = 2;
-                inputVal = this->dma.CpuRead(pcAddress + 1);
+                argAddress = pcAddress + 1;
+                inputVal = this->dma.Seek(argAddress);
                 //ORA #$AA
                 ss << opcode.instr_name << std::hex << " #$" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)inputVal;
                 break;
@@ -643,8 +688,8 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::zpg_:
             {
                 instLen = 2;
-                argAddress = this->dma.CpuRead(pcAddress + 1);
-                inputVal = this->dma.CpuRead(argAddress);
+                argAddress = this->dma.Seek(pcAddress + 1);
+                inputVal = this->dma.Seek(argAddress);
                 //ORA $78 = 00
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
@@ -652,10 +697,10 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::zpgX:
             {
                 instLen = 2;
-                dword lookupAddress = this->dma.CpuRead(pcAddress + 1);
+                dword lookupAddress = this->dma.Seek(pcAddress + 1);
                 argAddress = lookupAddress + this->GetRegs().name.X;
                 argAddress = argAddress % 0x100;
-                inputVal = this->dma.CpuRead(argAddress);
+                inputVal = this->dma.Seek(argAddress);
                 //ORA $00,X @ 78 = 00
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",X @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
@@ -663,10 +708,10 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::zpgY:
             {
                 instLen = 2;
-                dword lookupAddress = this->dma.CpuRead(pcAddress + 1);
+                dword lookupAddress = this->dma.Seek(pcAddress + 1);
                 argAddress = lookupAddress + this->GetRegs().name.Y;
                 argAddress = argAddress % 0x100;
-                inputVal = this->dma.CpuRead(argAddress);
+                inputVal = this->dma.Seek(argAddress);
                 //ORA $00,X @ 78 = 00
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << lookupAddress << ",Y @ " << std::setw(2) << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
@@ -674,7 +719,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::rel:
             {
                 instLen = 2;
-                sByte offset = this->dma.CpuRead(pcAddress + 1);
+                sByte offset = this->dma.Seek(pcAddress + 1);
                 argAddress = offset + pcAddress + 2;
                 //BCS $F815
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
@@ -683,10 +728,11 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::Xind:
             {
                 instLen = 2;
-                byte indirrectAddress = this->dma.CpuRead( pcAddress + 1);
+                //purposely want an overflow here which is why using byte instead of dword
+                byte indirrectAddress = this->dma.Seek( pcAddress + 1);
                 byte indirrectAddressX = indirrectAddress + this->GetRegs().name.X;
-                argAddress = BitUtil::GetDWord(&this->dma, indirrectAddressX, true);
-                inputVal = this->dma.CpuRead( argAddress );
+                argAddress = BitUtil::GetDWord(&this->dma, indirrectAddressX, true, !seekOnly);
+                inputVal = this->dma.Seek( argAddress ); 
                 //CMP ($80,X) @ 80 = 0200 = 40
                 ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << (int)indirrectAddress << ",X) @ " << std::setw(2) << (int)indirrectAddressX << " = " << std::setw(4) << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
@@ -694,10 +740,10 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::indY:
             {
                 instLen = 2;
-                byte indirrectAddress = this->dma.CpuRead( pcAddress + 1);
-                dword inDirAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true);
+                byte indirrectAddress = this->dma.Seek( pcAddress + 1);
+                dword inDirAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true, !seekOnly);
                 argAddress = inDirAddress + this->GetRegs().name.Y;
-                inputVal = this->dma.CpuRead( argAddress );
+                inputVal = this->dma.Seek( argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(inDirAddress, argAddress);
@@ -712,7 +758,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             {
                 instLen = 3;
                 argAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
-                inputVal = this->dma.CpuRead(argAddress);
+                inputVal = this->dma.Seek(argAddress);
                 //LDA $0400 = 87
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << argAddress;
                 if(opcode.instr != Instructions::Instr::JMP && opcode.instr != Instructions::Instr::JSR)
@@ -726,7 +772,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
                 instLen = 3;
                 dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
                 argAddress = lookupAddress + this->GetRegs().name.X;
-                inputVal = this->dma.CpuRead(argAddress);
+                inputVal = this->dma.Seek(argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
@@ -740,7 +786,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
                 instLen = 3;
                 dword lookupAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
                 argAddress = lookupAddress + this->GetRegs().name.Y;
-                inputVal = this->dma.CpuRead(argAddress);
+                inputVal = this->dma.Seek(argAddress); 
                 if(opcode.instr != Instructions::Instr::STA)
                 {
                     cycleCount += this->AdditionalCyclesForPageCross(lookupAddress, argAddress);
@@ -752,8 +798,8 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
             case Instructions::AddrM::ind_:
             {
                 instLen = 3;
-                dword indirrectAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1);
-                argAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true);
+                dword indirrectAddress = BitUtil::GetDWord(&this->dma, pcAddress + 1, false, !seekOnly);
+                argAddress = BitUtil::GetDWord(&this->dma, indirrectAddress, true, !seekOnly);
                 //JMP ($0200) = DB7E
                 ss << opcode.instr_name << std::hex << " ($" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << indirrectAddress << ") = " << std::setw(4) << argAddress;
                 break;
@@ -763,8 +809,8 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
                 std::cerr << "invalid memory mode" << std::endl;
                 //default to zero page addressing
                 instLen = 2;
-                argAddress = this->dma.CpuRead(pcAddress + 1);
-                inputVal = this->dma.CpuRead(argAddress);
+                argAddress = this->dma.Seek(pcAddress + 1);
+                inputVal = this->dma.Seek(argAddress);
                 //ORA $78 = 00
                 ss << opcode.instr_name << std::hex << " $" << std::setfill('0') << std::setw(2) << std::right << std::uppercase << argAddress << " = " << std::setw(2) << (int)inputVal;
                 break;
@@ -774,7 +820,6 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
 
         std::unique_ptr<Instructions::Instruction> decodedInst = std::unique_ptr<Instructions::Instruction>( new Instructions::Instruction() );
         decodedInst->opcode = opcode;
-        decodedInst->inputVal = inputVal;
         decodedInst->pcAddress = pcAddress;
         decodedInst->argAddress = argAddress;
         decodedInst->instLen = instLen;
@@ -803,7 +848,7 @@ std::string Cpu::GenerateCpuScreen(int instructionsBefore, int instructionsAfter
             currentInstrIndex = decodedInstructions.size();
         }
 
-        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i);
+        std::unique_ptr<Instructions::Instruction> decodedInstr = this->DecodeInstruction(i, true);
         if(decodedInstr == NULL)
         {
             decodedInstr = std::unique_ptr<Instructions::Instruction>(new Instructions::Instruction());

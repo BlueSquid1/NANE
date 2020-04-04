@@ -57,7 +57,7 @@ class ApuRegisters: public MemoryRepeaterArray
         RegStruct name;
         byte raw[24];
     };
-    int rawLen = 24;
+    static const int rawLen = 24;
 
     //constructor
     ApuRegisters();

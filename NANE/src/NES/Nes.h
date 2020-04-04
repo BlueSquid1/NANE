@@ -36,5 +36,6 @@ class Nes
     const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
     const std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
     const std::string GenerateCpuScreen();
+    void IncrementDefaultColourPalette();
 };
 #endif

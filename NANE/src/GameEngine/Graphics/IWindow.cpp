@@ -38,9 +38,3 @@ void IWindow::ChangeDimensions(int newWidth, int newHeight, int newX, int newY)
 	this->windowDimensions.x = newX;
 	this->windowDimensions.y = newY;
 }
-
-//getters/setters
-const SDL_Rect& IWindow::GetDimensions() const
-{
-	this->windowDimensions;
-}

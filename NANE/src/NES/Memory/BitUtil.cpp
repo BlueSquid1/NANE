@@ -75,9 +75,18 @@ qword BitUtil::GetBits(qword value, unsigned char startBit, unsigned char endBit
 }
 
 
-dword BitUtil::GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap)
+dword BitUtil::GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap, bool readInsteadOfSeek)
 {
-    byte lowerByte = memory->Read(startAddress);
+    byte lowerByte = 0;
+    if(readInsteadOfSeek == true)
+    {
+        lowerByte = memory->Read(startAddress);
+    }
+    else
+    {
+        lowerByte = memory->Seek(startAddress);
+    }
+    
     dword endAddress = startAddress + 1;
     if(pageWrap == true)
     {
@@ -86,6 +95,14 @@ dword BitUtil::GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap)
         dword basePage = startAddress & 0xFF00;
         endAddress = basePage + offset;
     }
-    byte upperByte = memory->Read(endAddress);
+    byte upperByte = 0;
+    if(readInsteadOfSeek == true)
+    {
+        upperByte = memory->Read(endAddress);
+    }
+    else
+    {
+        upperByte = memory->Seek(endAddress);
+    }
     return (upperByte << 8) | lowerByte;
 }

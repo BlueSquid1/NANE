@@ -32,6 +32,19 @@ void CpuMemoryMap::Write(dword address, byte value)
     }
 }
 
+byte CpuMemoryMap::Seek(dword address) const
+{
+    if(this->cpuRam->Contains(address))
+    {
+        return this->cpuRam->Seek(address);
+    }
+    else
+    {
+        throw std::out_of_range("CPU Memory Map: tried to seek to an invalid memory address.");
+    }
+    return 0;
+}
+
 
 CpuRegisters& CpuMemoryMap::GetRegisters()
 {

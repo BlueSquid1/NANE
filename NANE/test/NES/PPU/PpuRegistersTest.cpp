@@ -25,16 +25,24 @@ TEST_CASE("make sure PpuRegisters has correct raw length") {
 TEST_CASE("registers cleared by default") {
     PpuRegisters registers;
 
+    //test the internal registers
+    REQUIRE(registers.bgr.curPpuAddress.val == 0);
+    REQUIRE(registers.bgr.ppuAddressLatch == 0);
+    REQUIRE(registers.bgr.ppuDataReadBuffer == 0);
+    REQUIRE(registers.bgr.ntByte == 0);
+    REQUIRE(registers.bgr.atByte == 0);
+    REQUIRE(registers.bgr.tileLo == 0);
+    REQUIRE(registers.bgr.tileHi == 0);
+    REQUIRE(registers.bgr.shift.paletteAttribute1 == 0);
+    REQUIRE(registers.bgr.shift.paletteAttribute2 == 0);
+    REQUIRE(registers.bgr.shift.patternPlane1.val == 0);
+    REQUIRE(registers.bgr.shift.patternPlane2.val == 0);
+
     REQUIRE(registers.rawLen > 0);
     for(int i = 0; i < registers.rawLen; ++i)
     {
-        REQUIRE(registers.Read(0x2000 + i) == 0);
+        REQUIRE(registers.Seek(0x2000 + i) == 0);
     }
-
-    //test the internal registers
-    REQUIRE(registers.name.curPpuAddress.val == 0);
-    REQUIRE(registers.name.ppuReadBuffer == 0);
-    REQUIRE(registers.name.ppuAddressLatch == 0);
 }
 
 /**
@@ -49,7 +57,6 @@ TEST_CASE("PPU registers write to and read from raw") {
     REQUIRE( registers.Read(0x2001) == 0 );
     //write - middle
     registers.name.OAMADDR = 203;
-    REQUIRE( registers.Read(0x2002) == 0 );
     REQUIRE( registers.Read(0x2003) == 203 );
     REQUIRE( registers.Read(0x2004) == 0 );
     //write - end
@@ -66,13 +73,13 @@ TEST_CASE("PPU latching registers") {
     dword ppuAddr = 0x2006;
     registers.Write(ppuAddr, 0x21);
 
-    REQUIRE(registers.name.ppuAddressLatch == true);
-    REQUIRE(registers.name.curPpuAddress.upper == 0x21);
+    REQUIRE(registers.bgr.ppuAddressLatch == true);
+    REQUIRE(registers.bgr.curPpuAddress.upper == 0x21);
 
     registers.Write(ppuAddr, 0x08);
 
-    REQUIRE(registers.name.ppuAddressLatch == false);
-    REQUIRE(registers.name.curPpuAddress.val == 0x2108);
+    REQUIRE(registers.bgr.ppuAddressLatch == false);
+    REQUIRE(registers.bgr.curPpuAddress.val == 0x2108);
 }
 
 /**
