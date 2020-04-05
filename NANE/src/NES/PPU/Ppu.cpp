@@ -24,8 +24,8 @@ rawColour Ppu::calc_background_pixel()
     this->GetRegs().bgr.shift.paletteAttribute2 <<= 1;
 
     //this->dma.GetPpuMemory().GetPalettes()->name.backgroundPalettes
-    byte nesColourIndex = this->dma.GetPpuMemory().GetPalettes().GetColourPalettes().backgroundPalettes[attributeIndex][patternValue];
-    return NesColour::GetRawColour(nesColourIndex);
+    rawColour nesColourIndex = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
+    return nesColourIndex;
 }
 
 rawColour Ppu::calc_sprite_pixel()

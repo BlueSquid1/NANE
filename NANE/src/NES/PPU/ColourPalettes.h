@@ -15,7 +15,6 @@ struct paletteStruct
 {
     union
     {
-        colourIndex palettes[8][4];
         struct
         {
             colourIndex backgroundPalettes[4][4];
@@ -51,9 +50,6 @@ class ColourPalettes : public MemoryRepeaterArray
     byte Seek(dword address) const override;
 
     rawColour PatternValueToColour(byte palletteId, byte patternVal) const;
-
-    //getters and setters
-    const paletteStruct& GetColourPalettes() const;
 };
 
 #endif

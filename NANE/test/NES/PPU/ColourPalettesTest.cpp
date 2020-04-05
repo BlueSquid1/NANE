@@ -39,13 +39,7 @@ TEST_CASE("ColourPalettes write to and read from raw") {
 
     //test redirrecting from palette 0
     REQUIRE(palettes.Read(0x3F00) == 43);
-    REQUIRE(palettes.Read(0x3F04) == 43);
-    REQUIRE(palettes.Read(0x3F08) == 43);
-    REQUIRE(palettes.Read(0x3F0C) == 43);
     REQUIRE(palettes.Read(0x3F10) == 43);
-    REQUIRE(palettes.Read(0x3F14) == 43);
-    REQUIRE(palettes.Read(0x3F18) == 43);
-    REQUIRE(palettes.Read(0x3F1C) == 43);
 
     //write to background palette 3
     palettes.Write(0x3F0C, 74);
@@ -56,12 +50,6 @@ TEST_CASE("ColourPalettes write to and read from raw") {
     REQUIRE(palettes.Read(0x3F0F) == 34);
 
     //test redirrecting from palette 3
-    REQUIRE(palettes.Read(0x3F00) == 74);
-    REQUIRE(palettes.Read(0x3F04) == 74);
-    REQUIRE(palettes.Read(0x3F08) == 74);
     REQUIRE(palettes.Read(0x3F0C) == 74);
-    REQUIRE(palettes.Read(0x3F10) == 74);
-    REQUIRE(palettes.Read(0x3F14) == 74);
-    REQUIRE(palettes.Read(0x3F18) == 74);
     REQUIRE(palettes.Read(0x3F1C) == 74);
 }
