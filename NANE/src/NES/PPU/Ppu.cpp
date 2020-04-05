@@ -59,6 +59,13 @@ int Ppu::Step()
 {
     int curLine = this->dma.GetPpuMemory().GetScanLineNum();
     int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
+    if(curLine == -1)
+    {
+        if(curCycle == 1)
+        {
+            this->GetRegs().name.verticalBlank = false;
+        }
+    }
     if(curLine < 239)
     {
         rawColour bPixel = this->calc_background_pixel();
@@ -83,6 +90,11 @@ int Ppu::Step()
         if(curCycle == 1)
         {
             //set VBlank flag to 1 at second cycle of scanline 241
+            this->GetRegs().name.verticalBlank = true;
+            if(this->GetRegs().name.generateNmi == true)
+            {
+                this->dma.SetNmi(true);
+            }
         }
     }
     else if( curLine == 260 )

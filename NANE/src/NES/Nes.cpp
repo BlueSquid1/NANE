@@ -52,11 +52,14 @@ bool Nes::processes(bool verbose)
     {
         //1 CPU step for 3 PPU steps
         cpuCycles += this->cpu.Step(verbose);
-        for(int i = 0; i < cpuCycles; ++i)
+        for(int i = 0; i < cpuCycles * 3; ++i)
         {
             this->ppu.Step();
-            this->ppu.Step();
-            this->ppu.Step();
+            if(this->dma.GetNmi() == true)
+            {
+                this->dma.SetNmi(false);
+                this->cpu.HandleNmiEvent();
+            }
         }
     }
     return true;

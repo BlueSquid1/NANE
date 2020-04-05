@@ -8,7 +8,6 @@
 
 #include <memory> //std::unique_ptr
 
-
 //keeps track of all memory used by NES console
 //in other words its the memory bus
 class Dma : public IMemoryRW
@@ -18,6 +17,7 @@ class Dma : public IMemoryRW
     PpuMemoryMap ppuMemory;
     ApuRegisters apuRegisters;
     std::unique_ptr<ICartridge> cartridge = NULL;
+    bool nmiActive = false;
 
     void IncrementPpuAddress();
 
@@ -39,6 +39,8 @@ class Dma : public IMemoryRW
     ApuRegisters& GetApuRegisters();
     bool SetCartridge(std::unique_ptr<ICartridge> cartridge);
     std::unique_ptr<ICartridge>& GetCartridge();
+    bool GetNmi();
+    void SetNmi(bool isActive);
 };
 
 #endif

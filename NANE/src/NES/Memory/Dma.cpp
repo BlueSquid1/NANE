@@ -196,3 +196,14 @@ std::unique_ptr<ICartridge>& Dma::GetCartridge()
 {
     return this->cartridge;
 }
+
+
+bool Dma::GetNmi()
+{
+    return this->nmiActive;
+}
+
+void Dma::SetNmi(bool isActive)
+{
+    this->nmiActive = isActive;
+}

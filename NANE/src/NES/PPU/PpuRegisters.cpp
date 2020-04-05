@@ -29,7 +29,6 @@ byte PpuRegisters::Read(dword address)
         case PpuRegisters::PPUSTATUS_ADDR:
         {
             //fill the bottom bits with ppu data read buffer
-            this->name.verticalBlank = true;
             byte returnValue = (this->name.PPUSTATUS & 0xE0) | (this->bgr.ppuDataReadBuffer & 0x1F);
             this->name.verticalBlank = false;
             this->bgr.ppuAddressLatch = false;

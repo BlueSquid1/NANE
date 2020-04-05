@@ -8,6 +8,7 @@
 Cpu::Cpu(Dma& dma)
 : dma(dma)
 {
+    //this->dma.GetNmiEventHandler() += this->HandleNmiEvent;
 }
 
 bool Cpu::PowerCycle(dword newPcAddress)
@@ -547,6 +548,11 @@ int Cpu::Step(bool verbose)
     //update cycle count
     this->totalClockCycles += cycleCount;
     return cycleCount;
+}
+
+void Cpu::HandleNmiEvent()
+{
+    
 }
 
 void Cpu::Push(dword value)

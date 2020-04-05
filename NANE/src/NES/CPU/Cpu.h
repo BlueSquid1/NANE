@@ -30,6 +30,7 @@ class Cpu
     Cpu(Dma& dma);
     bool PowerCycle(dword newPcAddress = 0x8000);
     int Step(bool verbose);
+    void HandleNmiEvent();
 
     /**
      * @param instructionsBefore how many instructions to print before current instructions
