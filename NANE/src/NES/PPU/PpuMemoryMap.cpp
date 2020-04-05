@@ -7,15 +7,13 @@ PpuMemoryMap::PpuMemoryMap()
     primOam( 256 ),
     secOam( 32 )
 {
-    std::unique_ptr<std::vector<byte>> nametableVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(4096) );
-    this->nametableMem = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x2000, 0x3EFF, std::move(nametableVec)) );
 }
 
 byte PpuMemoryMap::Read(dword address)
 {
-    if(this->nametableMem->Contains(address))
+    if(this->nametableMem.Contains(address))
     {
-        return this->nametableMem->Read(address);
+        return this->nametableMem.Read(address);
     }
     else if(this->palettesMem.Contains(address))
     {
@@ -30,9 +28,9 @@ byte PpuMemoryMap::Read(dword address)
 
 void PpuMemoryMap::Write(dword address, byte value)
 {
-    if(this->nametableMem->Contains(address))
+    if(this->nametableMem.Contains(address))
     {
-        this->nametableMem->Write(address, value);
+        this->nametableMem.Write(address, value);
     }
     else if(this->palettesMem.Contains(address))
     {
@@ -46,9 +44,9 @@ void PpuMemoryMap::Write(dword address, byte value)
 
 byte PpuMemoryMap::Seek(dword address) const
 {
-    if(this->nametableMem->Contains(address))
+    if(this->nametableMem.Contains(address))
     {
-        return this->nametableMem->Seek(address);
+        return this->nametableMem.Seek(address);
     }
     else if(this->palettesMem.Contains(address))
     {
@@ -74,6 +72,11 @@ PpuRegisters& PpuMemoryMap::GetRegisters()
 const PpuRegisters& PpuMemoryMap::GetRegisters() const
 {
     return this->ppuRegMem;
+}
+
+NameTables& PpuMemoryMap::GetNameTables()
+{
+    return this->nametableMem;
 }
 
 void PpuMemoryMap::SetScanLineNum(int scanLineNum)

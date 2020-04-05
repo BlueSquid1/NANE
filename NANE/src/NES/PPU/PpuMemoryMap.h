@@ -4,17 +4,15 @@
 #include "PpuRegisters.h"
 #include "ColourPalettes.h"
 #include "PatternTables.h"
+#include "NameTables.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
-
-
-#include "NES/Memory/MemoryRepeaterVec.h" //TODO delete
 
 class PpuMemoryMap : public IMemoryRW
 {
     private:
     PpuRegisters ppuRegMem;
-    std::unique_ptr<IMemoryRepeater> nametableMem = NULL; //layout (vram)
+    NameTables nametableMem; //layout (vram)
     ColourPalettes palettesMem; //colours
     
     std::vector<byte> primOam; //256 bytes
@@ -35,6 +33,7 @@ class PpuMemoryMap : public IMemoryRW
     ColourPalettes& GetPalettes();
     PpuRegisters& GetRegisters();
     const PpuRegisters& GetRegisters() const;
+    NameTables& GetNameTables();
     void SetScanLineNum(int scanLineNum);
     int GetScanLineNum() const;
     void SetScanCycleNum(int scanCycleNum);

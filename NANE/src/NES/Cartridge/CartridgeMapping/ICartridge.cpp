@@ -106,3 +106,13 @@ std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetPrgRom()
 {
     return this->prgRom;
 }
+
+INes::MirrorType ICartridge::GetMirroringType()
+{
+    return this->mirroringType;
+}
+
+void ICartridge::SetMirroringType(INes::MirrorType mirroringType)
+{
+    this->mirroringType = mirroringType;
+}

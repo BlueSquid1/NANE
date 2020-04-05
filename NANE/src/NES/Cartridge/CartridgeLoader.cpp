@@ -27,7 +27,7 @@ bool CartridgeLoader::UpdateHead( std::unique_ptr<INes> & rom, std::ifstream * f
     {
         if(mirroringVertical == false)
         {
-            mirrorType = INes::disabled;
+            mirrorType = INes::one_way;
         }
         else
         {

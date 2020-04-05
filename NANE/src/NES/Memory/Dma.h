@@ -30,6 +30,8 @@ class Dma : public IMemoryRW
 
     byte PpuRead(dword address);
     void PpuWrite(dword address, byte value);
+    
+    bool SetCartridge(std::unique_ptr<ICartridge> cartridge);
 
     std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 
@@ -37,7 +39,6 @@ class Dma : public IMemoryRW
     CpuMemoryMap& GetCpuMemory();
     PpuMemoryMap& GetPpuMemory();
     ApuRegisters& GetApuRegisters();
-    bool SetCartridge(std::unique_ptr<ICartridge> cartridge);
     std::unique_ptr<ICartridge>& GetCartridge();
     bool GetNmi();
     void SetNmi(bool isActive);

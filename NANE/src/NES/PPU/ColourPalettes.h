@@ -13,14 +13,8 @@
 
 struct paletteStruct
 {
-    union
-    {
-        struct
-        {
-            colourIndex backgroundPalettes[4][4];
-            colourIndex spritePalettes[4][4];
-        };
-    };
+    colourIndex backgroundPalettes[4][4];
+    colourIndex spritePalettes[4][4];
 };
 
 class ColourPalettes : public MemoryRepeaterArray

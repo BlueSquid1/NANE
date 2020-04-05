@@ -46,7 +46,7 @@ byte ColourPalettes::Seek(dword address) const
     dword redirrectAddress = this->Redirect(address);
     return MemoryRepeaterArray::Seek(redirrectAddress);
 }
-#include <iostream>
+
 rawColour ColourPalettes::PatternValueToColour(byte palletteId, byte patternVal) const
 {
     if(palletteId < 0 || palletteId >= 8)
@@ -57,6 +57,6 @@ rawColour ColourPalettes::PatternValueToColour(byte palletteId, byte patternVal)
     {
         throw std::invalid_argument("patternVal is outside boundary for a ColourPalette");
     }
-    byte colourIndex = this->Seek(0x3F00 + 4 * palletteId + patternVal);
+    byte colourIndex = this->Seek(this->startAddress + 4 * palletteId + patternVal);
     return NesColour::GetRawColour(colourIndex);
 }

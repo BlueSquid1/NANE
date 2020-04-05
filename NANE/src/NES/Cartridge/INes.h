@@ -16,7 +16,8 @@ class INes
      */
     enum MirrorType
     {
-        disabled, /**< No mirror */
+        not_set, /** defaults to no_set */
+        one_way, /**< One way mapping */
         horizontal, /**< mirror the screen on the horizontal axis */
         vertical, /**< mirror the screen on the vertical axis */
         fourScreen /**< split the screen into four sections */

@@ -19,20 +19,6 @@ TEST_CASE("PPU: Can read and write without loading a cartridge")
     REQUIRE(memoryMap.Contains(0x3FFF) == true);
     REQUIRE(memoryMap.Contains(0x4000) == false);
 
-    //Name tables
-    memoryMap.Write(0x2000, 56);
-    REQUIRE(memoryMap.Read(0x2000) == 56);
-    //TODO check with GetNameTable()
-
-    memoryMap.Write(0x2FFF, 47);
-    REQUIRE(memoryMap.Read(0x2FFF) == 47);
-    //TODO check with GetNameTable()
-    
-    //check if memory mirroring for nametables are correct
-    REQUIRE(memoryMap.Read(0x3000) == 56);
-    memoryMap.Write(0x2EFF, 78);
-    REQUIRE(memoryMap.Read(0x2EFF) == 78);
-
     //palette memory
     memoryMap.Write(0x3F00, 153);
     REQUIRE(memoryMap.Read(0x3F00) == 153);

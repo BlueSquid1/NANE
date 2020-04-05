@@ -189,6 +189,8 @@ ApuRegisters& Dma::GetApuRegisters()
 bool Dma::SetCartridge(std::unique_ptr<ICartridge> cartridge)
 {
     this->cartridge = std::move(cartridge);
+    INes::MirrorType mirroringType = this->cartridge->GetMirroringType();
+    this->ppuMemory.GetNameTables().SetMirrorType(mirroringType);
     return true;
 }
 
