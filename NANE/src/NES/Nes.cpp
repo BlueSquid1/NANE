@@ -1,6 +1,7 @@
 #include "Nes.h"
 
 #include "Cartridge/CartridgeLoader.h"
+#include <sstream> //std::stringstream
 
 Nes::Nes()
 : dma(), cpu(dma), ppu(dma)
@@ -94,4 +95,19 @@ void Nes::IncrementDefaultColourPalette()
         palette = 0;
     }
     this->ppu.SetDefaultPalette(palette);
+}
+
+const std::string Nes::GenerateFirstNameTable()
+{
+    std::unique_ptr<Matrix<patternIndex>> nameTable = this->dma.GetPpuMemory().GetNameTables().GenerateFirstNameTable();
+    std::stringstream ss;
+    for(int y = 0; y < nameTable->GetHeight(); ++y)
+    {
+        for(int x = 0; x < nameTable->GetWidth(); ++x)
+        {
+            ss << std::hex << (int)nameTable->Get(y, x) << " ";
+        }
+        std::cout << std::endl;
+    }
+    return ss.str();
 }

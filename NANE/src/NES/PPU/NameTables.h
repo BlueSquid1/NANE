@@ -4,6 +4,9 @@
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
+#include "Matrix.h"
+
+#include <memory>
 
 /**
  * Manages the nametables
@@ -11,25 +14,28 @@
  * https://wiki.nesdev.com/w/index.php/PPU_nametables
  */
 
-struct QuadTilePalette
+typedef byte paletteIndex;
+typedef byte patternIndex;
+
+struct QuadAreaPalette
 {
     union
     {
-        byte value;
+        paletteIndex value;
         struct
         {
-            byte topleftArea : 2;
-            byte topRightArea : 2;
-            byte bottomleftArea : 2;
-            byte bottomrightArea : 2;
+            paletteIndex topleftArea : 2;
+            paletteIndex topRightArea : 2;
+            paletteIndex bottomleftArea : 2;
+            paletteIndex bottomrightArea : 2;
         };
     };
 };
 
 struct NameTable
 {
-    byte charactorCell[30][32];
-    QuadTilePalette attributeTable[8][8];
+    patternIndex charactorCell[30][32];
+    QuadAreaPalette attributeTable[8][8];
 };
 
 struct NameTableStruct
@@ -40,6 +46,13 @@ struct NameTableStruct
 class NameTables : public MemoryRepeaterArray
 {
     private:
+    struct LocalTablePos
+    {
+        byte tableIndex;
+        dword localX;
+        dword localY;
+    };
+
     static const int rawLen = 4096;
     //anonymous union
     union
@@ -51,6 +64,7 @@ class NameTables : public MemoryRepeaterArray
     INes::MirrorType mirroringType = INes::not_set;
 
     dword Redirect(dword address) const;
+    LocalTablePos LocalFromGlobalPos(dword globalY, dword globalX);
 
     public:
     NameTables();
@@ -58,6 +72,13 @@ class NameTables : public MemoryRepeaterArray
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
+
+    patternIndex GetPatternIndex(dword globalY, dword globalX);
+    paletteIndex GetPaletteIndex(dword globalY, dword globalX);
+
+    //dissassemble commands
+    std::unique_ptr<Matrix<patternIndex>> GenerateFirstNameTable();
+    //getters/setters
     void SetMirrorType( INes::MirrorType mirroringType );
 };
 
