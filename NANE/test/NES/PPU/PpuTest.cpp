@@ -1,12 +1,33 @@
 #include <catch2/catch.hpp>
 #include <type_traits> //std::is_pod<>
 
-#include "NES/PPU/PpuRegisters.h"
+#include "NES/PPU/Ppu.h"
+#include "NES/Memory/Dma.h"
 
 /**
- * test if Ppu structs are Plain-Old Data otherwise compiler might not place struct in the same order defined in the struct
+ * 
  */
-TEST_CASE("make sure Ppu structs are Plain-Old Data otherwise") 
+TEST_CASE("test powerup state") 
 {
-    REQUIRE(std::is_pod<PpuRegisters::BackgroundRegisters>::value == true);
+    Dma dma;
+    Ppu ppu(dma);
+    Matrix<rawColour> display = ppu.GetFrameDisplay();
+    REQUIRE(display.GetHeight() == 240);
+    REQUIRE(display.GetWidth() == 256);
+    rawColour black;
+    black.channels.alpha = 0xFF;
+    black.channels.red = 0x00;
+    black.channels.green = 0x00;
+    black.channels.blue = 0x00;
+
+    for(int y = 0; y < display.GetHeight(); ++y)
+    {
+        for(int x = 0; x < display.GetWidth(); ++x)
+        {
+            REQUIRE(display.Get(y,x).raw == black.raw);
+        }
+    }
+
+    REQUIRE(ppu.PowerCycle() == true);
+    
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <memory>
+#include <sstream>
 
 #include "NES/Nes.h"
 #include "TextureWindow.h"
@@ -29,6 +30,8 @@ class WindowManager
     TextureWindow chrRomWindow;
     TextWindow cpuWindow;
     TextureWindow colourDisplayWindow;
+    TextWindow fpsDisplay;
+    std::stringstream fpsStringStream;
 
     public:
     /**
@@ -41,7 +44,7 @@ class WindowManager
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display(Nes& nesEmulator, bool showDisassembly);
+    bool Display(Nes& nesEmulator,unsigned int fps, bool showDisassembly);
 
     /**
      * Close the graphics engine.

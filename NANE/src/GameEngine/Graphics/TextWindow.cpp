@@ -2,7 +2,7 @@
 #include <algorithm>
 
 
-void TextWindow::Display(std::string& screenText, TTF_Font * gFont, SDL_Color forgroundColour, SDL_Color backgroundColour)
+void TextWindow::Display(const std::string& screenText, TTF_Font * gFont, SDL_Color forgroundColour, SDL_Color backgroundColour, bool writeTopDown)
 {
 	//delete previous texture
 	this->FreeTexture();
@@ -38,7 +38,11 @@ void TextWindow::Display(std::string& screenText, TTF_Font * gFont, SDL_Color fo
 
 	SDL_Rect targetSize;
 	targetSize.x = this->windowDimensions.x;
-	targetSize.y = this->windowDimensions.y + std::max(this->windowDimensions.h - textHeight, 0);
+	targetSize.y = this->windowDimensions.y;
+	if(writeTopDown == false)
+	{
+		targetSize.y = this->windowDimensions.y + std::max(this->windowDimensions.h - textHeight, 0);
+	}
 	targetSize.w = sourceSize.w;
 	targetSize.h = sourceSize.h;
 

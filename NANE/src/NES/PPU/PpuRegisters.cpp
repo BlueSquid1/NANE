@@ -8,17 +8,20 @@ PpuRegisters::PpuRegisters()
     memset(this->raw, 0, sizeof(this->name));
 
 
-    this->bgr.curPpuAddress.val = 0;
-    this->bgr.ppuAddressLatch = 0;
+    this->bgr.vramPpuAddress.val = 0;
+    this->bgr.ppuAddressLatch = false;
+    this->bgr.scrollX.val = 0;
+    this->bgr.scrollY.val = 0;
+    this->bgr.ppuScrollLatch = false;
     this->bgr.ppuDataReadBuffer = 0;
-    this->bgr.ntByte = 0;
-    this->bgr.atByte = 0;
-    this->bgr.tileLo = 0;
-    this->bgr.tileHi = 0;
-    this->bgr.shift.paletteAttribute1 = 0;
-    this->bgr.shift.paletteAttribute2 = 0;
-    this->bgr.shift.patternPlane1.val = 0;
-    this->bgr.shift.patternPlane2.val = 0;
+    // this->bgr.ntByte = 0;
+    // this->bgr.atByte = 0;
+    // this->bgr.tileLo = 0;
+    // this->bgr.tileHi = 0;
+    // this->bgr.shift.paletteAttribute1 = 0;
+    // this->bgr.shift.paletteAttribute2 = 0;
+    // this->bgr.shift.patternPlane1.val = 0;
+    // this->bgr.shift.patternPlane2.val = 0;
 
 }
 
@@ -36,38 +39,35 @@ byte PpuRegisters::Read(dword address)
         }
     }
     return this->Seek(address);
-    /*
-    else if(address == PpuRegisters::OAMDATA_ADDR)
-    {
-        //TODO
-    }
-    return MemoryRepeaterArray::Read(address);
-    */
 }
 
 void PpuRegisters::Write(dword address, byte value)
 {
     switch(address)
     {
-        case PpuRegisters::OAMDATA_ADDR:
-        {
-            //TODO
-            break;
-        }
         case PpuRegisters::PPUSCROLL_ADDR:
         {
-            //TODO
+            if(this->bgr.ppuScrollLatch == false)
+            {
+                this->bgr.scrollX.val = value;
+            }
+            else
+            {
+                this->bgr.scrollY.val = value;
+            }
+            //flip the vram address latch
+            this->bgr.ppuScrollLatch = !this->bgr.ppuAddressLatch;
             break;
         }
         case PpuRegisters::PPUADDR_ADDR:
         {
             if(this->bgr.ppuAddressLatch == false)
             {
-                this->bgr.curPpuAddress.upper = value;
+                this->bgr.vramPpuAddress.upper = value;
             }
             else
             {
-                this->bgr.curPpuAddress.lower = value;
+                this->bgr.vramPpuAddress.lower = value;
             }
             //flip the vram address latch
             this->bgr.ppuAddressLatch = !this->bgr.ppuAddressLatch;
@@ -76,6 +76,11 @@ void PpuRegisters::Write(dword address, byte value)
         case PpuRegisters::OAMDMA_ADDR:
         {
             //TODO
+        }
+        case PpuRegisters::OAMDATA_ADDR:
+        {
+            //TODO
+            break;
         }
         default:
         {

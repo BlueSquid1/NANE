@@ -31,6 +31,7 @@ class Nes
     bool processes(bool verbose);
 
     const Matrix<rawColour>& GetFrameDisplay();
+    long long int& GetFrameCount();
 
     //dissassmbly methods
     const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();

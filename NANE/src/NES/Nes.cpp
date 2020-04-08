@@ -39,20 +39,11 @@ bool Nes::PowerCycle()
 
 bool Nes::processes(bool verbose)
 {
-    //it takes 29606 cpu cycles to render a whole frame
-    //int cpuCyclesToRun = 29606;
-    int cpuCyclesToRun = 296;
-
-    if(verbose)
-    {
-        //cpuCyclesToRun = 1;
-    }
-
-    int cpuCycles = 0;
-    while(cpuCycles < cpuCyclesToRun )
+    long long int frameCount = this->GetFrameCount();
+    while( this->GetFrameCount() == frameCount )
     {
         //1 CPU step for 3 PPU steps
-        cpuCycles += this->cpu.Step(verbose);
+        int cpuCycles = this->cpu.Step(verbose);
         for(int i = 0; i < cpuCycles * 3; ++i)
         {
             this->ppu.Step();
@@ -69,6 +60,11 @@ bool Nes::processes(bool verbose)
 const Matrix<rawColour>& Nes::GetFrameDisplay()
 {
     return this->ppu.GetFrameDisplay();
+}
+
+long long int& Nes::GetFrameCount()
+{
+    return this->ppu.GetTotalFrameCount();
 }
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
@@ -90,7 +86,7 @@ void Nes::IncrementDefaultColourPalette()
 {
     byte palette = this->ppu.GetDefaultPalette();
     ++palette;
-    if(palette < 8)
+    if(palette >= 8)
     {
         palette = 0;
     }

@@ -32,7 +32,9 @@ class Dma : public IMemoryRW
     void PpuWrite(dword address, byte value);
     
     bool SetCartridge(std::unique_ptr<ICartridge> cartridge);
+    PatternTables::BitTile& GetPatternTile(int tableNum, patternIndex patternNum);
 
+    //for disassembly
     std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 
     //getters/setters

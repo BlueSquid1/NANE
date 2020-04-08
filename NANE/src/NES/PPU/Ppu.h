@@ -12,6 +12,22 @@
 class Ppu
 {
     private:
+    struct Point
+    {
+        int x;
+        int y;
+    };
+    const int LAST_CYCLE = 340;
+    const int LAST_SCANLINE = 260;
+
+    const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
+    const int LAST_NEXT_SCANLINE_FETCHING = 337; //cycles
+    const int START_VISIBLE_CYCLE = 1; //cycles
+    const int LAST_VISIBLE_CYCLE = 256; //cycles
+    const int PRE_SCANLINE = -1;
+    const int START_VISIBLE_SCANLINE = 0; //scanlines
+    const int LAST_VISIBLE_SCANLINE = 239; //scanlines
+
     Dma& dma;
 
     //the actual output
@@ -21,6 +37,13 @@ class Ppu
 
     long long int frameCountNum; //how many frames have been rendered
     byte defaultPalette = 0;
+
+    Point NextPixel();
+
+    /**
+     * returns NULL when no next tile (e.g. fetching beyound visible section)
+     */
+    Point CalcNextFetchTile();
 
     rawColour calc_background_pixel();
     rawColour calc_sprite_pixel();
@@ -49,6 +72,7 @@ class Ppu
     //getters/setters
     byte GetDefaultPalette() const;
     void SetDefaultPalette(byte palette);
+    long long int& GetTotalFrameCount();
 };
 
 #endif

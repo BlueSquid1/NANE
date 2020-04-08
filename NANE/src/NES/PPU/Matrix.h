@@ -2,6 +2,7 @@
 #define MATRIX
 
 #include <vector>
+#include <iostream>
 
 /**
  * just a standard matrix implementation using a flat vector as the underlying vecvecData structure.

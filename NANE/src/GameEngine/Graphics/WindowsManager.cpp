@@ -70,7 +70,14 @@ bool WindowManager::Init()
 	bool colourDisplayWindow = this->colourDisplayWindow.Init(this->gRenderer, colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
 	if(chrRomWindowResult == false)
 	{
-		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
+		std::cerr << "can't create palette window. SDL error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+
+	bool fpsResult = this->fpsDisplay.Init(this->gRenderer, 100, 100, BORDER_WIDTH, BORDER_WIDTH);
+	if(fpsResult == false)
+	{
+		std::cerr << "can't create fps display. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
@@ -101,7 +108,7 @@ void WindowManager::ChangeScaleFactor(int newScaleFactor)
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
 }
 
-bool WindowManager::Display(Nes& nesEmulator, bool showDisassembly)
+bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, bool showDisassembly)
 {
     //clear the screen
 	SDL_SetRenderDrawColor(this->gRenderer, 0x80, 0x80, 0x80, 0xFF);
@@ -114,6 +121,15 @@ bool WindowManager::Display(Nes& nesEmulator, bool showDisassembly)
 	if(showDisassembly == true)
 	{
 		std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
+		//TODO
+		// for(int y = 0; y < chrRomDisplay->GetHeight(); ++y)
+		// {
+		// 	for(int x = 0; x < chrRomDisplay->GetWidth(); ++x)
+		// 	{
+		// 		std::cout << chrRomDisplay->Get(y, x).raw << " ";
+		// 	}
+		// 	std::cout << std::endl;
+		// }
 		this->chrRomWindow.Display(*chrRomDisplay);
 
 		std::string cpuText = nesEmulator.GenerateCpuScreen();
@@ -127,10 +143,24 @@ bool WindowManager::Display(Nes& nesEmulator, bool showDisassembly)
 		backgroundColor.g = 0x00;
 		backgroundColor.b = 0x00;
 		backgroundColor.a = 0xFF;
-		this->cpuWindow.Display(cpuText, this->gFont, foregroundColor, backgroundColor);
+		this->cpuWindow.Display(cpuText, this->gFont, foregroundColor, backgroundColor, false);
 
 		std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
 		this->colourDisplayWindow.Display(*colourPalettesDisplay);
+
+		//fps
+		fpsStringStream.str("");
+		fpsStringStream << fps << "FPS";
+		const std::string fpsText = fpsStringStream.str();
+		SDL_Color fpsTextColour;
+		fpsTextColour.r = 0xFF;
+		fpsTextColour.g = 0xFF;
+		fpsTextColour.b = 0xAA;
+		fpsTextColour.a = 0xFF;
+		
+		SDL_Color transparentColor;
+		transparentColor.a = 0x00;
+		this->fpsDisplay.Display(fpsText, this->gFont, fpsTextColour, transparentColor, true);
 	}
 
 	//Update the surface

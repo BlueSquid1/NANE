@@ -14,8 +14,6 @@ class PatternTables
     static const byte TILE_WIDTH = 8; //pixels
     static const byte TILE_HEIGHT = 8; //pixels
 
-    
-    private:
     /**
      * these structs are used to dynamically case the chr rom to a BitPatternTables without having to write a decoder (pretty cool right?).
      */
@@ -26,13 +24,18 @@ class PatternTables
     };
     struct BitPatternTable
     {
-        BitTile titles[TABLE_HEIGHT][TABLE_WIDTH];
+        union
+        {
+            BitTile titles[TABLE_HEIGHT][TABLE_WIDTH];
+            BitTile raw[TABLE_HEIGHT * TABLE_WIDTH];
+        };
     };
     struct BitPatternTables
     {
         BitPatternTable tables[NUM_OF_TABLES];
     };
 
+    private:
     //the user friendly interface
     class PatternTable
     {

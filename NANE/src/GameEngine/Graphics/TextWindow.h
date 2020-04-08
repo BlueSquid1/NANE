@@ -10,7 +10,7 @@
 class TextWindow : public IWindow
 {
     public:
-    void Display(std::string& screenText, TTF_Font * gFont, SDL_Color forgroundColour, SDL_Color backgroundColour);
+    void Display(const std::string& screenText, TTF_Font * gFont, SDL_Color forgroundColour, SDL_Color backgroundColour, bool writeTopDown);
 };
 
 #endif

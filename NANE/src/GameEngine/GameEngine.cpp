@@ -87,8 +87,9 @@ bool GameEngine::Processing()
 
 bool GameEngine::Display()
 {
+	unsigned int fps = fpsTimer.CalcFps();
 	bool showDisassembly = true;
-	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, showDisassembly);
+	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, fps, showDisassembly);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;

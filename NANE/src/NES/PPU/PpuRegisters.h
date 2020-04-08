@@ -1,6 +1,7 @@
 #ifndef PPU_REGISTERS
 #define PPU_REGISTERS
 
+#include "NameTables.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 
@@ -31,7 +32,7 @@ class PpuRegisters : public MemoryRepeaterArray
             byte PPUCTRL;
             struct
             {
-                byte baseNameTable : 2; //Base nametable address (0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)
+                byte baseNameTable : 2;
                 bit vramDirrection : 1; //VRAM address increment per CPU read/write of PPUDATA (0: add 1, going across; 1: add 32, going down)
                 bit sprite8x8PatternTable : 1; //Sprite pattern table address for 8x8 sprites (0: $0000; 1: $1000; ignored in 8x16 mode)
                 bit backgroundPatternTable : 1; //Background pattern table address (0: $0000; 1: $1000)
@@ -73,34 +74,74 @@ class PpuRegisters : public MemoryRepeaterArray
         byte PPUDATA; //0x2007
     };
 
+    //https://wiki.nesdev.com/w/index.php/PPU_scrolling
+    // union LoopyRegister
+    // {
+    //     struct
+    //     {
+    //         dword coarseX : 5;
+    //         dword coarseY : 5;
+    //         dword nametableX : 1;
+    //         dword nametableY : 1;
+    //         dword fineY : 3;
+    //         dword unused : 1;
+    //     };
+    //     dword_p reg;
+    // };
+
+    union scrollRegister
+    {
+        struct
+        {
+            byte fineX : 3;
+            byte courseX : 5;
+        };
+        byte val;
+    };
+
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
     struct BackgroundRegisters
     {
-        // internal registers
-        // https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
-        dword_p curPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
+        //LoopyRegister tramPpuAddress;
+
+
+        dword_p vramPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
         bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
+
+        scrollRegister scrollX;
+        scrollRegister scrollY;
+        bool ppuScrollLatch;
         
         // buffer used for:
         // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
         byte ppuDataReadBuffer;
 
-        // Temporary Registers
-        byte ntByte;
-        byte atByte;
-        byte tileLo;
-        byte tileHi;
+        //registers used for background fetching/rendering
+        dword_p lsbPatternPlane;
+        dword_p msbPatternPlane;
+
+        patternIndex nextNametableIndex;
+        paletteIndex nextAttributeIndex;
+
+        byte lsbNextTile;
+        byte msbNextTile;
+
+        // // Temporary Registers
+        // byte ntByte;
+        // byte atByte;
+        // byte tileLo;
+        // byte tileHi;
         
-        // Shift Registers for background
-        struct 
-        {
-            byte paletteAttribute1; //colour attribute 1 (controls bit 0)
-            byte paletteAttribute2; //colour attribute 1 (controls bit 1)
-            // bool atLatch1;
-            // bool atLatch2;
-            dword_p patternPlane1; //background pattern plane 1 (controls bit 0)
-            dword_p patternPlane2; //background pattern plane 2 (controls bit 1)
-        } shift;
+        // // Shift Registers for background
+        // struct 
+        // {
+        //     byte paletteAttribute1; //colour attribute 1 (controls bit 0)
+        //     byte paletteAttribute2; //colour attribute 1 (controls bit 1)
+        //     // bool atLatch1;
+        //     // bool atLatch2;
+        //     dword_p patternPlane1; //background pattern plane 1 (controls bit 0)
+        //     dword_p patternPlane2; //background pattern plane 2 (controls bit 1)
+        // } shift;
     };
 
     static const int rawLen = 8;

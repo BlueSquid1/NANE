@@ -1,6 +1,8 @@
 #include "Dma.h"
 
 #include <iostream> //std::cerr
+#include <exception> //std::out_of_range
+#include "NES/PPU/PatternTables.h"
 
 void Dma::IncrementPpuAddress()
 {
@@ -10,7 +12,7 @@ void Dma::IncrementPpuAddress()
     {
         incrementAmount = 32;
     }
-    this->ppuMemory.GetRegisters().bgr.curPpuAddress.val += incrementAmount;
+    this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val += incrementAmount;
 }
 
 
@@ -28,7 +30,7 @@ byte Dma::Read(dword address)
         {
             //read value to VRAM address
             byte returnVal = this->ppuMemory.GetRegisters().bgr.ppuDataReadBuffer;
-            dword vramAddress = this->ppuMemory.GetRegisters().bgr.curPpuAddress.val;
+            dword vramAddress = this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val;
             this->ppuMemory.GetRegisters().bgr.ppuDataReadBuffer = this->PpuRead(vramAddress);
 
             if(vramAddress >= 0x3F00)
@@ -69,16 +71,25 @@ void Dma::Write(dword address, byte value)
     //handle special cases
     switch(address)
     {
+        case PpuRegisters::PPUCTRL_ADDR:
+        {
+            this->ppuMemory.GetRegisters().Write(address, value);
+            //this->ppuMemory.GetRegisters().bgr.tramPpuAddress.nametableX = this->ppuMemory.GetRegisters().name.baseNametableX;
+            //this->ppuMemory.GetRegisters().bgr.tramPpuAddress.nametableY = this->ppuMemory.GetRegisters().name.baseNametableY;
+            return;
+            break;
+        }
         case PpuRegisters::PPUDATA_ADDR:
         {
             //write value to VRAM address
-            dword vramAddress = this->ppuMemory.GetRegisters().bgr.curPpuAddress.val;
+            dword vramAddress = this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val;
             this->PpuWrite(vramAddress, value);
             this->IncrementPpuAddress();
             return;
             break;
         }
     }
+
     if(this->ppuMemory.GetRegisters().Contains(address))
     {
         this->ppuMemory.GetRegisters().Write(address, value);
@@ -158,18 +169,6 @@ void Dma::PpuWrite(dword address, byte value)
     }
 }
 
-std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
-{
-    if(this->cartridge == NULL)
-    {
-        std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
-    }
-    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
-    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
-    std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
-    return patternTables;
-}
-
 CpuMemoryMap& Dma::GetCpuMemory()
 {
     return this->cpuMemory;
@@ -194,6 +193,28 @@ bool Dma::SetCartridge(std::unique_ptr<ICartridge> cartridge)
     return true;
 }
 
+PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNum)
+{
+    if(this->cartridge == NULL)
+    {
+        throw std::out_of_range("can't get chr rom data because cartridge is NULL");
+    }
+    if(tableNum < 0 || tableNum >= PatternTables::NUM_OF_TABLES)
+    {
+        throw std::out_of_range("table num is not in the boundary");
+    }
+    if(patternNum < 0 || patternNum >= PatternTables::TABLE_HEIGHT * PatternTables::TABLE_WIDTH)
+    {
+        throw std::out_of_range("patternNum is not in the boundary");
+    }
+    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
+    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
+    byte * chrRawData = chrDataVec->data();
+    //do a dynmatic type conversion of the binary
+    PatternTables::BitPatternTables& patternTables = (PatternTables::BitPatternTables&) *chrRawData;
+    return patternTables.tables[tableNum].raw[patternNum];
+}
+
 std::unique_ptr<ICartridge>& Dma::GetCartridge()
 {
     return this->cartridge;
@@ -208,4 +229,16 @@ bool Dma::GetNmi()
 void Dma::SetNmi(bool isActive)
 {
     this->nmiActive = isActive;
+}
+
+std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
+{
+    if(this->cartridge == NULL)
+    {
+        std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
+    }
+    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
+    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
+    std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
+    return patternTables;
 }

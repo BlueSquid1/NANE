@@ -26,17 +26,10 @@ TEST_CASE("registers cleared by default") {
     PpuRegisters registers;
 
     //test the internal registers
-    REQUIRE(registers.bgr.curPpuAddress.val == 0);
+    REQUIRE(registers.bgr.vramPpuAddress.val == 0);
     REQUIRE(registers.bgr.ppuAddressLatch == 0);
     REQUIRE(registers.bgr.ppuDataReadBuffer == 0);
-    REQUIRE(registers.bgr.ntByte == 0);
-    REQUIRE(registers.bgr.atByte == 0);
-    REQUIRE(registers.bgr.tileLo == 0);
-    REQUIRE(registers.bgr.tileHi == 0);
-    REQUIRE(registers.bgr.shift.paletteAttribute1 == 0);
-    REQUIRE(registers.bgr.shift.paletteAttribute2 == 0);
-    REQUIRE(registers.bgr.shift.patternPlane1.val == 0);
-    REQUIRE(registers.bgr.shift.patternPlane2.val == 0);
+    
 
     REQUIRE(registers.rawLen > 0);
     for(int i = 0; i < registers.rawLen; ++i)
@@ -74,12 +67,12 @@ TEST_CASE("PPU latching registers") {
     registers.Write(ppuAddr, 0x21);
 
     REQUIRE(registers.bgr.ppuAddressLatch == true);
-    REQUIRE(registers.bgr.curPpuAddress.upper == 0x21);
+    REQUIRE(registers.bgr.vramPpuAddress.upper == 0x21);
 
     registers.Write(ppuAddr, 0x08);
 
     REQUIRE(registers.bgr.ppuAddressLatch == false);
-    REQUIRE(registers.bgr.curPpuAddress.val == 0x2108);
+    REQUIRE(registers.bgr.vramPpuAddress.val == 0x2108);
 }
 
 /**

@@ -1,13 +1,14 @@
 #ifndef GAME_ENGINE
 #define GAME_ENGINE
 
-#include <iostream> //std::string
-#include <memory> //std::unique_ptr
-#include <SDL.h> //graphics library
-
 #include "Network/Logger.h"
 #include "Graphics/WindowsManager.h"
 #include "NES/Nes.h"
+#include "Utils/FpsTimer.h"
+
+#include <iostream> //std::string
+#include <memory> //std::unique_ptr
+#include <SDL.h> //graphics library
 
 /**
  * Responsible for controlling the logic flow from initialization to the game loop to closing the game.
@@ -18,6 +19,7 @@ class GameEngine
     //graphics module
     WindowManager windowsMgr;
     Nes nesEmulator;
+    FpsTimer fpsTimer;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
