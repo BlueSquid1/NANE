@@ -21,9 +21,10 @@ class Ppu
     const int LAST_SCANLINE = 260;
 
     const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
-    const int LAST_NEXT_SCANLINE_FETCHING = 337; //cycles
+    const int LAST_NEXT_SCANLINE_FETCHING = 336; //cycles
     const int START_VISIBLE_CYCLE = 1; //cycles
     const int LAST_VISIBLE_CYCLE = 256; //cycles
+    const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8;
     const int PRE_SCANLINE = -1;
     const int START_VISIBLE_SCANLINE = 0; //scanlines
     const int LAST_VISIBLE_SCANLINE = 239; //scanlines
@@ -40,15 +41,10 @@ class Ppu
 
     Point NextPixel();
 
-    /**
-     * returns NULL when no next tile (e.g. fetching beyound visible section)
-     */
-    Point CalcNextFetchTile();
-
     rawColour calc_background_pixel();
     rawColour calc_sprite_pixel();
 
-    void background_fetch();
+    void backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile);
     void sprite_fetch();
 
     PpuRegisters& GetRegs();
@@ -59,6 +55,8 @@ class Ppu
 
     bool PowerCycle();
     int Step();
+
+    std::unique_ptr<Ppu::Point> CalcNextFetchTile();
 
     /**
      * just for dissassembly purposes

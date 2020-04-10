@@ -1,5 +1,10 @@
 #include "BitUtil.h"
 
+const byte BitUtil::bitReverseLookup[16] = {
+        0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+        0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf
+    };
+
 std::unique_ptr<std::vector<byte>> BitUtil::ArrayToVec(byte * array, unsigned int arrayLen)
 {
     if(array == NULL)
@@ -105,4 +110,9 @@ dword BitUtil::GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap, bo
         upperByte = memory->Seek(endAddress);
     }
     return (upperByte << 8) | lowerByte;
+}
+
+byte BitUtil::FlipByte(byte value)
+{
+    return (bitReverseLookup[value & 0b1111] << 4) | bitReverseLookup[value >> 4];
 }

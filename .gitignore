@@ -47,3 +47,6 @@ cache.ini
 
 #VS Code counter plugin
 .VSCodeCounter
+
+#nes games
+*.nes

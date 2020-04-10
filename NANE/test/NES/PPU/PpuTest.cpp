@@ -29,5 +29,19 @@ TEST_CASE("test powerup state")
     }
 
     REQUIRE(ppu.PowerCycle() == true);
-    
+    REQUIRE(dma.GetPpuMemory().GetScanCycleNum() == 0);
+    REQUIRE(dma.GetPpuMemory().GetScanLineNum() == -1);
 }
+
+// /**
+//  * see next tile function
+//  */
+// TEST_CASE("test ppu next tile function")
+// {
+//     Dma dma;
+//     Ppu ppu(dma);
+//     ppu.PowerCycle();
+//     dma.GetPpuMemory().SetScanLineNum(0);
+//     dma.GetPpuMemory().SetScanCycleNum(0);
+//     ppu.CalcNextFetchTile();
+// }

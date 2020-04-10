@@ -28,32 +28,39 @@ Ppu::Point Ppu::NextPixel()
     return nextPoint;
 }
 
-Ppu::Point Ppu::CalcNextFetchTile()
+std::unique_ptr<Ppu::Point> Ppu::CalcNextFetchTile()
 {
-    Ppu::Point nextTile;
-    int curScanLine = this->dma.GetPpuMemory().GetScanLineNum();
+    int curLine = this->dma.GetPpuMemory().GetScanLineNum();
     int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
 
-    nextTile.x = (curCycle - START_VISIBLE_CYCLE) >> 3;
-    if(curScanLine < 0)
+
+    if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
     {
-        //handle negative values
-        nextTile.y = -1;
+        //fetch from next scanline
+        std::unique_ptr<Ppu::Point> nextTile = std::unique_ptr<Ppu::Point>( new Ppu::Point() );
+        if(curLine <= -1)
+        {
+            nextTile->y = 0;
+        }
+        else
+        {
+            //convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
+            nextTile->y = curLine >> 3;
+        }
+        nextTile->x = (curCycle - START_NEXT_SCANLINE_FETCHING) >> 3;
+        return nextTile;
     }
-    else
+    else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE - 8) )
     {
-        nextTile.y  = (curScanLine) >> 3;
+        //fetch from current scanline
+        std::unique_ptr<Ppu::Point> nextTile = std::unique_ptr<Ppu::Point>( new Ppu::Point() );
+        nextTile->y = curLine >> 3;
+        nextTile->x = (curCycle >> 3) + 2;
+        return nextTile;
     }
 
-    nextTile.x += 2;
-
-    if(curCycle >= START_NEXT_SCANLINE_FETCHING)
-    {
-        ++nextTile.y;
-        nextTile.x -= (LAST_CYCLE >> 3);
-    }
-
-    return nextTile;
+    //fetching not needed at current scanline/cycle
+    return NULL;
 }
 
 rawColour Ppu::calc_sprite_pixel()
@@ -73,9 +80,19 @@ bool Ppu::PowerCycle()
     this->GetRegs().name.PPUDATA = 0;
     
     //internal registers
-    this->GetRegs().bgr.ppuAddressLatch = false;
     this->GetRegs().bgr.vramPpuAddress.val = 0;
+    this->GetRegs().bgr.ppuAddressLatch = false;
+    this->GetRegs().bgr.scrollX.val = 0;
+    this->GetRegs().bgr.scrollY.val = 0;    
+    this->GetRegs().bgr.ppuScrollLatch = false;
     this->GetRegs().bgr.ppuDataReadBuffer = 0;
+    this->GetRegs().bgr.lsbPatternPlane.val = 0;
+    this->GetRegs().bgr.msbPatternPlane.val = 0;
+    this->GetRegs().bgr.nextNametableIndex = 0;
+    this->GetRegs().bgr.nextAttributeIndex = 0;
+    this->GetRegs().bgr.lsbNextTile = 0;
+    this->GetRegs().bgr.msbNextTile = 0;
+
     this->dma.GetPpuMemory().SetScanLineNum(-1);
     this->dma.GetPpuMemory().SetScanCycleNum(0);
     this->frameCountNum = 0;
@@ -106,15 +123,11 @@ int Ppu::Step()
         }
     }
 
-    
-    //cycles to fetch background
-    //1. when fetching for the next scanline
-    //2. for current scanline fetching
-    if( ( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
-        ||( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE - 8) ) )
-    {   
-        this->background_fetch();
-        //this->sprite_fetch(); TODO
+    //attempt to fetch next tile
+    std::unique_ptr<Ppu::Point> fetchTile = this->CalcNextFetchTile();
+    if(fetchTile != NULL)
+    {
+        this->backgroundFetch(fetchTile);
     }
 
     // visible scanlines
@@ -128,16 +141,12 @@ int Ppu::Step()
         {
             int pixelX = curCycle - START_VISIBLE_CYCLE;
             int pixelY = curLine - START_VISIBLE_SCANLINE;
-            if(pixelColour.raw != 255)
-            {
-                int i = 0;
-            }
             this->framebuffer.Set(pixelY, pixelX, pixelColour);
         }
     }
 
     //move to next pixel
-    Ppu::Point nextPoint = this->NextPixel();
+    const Ppu::Point& nextPoint = this->NextPixel();
     this->dma.GetPpuMemory().SetScanLineNum(nextPoint.y);
     this->dma.GetPpuMemory().SetScanCycleNum(nextPoint.x);
 
@@ -145,49 +154,54 @@ int Ppu::Step()
 }
 
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
-void Ppu::background_fetch()
+void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
 {
     //called between 1-257 and 321-337
     int curLine = this->dma.GetPpuMemory().GetScanLineNum();
     int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
+    curCycle -= PRE_SCANLINE;
     switch(curCycle % 8)
     {
-        case 1: //reload shift registers and get pattern index
+        case 0: //reload shift registers and get pattern index
         {
             //reload shift registers on 1(?), 9, 17, 25 ... 257
             this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
             this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
+            if(this->GetRegs().bgr.lsbPatternPlane.lower != 0) {
+            std::cout << this->GetRegs().bgr.lsbPatternPlane.lower << std::endl;
+            }
 
-            Ppu::Point nameTableIndex = this->CalcNextFetchTile();
-            //TODO scrolling
-            this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(nameTableIndex.y, nameTableIndex.x);
+            //get next pattern
+            this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile->y, fetchTile->x);
             break;
         }
-        case 3: //get pallette index
+        case 2: //get next pallette
         {
-            Ppu::Point nameTableIndex = this->CalcNextFetchTile();
-            //TODO scrolling
-            this->GetRegs().bgr.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(nameTableIndex.y, nameTableIndex.x);
+            this->GetRegs().bgr.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile->y, fetchTile->x);
             break;
         }
 
-        case 5:
+        case 4:
         {
+            //get lower pattern byte
             int tableNum = 0;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
             byte fineY = curLine % PatternTables::TILE_HEIGHT;
-            this->GetRegs().bgr.lsbNextTile = bitTile.LsbPlane[fineY];
+            byte revBitPlane = bitTile.LsbPlane[fineY];
+            this->GetRegs().bgr.lsbNextTile = BitUtil::FlipByte(revBitPlane);
             break;
         }
 
-        case 7:
+        case 6:
         {
+            //get upper pattern byte
             int tableNum = 0;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
             byte fineY = curLine % PatternTables::TILE_HEIGHT;
-            this->GetRegs().bgr.msbNextTile = bitTile.MsbPlane[fineY];
+            byte revBitPlane = bitTile.MsbPlane[fineY];
+            this->GetRegs().bgr.msbNextTile = BitUtil::FlipByte(revBitPlane);
             break;
         }
     }
@@ -207,8 +221,8 @@ rawColour Ppu::calc_background_pixel()
     byte attributeIndex = 0;
 
     //shift background specific registers
-    this->GetRegs().bgr.lsbPatternPlane.val <<= 1;
-    this->GetRegs().bgr.msbPatternPlane.val <<= 1;
+    this->GetRegs().bgr.lsbPatternPlane.val >>= 1;
+    this->GetRegs().bgr.msbPatternPlane.val >>= 1;
     // this->GetRegs().bgr.shift.paletteAttribute1 <<= 1;
     // this->GetRegs().bgr.shift.paletteAttribute2 <<= 1;
 

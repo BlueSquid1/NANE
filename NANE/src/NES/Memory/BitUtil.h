@@ -10,6 +10,8 @@
 
 class BitUtil
 {
+    private:
+    static const byte bitReverseLookup[16];
     public:
     /**
      * converts an array to a vector.
@@ -51,6 +53,8 @@ class BitUtil
      * @param startAddress the first byte that makes up the dword 
      */
     static dword GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap = false, bool readInsteadOfSeek = false);
+
+    static byte FlipByte(byte value);
 };
 
 #endif

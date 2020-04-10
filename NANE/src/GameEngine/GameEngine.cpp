@@ -30,6 +30,7 @@ bool GameEngine::Init(const std::string & serverIp)
 bool GameEngine::LoadMedia()
 {
 	std::string romPath = "./NANE/test/resources/nestest.nes";
+	//std::string romPath = "./NANE/test/resources/DonkeyKong.nes";
 	if(this->nesEmulator.LoadCartridge(romPath) == false)
 	{
 		return false;

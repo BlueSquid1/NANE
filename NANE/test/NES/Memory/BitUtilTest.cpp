@@ -132,3 +132,12 @@ TEST_CASE("GetDWord") {
     REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x0 ) == 0x7836);
     REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x1 ) == 0x0178);
 }
+
+/**
+ * tests dword_p bit shifting
+ */
+TEST_CASE("dword_p bit shifting") {
+    dword_p temp;
+    temp.upper = 0x1;
+    temp.val <<= 1;
+}
