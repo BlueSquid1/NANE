@@ -3,7 +3,7 @@
 
 void TextureWindow::Display(const Matrix<rawColour>& pixelData)
 {
-	SDL_UpdateTexture(this->windowTexture, nullptr, pixelData.dump().data(), pixelData.GetWidth() * 4);
+	SDL_UpdateTexture(this->windowTexture, nullptr, pixelData.dump().data(), pixelData.GetWidth() * sizeof(rawColour));
 	SDL_Rect source_dimensions;
 	source_dimensions.x = 0;
 	source_dimensions.y = 0;

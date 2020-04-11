@@ -119,6 +119,8 @@ class PpuRegisters : public MemoryRepeaterArray
         //registers used for background fetching/rendering
         dword_p lsbPatternPlane;
         dword_p msbPatternPlane;
+        dword_p lsbPalletePlane;
+        dword_p msbPalletePlane;
 
         patternIndex nextNametableIndex;
         paletteIndex nextAttributeIndex;

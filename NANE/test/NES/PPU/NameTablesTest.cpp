@@ -69,7 +69,8 @@ TEST_CASE("NameTables horizontal mirroring") {
 /**
  * test to make sure NameTables mirroring works as expected
  */
-TEST_CASE("NameTables memory repeating test") {
+TEST_CASE("NameTables memory repeating test") 
+{
     NameTables verticalNameTables;
     verticalNameTables.SetMirrorType(INes::vertical);
     
@@ -78,4 +79,10 @@ TEST_CASE("NameTables memory repeating test") {
 
     verticalNameTables.Write(0x3FFF, 73);
     REQUIRE(verticalNameTables.Read(0x2FFF) == 73);
+}
+
+TEST_CASE("Test getting palette colours")
+{
+    //NameTables verticalNameTables;
+    //verticalNameTables.GetPaletteIndex();
 }

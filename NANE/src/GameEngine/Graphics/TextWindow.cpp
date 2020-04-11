@@ -8,8 +8,11 @@ void TextWindow::Display(const std::string& screenText, TTF_Font * gFont, SDL_Co
 	this->FreeTexture();
 
 	//colour in the background
-	SDL_SetRenderDrawColor( gRenderer, backgroundColour.r, backgroundColour.g, backgroundColour.b, 0xFF );
-	SDL_RenderFillRect(this->gRenderer, &this->windowDimensions);
+	if(backgroundColour.a != 0x00)
+	{
+		SDL_SetRenderDrawColor( gRenderer, backgroundColour.r, backgroundColour.g, backgroundColour.b, backgroundColour.a );
+		SDL_RenderFillRect(this->gRenderer, &this->windowDimensions);
+	}
 
 	//make foreground
 	SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped( gFont, screenText.c_str(), forgroundColour, 1000);

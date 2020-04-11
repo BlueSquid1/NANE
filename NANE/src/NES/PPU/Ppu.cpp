@@ -88,6 +88,8 @@ bool Ppu::PowerCycle()
     this->GetRegs().bgr.ppuDataReadBuffer = 0;
     this->GetRegs().bgr.lsbPatternPlane.val = 0;
     this->GetRegs().bgr.msbPatternPlane.val = 0;
+    this->GetRegs().bgr.lsbPalletePlane.val = 0;
+    this->GetRegs().bgr.msbPalletePlane.val = 0;
     this->GetRegs().bgr.nextNametableIndex = 0;
     this->GetRegs().bgr.nextAttributeIndex = 0;
     this->GetRegs().bgr.lsbNextTile = 0;
@@ -167,9 +169,8 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
             //reload shift registers on 1(?), 9, 17, 25 ... 257
             this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
             this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
-            if(this->GetRegs().bgr.lsbPatternPlane.lower != 0) {
-            std::cout << this->GetRegs().bgr.lsbPatternPlane.lower << std::endl;
-            }
+            this->GetRegs().bgr.lsbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 0) ? 0xFF : 0x00;
+            this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
 
             //get next pattern
             this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile->y, fetchTile->x);
@@ -211,20 +212,20 @@ rawColour Ppu::calc_background_pixel()
 {
     //get pattern value
     byte fineX = this->GetRegs().bgr.scrollX.fineX;
-    bit lsbBit = BitUtil::GetBits(this->GetRegs().bgr.lsbPatternPlane.lower, fineX);
-    bit msbBit = BitUtil::GetBits(this->GetRegs().bgr.msbPatternPlane.lower, fineX);
-    byte patternValue = (msbBit << 1) | lsbBit;
+    bit lsbPattern = BitUtil::GetBits(this->GetRegs().bgr.lsbPatternPlane.lower, fineX);
+    bit msPattern = BitUtil::GetBits(this->GetRegs().bgr.msbPatternPlane.lower, fineX);
+    byte patternValue = (msPattern << 1) | lsbPattern;
 
     //get palette index
-    // bit palBit0 = BitUtil::GetBits(this->GetRegs().bgr.shift.paletteAttribute1, 0);
-    // bit palBit1 = BitUtil::GetBits(this->GetRegs().bgr.shift.paletteAttribute2, 0);
-    byte attributeIndex = 0;
+    bit lsbPallete = BitUtil::GetBits(this->GetRegs().bgr.lsbPalletePlane.lower, fineX);
+    bit msbPallete = BitUtil::GetBits(this->GetRegs().bgr.msbPalletePlane.lower, fineX);
+    byte attributeIndex = (msbPallete << 1) | lsbPallete;
 
     //shift background specific registers
     this->GetRegs().bgr.lsbPatternPlane.val >>= 1;
     this->GetRegs().bgr.msbPatternPlane.val >>= 1;
-    // this->GetRegs().bgr.shift.paletteAttribute1 <<= 1;
-    // this->GetRegs().bgr.shift.paletteAttribute2 <<= 1;
+    this->GetRegs().bgr.lsbPalletePlane.val >>= 1;
+    this->GetRegs().bgr.msbPalletePlane.val >>= 1;
 
     //this->dma.GetPpuMemory().GetPalettes()->name.backgroundPalettes
     rawColour nesColourIndex = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);

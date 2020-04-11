@@ -11,9 +11,9 @@ union rawColour
     struct
     {
         byte alpha;
-        byte red;
-        byte green;
         byte blue;
+        byte green;
+        byte red;
     }channels;
 };
 

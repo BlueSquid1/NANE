@@ -23,7 +23,7 @@ bool IWindow::Init(SDL_Renderer * gRenderer, int width, int height, int xPos, in
     windowDimensions.x = xPos;
     windowDimensions.y = yPos;
 
-	this->windowTexture = SDL_CreateTexture(this->gRenderer, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+	this->windowTexture = SDL_CreateTexture(this->gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
     if(!this->windowTexture)
 	{
 		return false;
