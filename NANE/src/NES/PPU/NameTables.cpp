@@ -14,6 +14,7 @@ dword NameTables::Redirect(dword address) const
 {
     dword redirrectedAddress = address;
     dword offset = this->LowerOffset(address);
+
     switch(this->mirroringType)
     {
         case INes::vertical:
@@ -95,6 +96,7 @@ void NameTables::Write(dword address, byte value)
     {
         std::cerr << "warning, mirroring type for PPU Name tables hasn't been set. Expect corrupt graphics." << std::endl;
     }
+
     dword redirrectAddress = this->Redirect(address);
     return MemoryRepeaterArray::Write(redirrectAddress, value);
 }
@@ -120,13 +122,28 @@ patternIndex NameTables::GetPatternIndex(dword globalY, dword globalX)
 paletteIndex NameTables::GetPaletteIndex(dword globalY, dword globalX)
 {
     NameTables::LocalTablePos pos = this->LocalFromGlobalPos(globalY, globalX);
-    byte paletteY = pos.localY << 2;
-    byte paletteX = pos.localX << 2;
-    dword offset = pos.tableIndex * 1024 + (30 * 32) + paletteY * 8 + paletteX;
+    byte paletteY = pos.localY >> 2;
+    byte paletteX = pos.localX >> 2;
+    dword offset = (30 * 32) + pos.tableIndex * 1024 + paletteY * 8 + paletteX;
     byte area = this->Seek(this->startAddress + offset);
 
-    paletteIndex paletteBit = (4 * (pos.localY % 2)) + (2 * (pos.localX % 2));
-    paletteIndex palette = BitUtil::GetBits(area, paletteBit, paletteBit + 2);
+    paletteIndex paletteBit = 0;
+
+    byte fineY = pos.localY % 4;
+    byte fineX = pos.localX % 4;
+    if( fineY >= 2 )
+    {
+        //bottom left or right
+        paletteBit += 4;
+    }
+
+    if(fineX >= 2)
+    {
+        //top right or bottom right
+        paletteBit += 2;
+    }
+    
+    paletteIndex palette = BitUtil::GetBits(area, paletteBit, paletteBit + 1);
     return palette;
 }
 

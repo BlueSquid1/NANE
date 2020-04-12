@@ -67,8 +67,10 @@ TEST_CASE("Run NesTest") {
         REQUIRE(nesTestLine.substr(0, 73) == coutLine.substr(0, 73));
 
         //clock cycles part
-        REQUIRE(nesTestLine.substr(85) == coutLine.substr(85));
-        //CHECK(nesTestLine.substr(82) == coutLine.substr(82));
+        std::stringstream ssCycles;
+        ssCycles << std::setw(9) << std::left << std::setfill(' ') << nesTestLine.substr(86,9);
+        std::string cpuCycles = ssCycles.str();
+        REQUIRE(cpuCycles == coutLine.substr(86,9));
     }
 
     //reset to standard output again

@@ -8,7 +8,6 @@
 
 #include <iostream> //std::string
 #include <memory> //std::unique_ptr
-#include <SDL.h> //graphics library
 
 /**
  * Responsible for controlling the logic flow from initialization to the game loop to closing the game.
@@ -26,7 +25,7 @@ class GameEngine
 
     bool step = false;
     bool run = false;
-    bool verbose = true;
+    bool verbose = false;
 
     public:
     /**

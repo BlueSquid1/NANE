@@ -9,6 +9,7 @@
  */
 TEST_CASE("make sure NameTableStruct is Plain-Old Data otherwise") {
     REQUIRE(std::is_pod<NameTableStruct>::value == true);
+    REQUIRE( sizeof(QuadAreaPalette) == 1 ); //really need this to be 1 byte in length
 }
 
 /**
@@ -83,6 +84,29 @@ TEST_CASE("NameTables memory repeating test")
 
 TEST_CASE("Test getting palette colours")
 {
-    //NameTables verticalNameTables;
-    //verticalNameTables.GetPaletteIndex();
+    QuadAreaPalette paletteBuf;
+
+    //0x23C0
+    NameTables nameTables;
+    nameTables.SetMirrorType(INes::vertical);
+    paletteBuf.topleftArea = 0;
+    paletteBuf.topRightArea = 1;
+    paletteBuf.bottomleftArea = 2;
+    paletteBuf.bottomrightArea = 3;
+
+    REQUIRE(paletteBuf.value == 0xE4);
+    nameTables.Write(0x23C0, paletteBuf.value);
+    REQUIRE( nameTables.Read(0x23C0) == paletteBuf.value );
+
+    REQUIRE( nameTables.GetPaletteIndex(0,0) == 0 );
+    REQUIRE( nameTables.GetPaletteIndex(1,1) == 0 );
+
+    REQUIRE( nameTables.GetPaletteIndex(0,2) == 1 );
+    REQUIRE( nameTables.GetPaletteIndex(1,3) == 1 );
+
+    REQUIRE( nameTables.GetPaletteIndex(2,0) == 2 );
+    REQUIRE( nameTables.GetPaletteIndex(3,1) == 2 );
+
+    REQUIRE( nameTables.GetPaletteIndex(2,2) == 3 );
+    REQUIRE( nameTables.GetPaletteIndex(3,3) == 3 );
 }

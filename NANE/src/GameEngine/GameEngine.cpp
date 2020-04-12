@@ -1,5 +1,8 @@
 #include "GameEngine.h"
 
+
+#include <SDL.h> //SDL_PollEvent()
+
 GameEngine::GameEngine()
 {
 
