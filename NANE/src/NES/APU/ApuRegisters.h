@@ -47,17 +47,15 @@ class ApuRegisters: public MemoryRepeaterArray
         }DMC;
         byte OAMDMA;
         byte SND_CHN;
-        byte JOY1;
-        byte JOY2;
     };
 
     //anonymous union
     union
     {
         RegStruct name;
-        byte raw[24];
+        byte raw[22];
     };
-    static const int rawLen = 24;
+    static const int rawLen = 22;
 
     //constructor
     ApuRegisters();

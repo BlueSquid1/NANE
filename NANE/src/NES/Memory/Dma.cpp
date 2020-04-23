@@ -17,7 +17,9 @@ void Dma::IncrementPpuAddress()
 
 
 Dma::Dma()
-: IMemoryRW(0x0000, 0xFFFF)
+: IMemoryRW(0x0000, 0xFFFF),
+controllerPlayer1(0x4016),
+controllerPlayer2(0x4017)
 {
 }
 
@@ -43,8 +45,15 @@ byte Dma::Read(dword address)
             break;
         }
     }
-
-    if(this->ppuMemory.GetRegisters().Contains(address))
+    if(this->controllerPlayer1.Contains(address))
+    {
+        return this->controllerPlayer1.Read(address);
+    }
+    else if(this->controllerPlayer2.Contains(address))
+    {
+        return this->controllerPlayer2.Read(address);
+    }
+    else if(this->ppuMemory.GetRegisters().Contains(address))
     {
         return this->ppuMemory.GetRegisters().Read(address);
     }
@@ -90,7 +99,15 @@ void Dma::Write(dword address, byte value)
         }
     }
 
-    if(this->ppuMemory.GetRegisters().Contains(address))
+    if(this->controllerPlayer1.Contains(address))
+    {
+        this->controllerPlayer1.Write(address, value);
+    }
+    else if(this->controllerPlayer2.Contains(address))
+    {
+        this->controllerPlayer2.Write(address, value);
+    }
+    else if(this->ppuMemory.GetRegisters().Contains(address))
     {
         this->ppuMemory.GetRegisters().Write(address, value);
     }
@@ -114,7 +131,15 @@ void Dma::Write(dword address, byte value)
 
 byte Dma::Seek(dword address) const
 {
-    if(this->ppuMemory.GetRegisters().Contains(address))
+    if(this->controllerPlayer1.Contains(address))
+    {
+        return this->controllerPlayer1.Seek(address);
+    }
+    else if(this->controllerPlayer2.Contains(address))
+    {
+        return this->controllerPlayer2.Seek(address);
+    }
+    else if(this->ppuMemory.GetRegisters().Contains(address))
     {
         return this->ppuMemory.GetRegisters().Seek(address);
     }
@@ -218,6 +243,16 @@ PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNu
 std::unique_ptr<ICartridge>& Dma::GetCartridge()
 {
     return this->cartridge;
+}
+
+NesController& Dma::GetControllerPlayer1()
+{
+    return this->controllerPlayer1;
+}
+
+NesController& Dma::GetControllerPlayer2()
+{
+    return this->controllerPlayer2;
 }
 
 

@@ -67,6 +67,24 @@ long long int& Nes::GetFrameCount()
     return this->ppu.GetTotalFrameCount();
 }
 
+bool Nes::PressButton(NesController::NesInputs input, int controller = 0)
+{
+    if(controller == 0)
+    {
+        this->dma.GetControllerPlayer1().PressKey(input);
+    }
+    else if(controller == 1)
+    {
+        this->dma.GetControllerPlayer2().PressKey(input);
+    }
+    else
+    {
+        std::cerr << "invalid controller: " << controller << std::endl;
+        return false;
+    }
+    return true;
+}
+
 const std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
     return this->ppu.GeneratePatternTables();

@@ -5,6 +5,7 @@
 #include "Graphics/WindowsManager.h"
 #include "NES/Nes.h"
 #include "Utils/FpsTimer.h"
+#include "Input/KeyMapper.h"
 
 #include <iostream> //std::string
 #include <memory> //std::unique_ptr
@@ -19,6 +20,7 @@ class GameEngine
     WindowManager windowsMgr;
     Nes nesEmulator;
     FpsTimer fpsTimer;
+    KeyMapper keyMapper;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
