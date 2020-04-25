@@ -3,5 +3,9 @@
 
 NesController::NesInputs KeyMapper::ToNesInput(SDL_Keycode& inputKey)
 {
-    this->inputMap.
+    if(this->inputMap.find(inputKey) == this->inputMap.end())
+    {
+        return NesController::NesInputs::UNDEFINED;
+    }
+    return this->inputMap.at(inputKey);
 }

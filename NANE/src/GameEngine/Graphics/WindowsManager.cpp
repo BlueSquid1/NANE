@@ -23,6 +23,8 @@ bool WindowManager::Init()
 	int cpuDisplayHeight = 200 * this->windowScale;
 	int colourDisplayWidth = 42 * this->windowScale;
 	int colourDisplayHeight = 16 * this->windowScale;
+	int playerOneInputsWidth = 50 * this->windowScale;
+	int playerOneInputsHeight = 8 * this->windowScale;
 
 	int totalWidth = this->BORDER_WIDTH + mainWindowWidth + this->BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
 	int totalHeight = this->BORDER_WIDTH + chrRomHeight + this->BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
@@ -74,6 +76,13 @@ bool WindowManager::Init()
 		return false;
 	}
 
+	bool playerOneResult = this->playerOneInputs.Init(this->gRenderer, playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + 2 * BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
+	if(playerOneResult == false)
+	{
+		std::cerr << "can't create player one input window. SDL error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+
 	bool fpsResult = this->fpsDisplay.Init(this->gRenderer, 100, 100, BORDER_WIDTH, BORDER_WIDTH);
 	if(fpsResult == false)
 	{
@@ -94,6 +103,8 @@ void WindowManager::ChangeScaleFactor(int newScaleFactor)
 	int cpuDisplayHeight = 200 * this->windowScale;
 	int colourDisplayWidth = 42 * this->windowScale;
 	int colourDisplayHeight = 16 * this->windowScale;
+	int playerOneInputsWidth = 50 * this->windowScale;
+	int playerOneInputsHeight = 8 * this->windowScale;
 
 	int totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
 	int totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
@@ -103,6 +114,7 @@ void WindowManager::ChangeScaleFactor(int newScaleFactor)
 	this->chrRomWindow.ChangeDimensions(chrRomWidth, chrRomHeight, mainWindowWidth + BORDER_WIDTH, BORDER_WIDTH);
 	this->cpuWindow.ChangeDimensions(cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + BORDER_WIDTH, chrRomHeight + 2 * BORDER_WIDTH);
 	this->colourDisplayWindow.ChangeDimensions(colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + BORDER_WIDTH);
+	this->playerOneInputs.ChangeDimensions(playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + 2 * BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
 
 	//update window size
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
@@ -121,15 +133,7 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, bool showDisassem
 	if(showDisassembly == true)
 	{
 		std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
-		//TODO
-		// for(int y = 0; y < chrRomDisplay->GetHeight(); ++y)
-		// {
-		// 	for(int x = 0; x < chrRomDisplay->GetWidth(); ++x)
-		// 	{
-		// 		std::cout << chrRomDisplay->Get(y, x).raw << " ";
-		// 	}
-		// 	std::cout << std::endl;
-		// }
+
 		this->chrRomWindow.Display(*chrRomDisplay);
 
 		std::string cpuText = nesEmulator.GenerateCpuScreen();
@@ -147,6 +151,9 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, bool showDisassem
 
 		std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
 		this->colourDisplayWindow.Display(*colourPalettesDisplay);
+
+		std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
+		this->playerOneInputs.Display(*playerOneDisplay);
 
 		//fps
 		fpsStringStream.str("");

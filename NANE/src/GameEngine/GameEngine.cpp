@@ -60,31 +60,42 @@ bool GameEngine::UserInput()
 		{
             this->shouldExit = true;
         }
-        if (e.type == SDL_KEYDOWN)
+        else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
 		{
-			//special keys
-			switch( e.key.keysym.sym )
+			if(e.type == SDL_KEYDOWN)
 			{
-				case SDLK_n:
+				//key down
+
+				//special cases
+				switch( e.key.keysym.sym )
 				{
-					this->step = true;
-					break;
+					case SDLK_n:
+					{
+						this->step = true;
+						break;
+					}
+					case SDLK_p:
+					{
+						this->run = !this->run;
+						break;
+					}
+					case SDLK_c:
+					{
+						this->nesEmulator.IncrementDefaultColourPalette();
+						break;
+					}
+					default:
+					{
+						NesController::NesInputs nesInput = keyMapper.ToNesInput(e.key.keysym.sym);
+						this->nesEmulator.PressButton(nesInput, true);
+					}
 				}
-				case SDLK_p:
-				{
-					this->run = !this->run;
-					break;
-				}
-				case SDLK_c:
-				{
-					this->nesEmulator.IncrementDefaultColourPalette();
-					break;
-				}
-				default:
-				{
-					NesController::NesInputs nesInput = keyMapper.ToNesInput(e.key.keysym.sym);
-					this->nesEmulator.PressButton(nesInput);
-				}
+			}
+			else
+			{
+				//key up
+				NesController::NesInputs nesInput = keyMapper.ToNesInput(e.key.keysym.sym);
+				this->nesEmulator.PressButton(nesInput, false);
 			}
         }
     }

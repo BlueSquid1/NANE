@@ -31,6 +31,7 @@ class WindowManager
     TextWindow cpuWindow;
     TextureWindow colourDisplayWindow;
     TextWindow fpsDisplay;
+    TextureWindow playerOneInputs;
     std::stringstream fpsStringStream;
 
     public:

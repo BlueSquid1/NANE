@@ -33,7 +33,7 @@ class Nes
     const Matrix<rawColour>& GetFrameDisplay();
     long long int& GetFrameCount();
 
-    bool PressButton(NesController::NesInputs input, int controller = 0);
+    bool PressButton(NesController::NesInputs input, bool isPressed, int controller = 0);
 
     //dissassmbly methods
     const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
@@ -41,5 +41,6 @@ class Nes
     const std::string GenerateCpuScreen();
     void IncrementDefaultColourPalette();
     const std::string GenerateFirstNameTable();
+    const std::unique_ptr<Matrix<rawColour>> GenerateControllerState(int controller = 0);
 };
 #endif

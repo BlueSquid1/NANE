@@ -104,11 +104,8 @@ TEST_CASE("DMA: Can read and write without loading a cartridge") {
     dma.Write(0x4000, 39);
     REQUIRE(dma.GetApuRegisters().name.SQ1.VOL == 39);
 
-    dma.Write(0x4017, 61);
-    REQUIRE(dma.GetApuRegisters().name.JOY2 == 61);
-
-    //value just before cartridge
-    REQUIRE(dma.Read(0x401F) == 0);
+    dma.Write(0x4015, 61);
+    REQUIRE(dma.GetApuRegisters().name.SND_CHN == 61);
 }
 
 
@@ -122,9 +119,6 @@ TEST_CASE("DMA: Can read and write with loaded cartridge - CPU") {
     CartridgeLoader cartLoader;
     std::unique_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
     dma.SetCartridge(std::move(ines));
-
-    //value just before cartridge
-    REQUIRE(dma.Read(0x401F) == 0);
 
     //start of PRG ROM
     REQUIRE(dma.Read(0x8000) == 0x4c);

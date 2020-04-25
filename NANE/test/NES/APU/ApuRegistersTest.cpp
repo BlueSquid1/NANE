@@ -40,7 +40,7 @@ TEST_CASE("registers write to and read from raw") {
     REQUIRE( registers.raw[14] == 203 );
     REQUIRE( registers.raw[15] == 0 );
     //write - end
-    registers.name.JOY2 = 138;
-    REQUIRE( registers.raw[22] == 0 );
-    REQUIRE( registers.raw[23] == 138 );
+    registers.name.SND_CHN = 138;
+    REQUIRE( registers.raw[20] == 0 );
+    REQUIRE( registers.raw[21] == 138 );
 }

@@ -228,10 +228,6 @@ PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNu
     {
         throw std::out_of_range("table num is not in the boundary");
     }
-    if(patternNum < 0 || patternNum >= PatternTables::TABLE_HEIGHT * PatternTables::TABLE_WIDTH)
-    {
-        throw std::out_of_range("patternNum is not in the boundary");
-    }
     std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
     std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
     byte * chrRawData = chrDataVec->data();

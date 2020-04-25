@@ -67,15 +67,15 @@ long long int& Nes::GetFrameCount()
     return this->ppu.GetTotalFrameCount();
 }
 
-bool Nes::PressButton(NesController::NesInputs input, int controller = 0)
+bool Nes::PressButton(NesController::NesInputs input, bool isPressed, int controller)
 {
     if(controller == 0)
     {
-        this->dma.GetControllerPlayer1().PressKey(input);
+        this->dma.GetControllerPlayer1().SetKey(input, isPressed);
     }
     else if(controller == 1)
     {
-        this->dma.GetControllerPlayer2().PressKey(input);
+        this->dma.GetControllerPlayer2().SetKey(input, isPressed);
     }
     else
     {
@@ -124,4 +124,58 @@ const std::string Nes::GenerateFirstNameTable()
         std::cout << std::endl;
     }
     return ss.str();
+}
+
+const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int controller )
+{
+    const std::vector<bool> * keyPresses = NULL;
+    if(controller == 0)
+    {
+        keyPresses = &this->dma.GetControllerPlayer1().GetKeyPressed();
+    }
+    else if(controller == 1)
+    {
+        keyPresses = &this->dma.GetControllerPlayer2().GetKeyPressed();
+    }
+    if(keyPresses == NULL)
+    {
+        std::cerr << "invalid controller: " << controller << std::endl;
+        return NULL;
+    }
+    /*
+    make pixel array like this:
+    -----------------
+    |*|*|*|*|*|*|*|*|
+    -----------------
+
+    "*" = button status
+    "|" and "-" are background borders
+    */
+
+    rawColour backgroundColour;
+    backgroundColour.raw = 0x000000FF;
+    rawColour inactiveColour;
+    inactiveColour.raw = 0x606060FF;
+    rawColour pressColour;
+    pressColour.raw = 0xFF0000FF;
+
+    int buttonSize = 4; //pixels
+    int borderWidth = 2;
+    std::unique_ptr<Matrix<rawColour>> controllerState = std::unique_ptr<Matrix<rawColour>>(new Matrix<rawColour>((8 * buttonSize) + (9 * borderWidth), buttonSize + (2 * borderWidth), backgroundColour));
+    
+    for(int i = 0; i < 8; ++i)
+    {
+        int yPos = borderWidth;
+        int xPos = i * (buttonSize + borderWidth) + borderWidth;
+        if(keyPresses->at(i) == true)
+        {
+            controllerState->SetRegion(yPos, xPos, buttonSize, buttonSize, pressColour);
+        }
+        else
+        {
+            controllerState->SetRegion(yPos, xPos, buttonSize, buttonSize, inactiveColour);
+        }
+    }
+
+    return controllerState;
 }

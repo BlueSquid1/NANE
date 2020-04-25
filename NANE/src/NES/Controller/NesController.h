@@ -23,16 +23,19 @@ class NesController : public IMemoryRW
 
     private:
     std::vector<bool> keyPressed;
-    int bufferIndex = 0;
+    int bufferIndex = 8;
     std::vector<bool> readBuffer;
 
     public:
     NesController(dword cpuAddress);
-    void PressKey(NesInputs& input);
+    void SetKey(NesInputs& input, bool isPressed);
 
     void Write(dword address, byte value) override;
     byte Read(dword address) override;
     byte Seek(dword address) const override;
+
+    //getter/setters
+    const std::vector<bool>& GetKeyPressed() const;
 };
 
 #endif
