@@ -11,6 +11,16 @@ PpuMemoryMap::PpuMemoryMap()
 
 byte PpuMemoryMap::Read(dword address)
 {
+    //handle special cases
+    switch(address)
+    {
+        case PpuRegisters::OAMDATA_ADDR:
+        {
+            return this->oamMem.Read(this->ppuRegMem.name.OAMADDR);
+            break;
+        }
+    }
+
     if(this->nametableMem.Contains(address))
     {
         return this->nametableMem.Read(address);
@@ -28,6 +38,17 @@ byte PpuMemoryMap::Read(dword address)
 
 void PpuMemoryMap::Write(dword address, byte value)
 {
+    //handle special cases
+    switch(address)
+    {
+        case PpuRegisters::OAMDATA_ADDR:
+        {
+            this->oamMem.Write(this->ppuRegMem.name.OAMADDR, value);
+            return;
+            break;
+        }
+    }
+
     if(this->nametableMem.Contains(address))
     {
         this->nametableMem.Write(address, value);

@@ -13,6 +13,12 @@
 //in other words its the memory bus
 class Dma : public IMemoryRW
 {
+    public:
+    enum DmaAddresses : unsigned
+    {
+        DMA_ADDR   = 0x4014,
+    };
+
     private:
     CpuMemoryMap cpuMemory;
     PpuMemoryMap ppuMemory;

@@ -5,6 +5,7 @@
 #include "ColourPalettes.h"
 #include "PatternTables.h"
 #include "NameTables.h"
+#include "Oam.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
 
@@ -14,6 +15,7 @@ class PpuMemoryMap : public IMemoryRW
     PpuRegisters ppuRegMem;
     NameTables nametableMem; //layout (vram)
     ColourPalettes palettesMem; //colours
+    Oam oamMem;
     
     std::vector<byte> primOam; //256 bytes
     std::vector<byte> secOam; //32 bytes (8 sprites to render on scanline)
