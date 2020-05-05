@@ -42,15 +42,16 @@ bool Nes::processes(bool verbose)
     long long int frameCount = this->GetFrameCount();
     while( this->GetFrameCount() == frameCount )
     {
-        //1 CPU step for 3 PPU steps
         int cpuCycles = this->cpu.Step(verbose);
+
+        //1 CPU step for 3 PPU steps
         for(int i = 0; i < cpuCycles * 3; ++i)
         {
             this->ppu.Step();
             if(this->dma.GetNmi() == true)
             {
-                this->dma.SetNmi(false);
                 this->cpu.HandleNmiEvent();
+                this->dma.SetNmi(false);
             }
         }
     }

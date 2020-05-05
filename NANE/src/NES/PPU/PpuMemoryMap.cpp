@@ -44,6 +44,7 @@ void PpuMemoryMap::Write(dword address, byte value)
         case PpuRegisters::OAMDATA_ADDR:
         {
             this->oamMem.Write(this->ppuRegMem.name.OAMADDR, value);
+            ++this->ppuRegMem.name.OAMADDR;
             return;
             break;
         }
@@ -118,4 +119,24 @@ void PpuMemoryMap::SetScanCycleNum(int scanCycleNum)
 int PpuMemoryMap::GetScanCycleNum() const
 {
     return this->scanCycleNum;
+}
+
+Oam& PpuMemoryMap::GetOam()
+{
+    return this->oamMem;
+}
+
+long long& PpuMemoryMap::GetTotalPpuCycles()
+{
+    return this->totalPpuCycles;
+}
+
+void PpuMemoryMap::IncTotalPpuCycles()
+{
+    ++this->totalPpuCycles;
+}
+
+void PpuMemoryMap::SetTotalPpuCycles(long long& cycles)
+{
+    this->totalPpuCycles = cycles;
 }

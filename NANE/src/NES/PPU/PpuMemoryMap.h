@@ -23,6 +23,7 @@ class PpuMemoryMap : public IMemoryRW
     //these are here because this state is useful when restoring the PPU to a previous save
     int scanlineNum = -1; //the current scanline being rendered between -1 and 260
     int scanCycleNum = 0; //the cycle num for the current scanline between 0 and 340
+    long long totalPpuCycles = 0;
 
     public:
     //constructor
@@ -30,6 +31,8 @@ class PpuMemoryMap : public IMemoryRW
     virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
+    int GenerateTotalCycles();
+    void IncTotalPpuCycles();
 
     //getters and setters
     ColourPalettes& GetPalettes();
@@ -40,5 +43,8 @@ class PpuMemoryMap : public IMemoryRW
     int GetScanLineNum() const;
     void SetScanCycleNum(int scanCycleNum);
     int GetScanCycleNum() const;
+    Oam& GetOam();
+    long long& GetTotalPpuCycles();
+    void SetTotalPpuCycles(long long& cycles);
 };
 #endif

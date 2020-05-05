@@ -16,7 +16,7 @@ class Dma : public IMemoryRW
     public:
     enum DmaAddresses : unsigned
     {
-        DMA_ADDR   = 0x4014,
+        DMA_ADDR   = 0x4014
     };
 
     private:
@@ -27,6 +27,12 @@ class Dma : public IMemoryRW
     NesController controllerPlayer2;
     std::unique_ptr<ICartridge> cartridge = NULL;
     bool nmiActive = false;
+
+    bool dmaActive = false;
+    bool dmaGoodCycle = false;
+    dword dmaBaseAddress = 0;
+    dword dmaAddressOffset = 0;
+    byte dmaBuffer = 0;
 
     void IncrementPpuAddress();
 
@@ -55,6 +61,16 @@ class Dma : public IMemoryRW
     NesController& GetControllerPlayer2();
     bool GetNmi();
     void SetNmi(bool isActive);
+    bool GetDmaActive() const;
+    void SetDmaActive(bool value);
+    bool GetDmaGoodCycle() const;
+    void SetDmaGoodCycle(bool value);
+    dword GetDmaBaseAddress();
+    void SetDmaBaseAddress(dword address);
+    dword GetDmaAddressOffset();
+    void SetDmaAddressOffset(dword address);
+    byte GetDmaBuffer();
+    void SetDmaBuffer(byte value);
 };
 
 #endif

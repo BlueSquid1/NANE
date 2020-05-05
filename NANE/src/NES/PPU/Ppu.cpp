@@ -98,15 +98,19 @@ bool Ppu::PowerCycle()
     this->dma.GetPpuMemory().SetScanLineNum(-1);
     this->dma.GetPpuMemory().SetScanCycleNum(0);
     this->frameCountNum = 0;
+    long long cycles = 0;
+    this->dma.GetPpuMemory().SetTotalPpuCycles(cycles);
+    this->dma.SetDmaBuffer(0);
 
     return true;
 }
 
 int Ppu::Step()
 {
+    
+
     int curLine = this->dma.GetPpuMemory().GetScanLineNum();
     int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
-    //std::cout << curLine << " " << curCycle << std::endl; TODO
 
     //special cases
     if(curLine == -1 && curCycle == 1)
@@ -152,6 +156,7 @@ int Ppu::Step()
     this->dma.GetPpuMemory().SetScanLineNum(nextPoint.y);
     this->dma.GetPpuMemory().SetScanCycleNum(nextPoint.x);
 
+    this->dma.GetPpuMemory().IncTotalPpuCycles();
     return true;
 }
 
@@ -206,6 +211,57 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
             break;
         }
     }
+}
+
+void Ppu::ProcessDma()
+{
+    //handle DMA active
+    if(this->IsDmaActive())
+    {
+        //should write every second ppu cycle
+        if(this->dma.GetPpuMemory().GetTotalPpuCycles() % 2 == 0)
+        {
+            //read the value
+            dword fetchAddress = this->dma.GetDmaBaseAddress() + this->dma.GetDmaAddressOffset();
+            this->dma.SetDmaBuffer(this->dma.Read(fetchAddress));
+        }
+        else
+        {
+            //write the value
+            dword targetAddress = this->dma.GetDmaAddressOffset();
+            byte bufferVal = this->dma.GetDmaBuffer();
+            this->dma.GetPpuMemory().GetOam().Write(targetAddress, bufferVal);
+
+            ++targetAddress;
+            this->dma.SetDmaAddressOffset(targetAddress);
+
+            if(targetAddress >= 256)
+            {
+                //reached the end of DMA
+                this->dma.SetDmaActive(false);
+            }
+        }
+    }
+}
+
+bool Ppu::IsDmaActive()
+{
+    if(this->dma.GetDmaActive() == false)
+    {
+        return false;
+    }
+
+    if(this->dma.GetDmaGoodCycle() == false)
+    {
+        //dma starts on the next even cycle
+        if(this->dma.GetPpuMemory().GetTotalPpuCycles() % 2 == 1)
+        {
+            this->dma.SetDmaGoodCycle(true);
+        }
+        return false;
+    }
+
+    return true;
 }
 
 rawColour Ppu::calc_background_pixel()

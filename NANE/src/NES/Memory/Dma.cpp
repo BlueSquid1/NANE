@@ -97,6 +97,18 @@ void Dma::Write(dword address, byte value)
             return;
             break;
         }
+        case DmaAddresses::DMA_ADDR:
+        {
+            dword_p startAddress;
+            startAddress.val = 0;
+            startAddress.upper = value;
+            this->dmaBaseAddress = startAddress.val;
+            this->dmaAddressOffset = 0;
+            this->dmaGoodCycle = false;
+            this->dmaActive = true;
+            return;
+            break;
+        }
     }
 
     if(this->controllerPlayer1.Contains(address))
@@ -272,4 +284,54 @@ std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
     std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
     std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
     return patternTables;
+}
+
+bool Dma::GetDmaActive() const
+{
+    return this->dmaActive;
+}
+
+void Dma::SetDmaActive(bool value)
+{
+    this->dmaActive = value;
+}
+
+bool Dma::GetDmaGoodCycle() const
+{
+    return this->dmaGoodCycle;
+}
+
+void Dma::SetDmaGoodCycle(bool value)
+{
+    this->dmaGoodCycle = value;
+}
+
+dword Dma::GetDmaBaseAddress()
+{
+    return this->dmaBaseAddress;
+}
+    
+void  Dma::SetDmaBaseAddress(dword address)
+{
+    this->dmaBaseAddress = address;
+}
+
+dword Dma::GetDmaAddressOffset()
+{
+    return this->dmaAddressOffset;
+}
+
+void Dma::SetDmaAddressOffset(dword address)
+{
+    this->dmaAddressOffset = address;
+}
+
+byte Dma::GetDmaBuffer()
+{
+    return this->dmaBuffer;
+}
+
+void Dma::SetDmaBuffer(byte value)
+{
+    this->dmaBuffer = value;
 }

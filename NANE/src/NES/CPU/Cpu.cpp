@@ -34,6 +34,11 @@ bool Cpu::PowerCycle(dword newPcAddress)
 
 int Cpu::Step(bool verbose)
 {
+    if(this->dma.GetDmaActive())
+    {
+        //put CPU to sleep for 85 cycles (or 85 * 3 = 256 ppu cycles)
+        return 85;
+    }
     std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->GetRegs().name.PC, false, verbose);
     if(decodedInst == NULL)
     {
