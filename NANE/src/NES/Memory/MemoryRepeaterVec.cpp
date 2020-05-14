@@ -1,6 +1,6 @@
 #include "MemoryRepeaterVec.h"
 
-MemoryRepeaterVec::MemoryRepeaterVec(dword startAddress, dword endAddress, std::unique_ptr<std::vector<byte>> data)
+MemoryRepeaterVec::MemoryRepeaterVec(dword startAddress, dword endAddress, std::shared_ptr<std::vector<byte>> data)
     : IMemoryRepeater(startAddress, endAddress, data->size())
 {
     this->data = std::move(data);
@@ -41,7 +41,7 @@ byte MemoryRepeaterVec::Seek(dword address) const
     return this->data->at(lowerOffset);
 }
 
-std::unique_ptr<std::vector<byte>>& MemoryRepeaterVec::GetDataVec()
+std::shared_ptr<std::vector<byte>> MemoryRepeaterVec::GetDataVec()
 {
     return this->data;
 }

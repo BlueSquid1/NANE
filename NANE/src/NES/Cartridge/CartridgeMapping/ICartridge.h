@@ -14,9 +14,9 @@ class ICartridge : public IMemoryRW
     const unsigned int mapNumber = 0;
     INes::MirrorType mirroringType = INes::MirrorType::not_set;
 
-    std::unique_ptr<MemoryRepeaterVec> prgRom = NULL;
-    std::unique_ptr<MemoryRepeaterVec> chrRom = NULL;
-    std::unique_ptr<MemoryRepeaterVec> prgRam = NULL;
+    std::shared_ptr<MemoryRepeaterVec> prgRom = NULL;
+    std::shared_ptr<MemoryRepeaterVec> chrRom = NULL;
+    std::shared_ptr<MemoryRepeaterVec> prgRam = NULL;
 
     //protected constructor to prevent constructing this interface
     ICartridge(int mapNum);
@@ -34,8 +34,8 @@ class ICartridge : public IMemoryRW
 
     //getters and setters
     const unsigned int GetMapNumber() const;
-    std::unique_ptr<MemoryRepeaterVec>& GetChrRom();
-    std::unique_ptr<MemoryRepeaterVec>& GetPrgRom();
+    std::shared_ptr<MemoryRepeaterVec> GetChrRom();
+    std::shared_ptr<MemoryRepeaterVec> GetPrgRom();
     INes::MirrorType GetMirroringType();
     void SetMirroringType(INes::MirrorType mirroringType);
 };

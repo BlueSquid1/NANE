@@ -97,12 +97,12 @@ const unsigned int ICartridge::GetMapNumber() const
     return this->mapNumber;
 }
 
-std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetChrRom()
+std::shared_ptr<MemoryRepeaterVec> ICartridge::GetChrRom()
 {
     return this->chrRom;
 }
 
-std::unique_ptr<MemoryRepeaterVec>& ICartridge::GetPrgRom()
+std::shared_ptr<MemoryRepeaterVec> ICartridge::GetPrgRom()
 {
     return this->prgRom;
 }

@@ -80,18 +80,18 @@ bool CartridgeLoader::UpdateTrainer( std::unique_ptr<INes> & rom, std::ifstream 
 bool CartridgeLoader::UpdatePrgRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
 {
     unsigned int prgRomSize = rom->GetPrgRomLen();
-    std::unique_ptr<std::vector<byte>> prgRom(new std::vector<byte>(prgRomSize));
+    std::shared_ptr<std::vector<byte>> prgRom(new std::vector<byte>(prgRomSize));
     fileStream->read( (char *) prgRom->data(), prgRomSize);
-    rom->SetPrgRomData(std::move(prgRom));
+    rom->SetPrgRomData(prgRom);
     return true;
 }
 
 bool CartridgeLoader::UpdateChrRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
 {
     unsigned int chrRomSize = rom->GetChrRomLen();
-    std::unique_ptr<std::vector<byte>> chrRom(new std::vector<byte>(chrRomSize));
+    std::shared_ptr<std::vector<byte>> chrRom(new std::vector<byte>(chrRomSize));
     fileStream->read( (char *) chrRom->data(), chrRomSize);
-    rom->SetChrRomData(std::move(chrRom));
+    rom->SetChrRomData(chrRom);
     return true;
 }
 

@@ -240,8 +240,8 @@ PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNu
     {
         throw std::out_of_range("table num is not in the boundary");
     }
-    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
-    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
+    std::shared_ptr<MemoryRepeaterVec> chrRom = this->cartridge->GetChrRom();
+    std::shared_ptr<std::vector<byte>> chrDataVec = chrRom->GetDataVec();
     byte * chrRawData = chrDataVec->data();
     //do a dynmatic type conversion of the binary
     PatternTables::BitPatternTables& patternTables = (PatternTables::BitPatternTables&) *chrRawData;
@@ -280,8 +280,8 @@ std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
     {
         std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
     }
-    std::unique_ptr<MemoryRepeaterVec>& chrRom = this->cartridge->GetChrRom();
-    std::unique_ptr<std::vector<byte>>& chrDataVec = chrRom->GetDataVec();
+    std::shared_ptr<MemoryRepeaterVec> chrRom = this->cartridge->GetChrRom();
+    std::shared_ptr<std::vector<byte>> chrDataVec = chrRom->GetDataVec();
     std::unique_ptr<PatternTables> patternTables = std::unique_ptr<PatternTables>( new PatternTables(chrDataVec) );
     return patternTables;
 }

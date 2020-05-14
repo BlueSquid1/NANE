@@ -880,7 +880,7 @@ std::string Cpu::GenerateCpuScreen(int instructionsBefore, int instructionsAfter
     dword pc = this->GetRegs().name.PC;
     std::vector<Instructions::Instruction> decodedInstructions;
     int currentInstrIndex = -1;
-    std::unique_ptr<MemoryRepeaterVec>& prgRom = this->dma.GetCartridge()->GetPrgRom();
+    std::shared_ptr<MemoryRepeaterVec> prgRom = this->dma.GetCartridge()->GetPrgRom();
     int i = prgRom->startAddress;
     while(i < prgRom->endAddress)
     {

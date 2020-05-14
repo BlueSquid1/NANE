@@ -6,7 +6,7 @@ const byte PatternTables::TABLE_HEIGHT;
 const byte PatternTables::TILE_WIDTH;
 const byte PatternTables::TILE_HEIGHT;
 
-PatternTables::PatternTables(std::unique_ptr<std::vector<byte>>& chrRomVec)
+PatternTables::PatternTables(std::shared_ptr<std::vector<byte>> chrRomVec)
 : patternTableData(NUM_OF_TABLES)
 {
     byte * chrRawData = chrRomVec->data();

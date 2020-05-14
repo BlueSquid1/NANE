@@ -50,7 +50,7 @@ class PatternTables
     std::vector<PatternTable> patternTableData;
 
     public:
-    PatternTables(std::unique_ptr<std::vector<byte>>& chrRomVec);
+    PatternTables(std::shared_ptr<std::vector<byte>> chrRomVec);
 
     Matrix<byte>& GetTile(int tableNum, int y, int x);
 };
