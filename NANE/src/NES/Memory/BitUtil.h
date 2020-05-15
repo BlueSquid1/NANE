@@ -51,9 +51,15 @@ class BitUtil
      * intepretes the 2 bytes starts at startAddress as a single dword.
      * @param memory pointer to a piece of readable memory
      * @param startAddress the first byte that makes up the dword 
+     * @return the value from the memory
      */
     static dword GetDWord(IMemoryR * memory, dword startAddress, bool pageWrap = false, bool readInsteadOfSeek = false);
 
+    /**
+     * flips the bits in a byte
+     * @param value the input value to flip the bits
+     * @return the value flipped
+     */
     static byte FlipByte(byte value);
 };
 

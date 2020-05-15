@@ -141,3 +141,14 @@ TEST_CASE("dword_p bit shifting") {
     temp.upper = 0x1;
     temp.val <<= 1;
 }
+
+/**
+ * tests bit flipping
+ */
+TEST_CASE("FlipByte") {
+    REQUIRE(BitUtil::FlipByte(0x00) == 0x00);
+    REQUIRE(BitUtil::FlipByte(0x01) == 0x80);
+    REQUIRE(BitUtil::FlipByte(0xA3) == 0xC5);
+    REQUIRE(BitUtil::FlipByte(0xFE) == 0x7F);
+    REQUIRE(BitUtil::FlipByte(0xFF) == 0xFF);
+}

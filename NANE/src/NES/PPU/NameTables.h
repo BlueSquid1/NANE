@@ -3,8 +3,8 @@
 
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
+#include "NES/Memory/Matrix.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
-#include "Matrix.h"
 
 #include <memory>
 

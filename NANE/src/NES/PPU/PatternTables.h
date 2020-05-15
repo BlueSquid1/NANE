@@ -2,7 +2,7 @@
 #define PATTERN_TABLES
 
 #include <vector>
-#include "Matrix.h"
+#include "NES/Memory/Matrix.h"
 #include "NES/Memory/BitUtil.h"
 
 class PatternTables

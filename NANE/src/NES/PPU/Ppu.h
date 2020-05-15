@@ -2,10 +2,10 @@
 #define PPU
 
 #include "PpuRegisters.h"
-#include "Matrix.h"
 #include "NesColour.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/Dma.h"
+#include "NES/Memory/Matrix.h"
 
 #include <memory> //std::unique_ptr
 
