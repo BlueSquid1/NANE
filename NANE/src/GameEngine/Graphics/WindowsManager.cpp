@@ -1,5 +1,26 @@
 #include "WindowsManager.h"
 
+namespace
+{
+	// scalable dimensions
+	const int MAIN_WINDOW_WIDTH = 256;
+	const int MAIN_WINDOW_HEIGHT = 240;
+	const int CHR_ROM_WIDTH = 256;
+	const int CHR_ROM_HEIGHT = 128;
+	const int CPU_DISPLAY_WIDTH = 256;
+	const int CPU_DISPLAY_HEIGHT = 200;
+	const int COLOUR_DISPLAY_WIDTH = 42;
+	const int COLOUR_DISPLAY_HEIGHT = 16;
+	const int PLAYER_ONE_INPUTS_WIDTH = 50;
+	const int PLAYER_ONE_INPUTS_HEIGHT = 8;
+
+	// fixed dimensions
+	const int BORDER_WIDTH = 5;
+	const int FPS_COUNTER_WIDTH = 100;
+	const int FPS_COUNTER_HEIGHT = 100;
+	const int FILE_BAR_HEIGHT = 25;
+}
+
 bool WindowManager::Init()
 {
 	std::cout << "initalizing SDL" << std::endl;
@@ -15,21 +36,7 @@ bool WindowManager::Init()
 		return false;
 	}
 
-	int mainWindowWidth = 256 * this->windowScale;
-	int mainWindowHeight = 240 * this->windowScale;
-	int chrRomWidth = 256 * this->windowScale;
-	int chrRomHeight = 128 * this->windowScale;
-	int cpuDisplayWidth = 256 * this->windowScale;
-	int cpuDisplayHeight = 200 * this->windowScale;
-	int colourDisplayWidth = 42 * this->windowScale;
-	int colourDisplayHeight = 16 * this->windowScale;
-	int playerOneInputsWidth = 50 * this->windowScale;
-	int playerOneInputsHeight = 8 * this->windowScale;
-
-	int totalWidth = this->BORDER_WIDTH + mainWindowWidth + this->BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
-	int totalHeight = this->BORDER_WIDTH + chrRomHeight + this->BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
-
-    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, totalWidth, totalHeight, SDL_WINDOW_SHOWN);
+    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1, 1, SDL_WINDOW_HIDDEN);
 	if (!this->gWindow)
 	{
 		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
@@ -43,84 +50,72 @@ bool WindowManager::Init()
 		return false;
 	}
 
-	this->gFont = TTF_OpenFont( "VeraMono.ttf", 15 );
-	if(!this->gFont)
-	{
-		std::cerr << "failed to open 'VeraMono.tff'. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-
 	//create windows
-	bool mainWindowResult = this->mainWindow.Init(this->gRenderer, mainWindowWidth, mainWindowHeight, BORDER_WIDTH, BORDER_WIDTH);
-	if(mainWindowResult == false)
-	{
-		std::cerr << "can't create main window. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-	bool chrRomWindowResult = this->chrRomWindow.Init(this->gRenderer, chrRomWidth, chrRomHeight, mainWindowWidth + 2 * BORDER_WIDTH, BORDER_WIDTH);
-	if(chrRomWindowResult == false)
-	{
-		std::cerr << "can't create chr rom window. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-	bool cpuWindowResult = this->cpuWindow.Init(this->gRenderer, cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + 2 * BORDER_WIDTH, chrRomHeight + 2 * BORDER_WIDTH);
-	if(cpuWindowResult == false)
-	{
-		std::cerr << "can't create cpu window. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-	bool colourDisplayWindow = this->colourDisplayWindow.Init(this->gRenderer, colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
-	if(chrRomWindowResult == false)
-	{
-		std::cerr << "can't create palette window. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
+	this->mainWindow = std::make_unique<TextureWindow>(this->gRenderer, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
+	this->chrRomWindow = std::make_unique<TextureWindow>(this->gRenderer, CHR_ROM_WIDTH, CHR_ROM_HEIGHT);
+	std::string fontFile = "VeraMono.ttf";
+	int fontPt = 15;
+	SDL_Color foregroundColor;
+	foregroundColor.r = 0xFF;
+	foregroundColor.g = 0xFF;
+	foregroundColor.b = 0xFF;
+	foregroundColor.a = 0xFF;
+	SDL_Color backgroundColor;
+	backgroundColor.r = 0x00;
+	backgroundColor.g = 0x00;
+	backgroundColor.b = 0x00;
+	backgroundColor.a = 0xFF;
+	this->cpuWindow = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, foregroundColor, backgroundColor, false);
+	this->colourDisplayWindow = std::make_unique<TextureWindow>(this->gRenderer, COLOUR_DISPLAY_WIDTH, COLOUR_DISPLAY_HEIGHT);
+	this->playerOneInputs = std::make_unique<TextureWindow>(this->gRenderer, PLAYER_ONE_INPUTS_WIDTH, PLAYER_ONE_INPUTS_HEIGHT);
+	SDL_Color fpsTextColour;
+	fpsTextColour.r = 0xFF;
+	fpsTextColour.g = 0xFF;
+	fpsTextColour.b = 0xAA;
+	fpsTextColour.a = 0xFF;
+	SDL_Color transparentColor;
+	transparentColor.a = 0x00;
+	this->fpsDisplay = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, fpsTextColour, transparentColor);
+	this->menuBar = std::make_unique<MenuBar>(this->gRenderer);
 
-	bool playerOneResult = this->playerOneInputs.Init(this->gRenderer, playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + 2 * BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
-	if(playerOneResult == false)
-	{
-		std::cerr << "can't create player one input window. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-
-	bool fpsResult = this->fpsDisplay.Init(this->gRenderer, 100, 100, BORDER_WIDTH, BORDER_WIDTH);
-	if(fpsResult == false)
-	{
-		std::cerr << "can't create fps display. SDL error: " << SDL_GetError() << std::endl;
-		return false;
-	}
-
+	this->ChangeScaleFactor(2);
+	SDL_ShowWindow(this->gWindow);
 	return true;
 }
 
 void WindowManager::ChangeScaleFactor(int newScaleFactor)
 {
-	int mainWindowWidth = 256 * this->windowScale;
-	int mainWindowHeight = 240 * this->windowScale;
-	int chrRomWidth = 256 * this->windowScale;
-	int chrRomHeight = 128 * this->windowScale;
-	int cpuDisplayWidth = 256 * this->windowScale;
-	int cpuDisplayHeight = 200 * this->windowScale;
-	int colourDisplayWidth = 42 * this->windowScale;
-	int colourDisplayHeight = 16 * this->windowScale;
-	int playerOneInputsWidth = 50 * this->windowScale;
-	int playerOneInputsHeight = 8 * this->windowScale;
+	this->windowScale = newScaleFactor;
+
+	int mainWindowWidth = MAIN_WINDOW_WIDTH * this->windowScale;
+	int mainWindowHeight = MAIN_WINDOW_HEIGHT * this->windowScale;
+	int chrRomWidth = CHR_ROM_WIDTH * this->windowScale;
+	int chrRomHeight = CHR_ROM_HEIGHT * this->windowScale;
+	int cpuDisplayWidth = CPU_DISPLAY_WIDTH * this->windowScale;
+	int cpuDisplayHeight = CPU_DISPLAY_HEIGHT * this->windowScale;
+	int colourDisplayWidth = COLOUR_DISPLAY_WIDTH * this->windowScale;
+	int colourDisplayHeight = COLOUR_DISPLAY_HEIGHT * this->windowScale;
+	int playerOneInputsWidth = PLAYER_ONE_INPUTS_WIDTH * this->windowScale;
+	int playerOneInputsHeight = PLAYER_ONE_INPUTS_HEIGHT * this->windowScale;
 
 	int totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
-	int totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
+	int totalHeight = FILE_BAR_HEIGHT + BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
 
-	this->windowScale = newScaleFactor;
-	this->mainWindow.ChangeDimensions(mainWindowWidth, mainWindowHeight, BORDER_WIDTH, BORDER_WIDTH);
-	this->chrRomWindow.ChangeDimensions(chrRomWidth, chrRomHeight, mainWindowWidth + BORDER_WIDTH, BORDER_WIDTH);
-	this->cpuWindow.ChangeDimensions(cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + BORDER_WIDTH, chrRomHeight + 2 * BORDER_WIDTH);
-	this->colourDisplayWindow.ChangeDimensions(colourDisplayWidth, colourDisplayHeight, BORDER_WIDTH, mainWindowHeight + BORDER_WIDTH);
-	this->playerOneInputs.ChangeDimensions(playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + 2 * BORDER_WIDTH, mainWindowHeight + 2 * BORDER_WIDTH);
+	int mainOffsetHeight = FILE_BAR_HEIGHT + BORDER_WIDTH;
+	int mainOffsetWidth = BORDER_WIDTH;
+	this->mainWindow->SetDimensions(mainWindowWidth, mainWindowHeight, mainOffsetWidth, mainOffsetHeight);
+	this->chrRomWindow->SetDimensions(chrRomWidth, chrRomHeight, mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, mainOffsetHeight);
+	this->cpuWindow->SetDimensions(cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, chrRomHeight + BORDER_WIDTH + mainOffsetHeight);
+	this->colourDisplayWindow->SetDimensions(colourDisplayWidth, colourDisplayHeight, mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight);
+	this->playerOneInputs->SetDimensions(playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + BORDER_WIDTH + mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight);
+	this->fpsDisplay->SetDimensions(FPS_COUNTER_WIDTH, FPS_COUNTER_HEIGHT, mainOffsetWidth, mainOffsetHeight);
+	this->menuBar->SetDimensions(totalWidth, FILE_BAR_HEIGHT, 0, 0);
 
 	//update window size
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
 }
 
-bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, bool showDisassembly)
+bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 {
     //clear the screen
 	SDL_SetRenderDrawColor(this->gRenderer, 0x80, 0x80, 0x80, 0xFF);
@@ -128,47 +123,27 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, bool showDisassem
 
 	//render windows
 	const Matrix<rawColour>& mainDisplay = nesEmulator.GetFrameDisplay();
-	this->mainWindow.Display(mainDisplay);
+	this->mainWindow->Display(mainDisplay);
+	std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
 
-	if(showDisassembly == true)
-	{
-		std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
+	this->chrRomWindow->Display(*chrRomDisplay);
 
-		this->chrRomWindow.Display(*chrRomDisplay);
+	std::string cpuText = nesEmulator.GenerateCpuScreen();
+	this->cpuWindow->Display(cpuText);
 
-		std::string cpuText = nesEmulator.GenerateCpuScreen();
-		SDL_Color foregroundColor;
-		foregroundColor.r = 0xFF;
-		foregroundColor.g = 0xFF;
-		foregroundColor.b = 0xFF;
-		foregroundColor.a = 0xFF;
-		SDL_Color backgroundColor;
-		backgroundColor.r = 0x00;
-		backgroundColor.g = 0x00;
-		backgroundColor.b = 0x00;
-		backgroundColor.a = 0xFF;
-		this->cpuWindow.Display(cpuText, this->gFont, foregroundColor, backgroundColor, false);
+	std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
+	this->colourDisplayWindow->Display(*colourPalettesDisplay);
 
-		std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
-		this->colourDisplayWindow.Display(*colourPalettesDisplay);
+	std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
+	this->playerOneInputs->Display(*playerOneDisplay);
 
-		std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
-		this->playerOneInputs.Display(*playerOneDisplay);
+	//fps
+	fpsStringStream.str("");
+	fpsStringStream << fps << "FPS";
+	const std::string fpsText = fpsStringStream.str();
+	this->fpsDisplay->Display(fpsText);
 
-		//fps
-		fpsStringStream.str("");
-		fpsStringStream << fps << "FPS";
-		const std::string fpsText = fpsStringStream.str();
-		SDL_Color fpsTextColour;
-		fpsTextColour.r = 0xFF;
-		fpsTextColour.g = 0xFF;
-		fpsTextColour.b = 0xAA;
-		fpsTextColour.a = 0xFF;
-		
-		SDL_Color transparentColor;
-		transparentColor.a = 0x00;
-		this->fpsDisplay.Display(fpsText, this->gFont, fpsTextColour, transparentColor, true);
-	}
+	this->menuBar->Display();
 
 	//Update the surface
 	SDL_RenderPresent( this->gRenderer );
@@ -182,7 +157,5 @@ void WindowManager::Close()
 	this->gWindow = NULL;
 	SDL_DestroyRenderer(this->gRenderer);
 	this->gRenderer = NULL;
-	TTF_CloseFont(this->gFont);
-	this->gFont = NULL;
     SDL_Quit();
 }

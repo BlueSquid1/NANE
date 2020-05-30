@@ -79,5 +79,6 @@
         "version": "cpp",
         "any": "cpp",
         "list": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

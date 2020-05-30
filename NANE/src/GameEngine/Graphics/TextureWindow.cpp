@@ -1,5 +1,25 @@
 #include "TextureWindow.h"
-#include <SDL.h>
+
+void TextureWindow::FreeTexture()
+{
+	//Free texture if it exists
+	if( this->windowTexture != NULL )
+	{
+		SDL_DestroyTexture( this->windowTexture );
+		this->windowTexture = NULL;
+	}
+}
+
+TextureWindow::TextureWindow(SDL_Renderer* gRenderer, const int textureWidth, const int textureHeight)
+: IWindow(gRenderer)
+{
+	this->windowTexture = SDL_CreateTexture(this->gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, textureWidth, textureHeight);
+}
+
+TextureWindow::~TextureWindow()
+{
+	this->FreeTexture();
+}
 
 void TextureWindow::Display(const Matrix<rawColour>& pixelData)
 {

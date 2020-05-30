@@ -1,12 +1,26 @@
 #include "TextWindow.h"
 #include <algorithm>
 
-
-void TextWindow::Display(const std::string& screenText, TTF_Font * gFont, SDL_Color forgroundColour, SDL_Color backgroundColour, bool writeTopDown)
+TextWindow::TextWindow(SDL_Renderer * gRenderer, std::string fontFile, int fontPt, SDL_Color forgroundColour, SDL_Color backgroundColour, bool writeTopDown)
+ : IWindow(gRenderer)
 {
-	//delete previous texture
-	this->FreeTexture();
+	this->font = TTF_OpenFont( fontFile.c_str(), fontPt );
+	this->forgroundColour = forgroundColour;
+	this->backgroundColour = backgroundColour;
+	this->writeTopDown = writeTopDown;
+}
 
+TextWindow::~TextWindow()
+{
+	if(this->font != NULL)
+	{
+		TTF_CloseFont(this->font);
+		this->font = NULL;
+	}
+}
+
+void TextWindow::Display(const std::string& screenText)
+{
 	//colour in the background
 	if(backgroundColour.a != 0x00)
 	{
@@ -15,15 +29,15 @@ void TextWindow::Display(const std::string& screenText, TTF_Font * gFont, SDL_Co
 	}
 
 	//make foreground
-	SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped( gFont, screenText.c_str(), forgroundColour, 1000);
+	SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped( font, screenText.c_str(), forgroundColour, 1000);
 	if( textSurface == NULL )
 	{
 		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
 	}
 
 	//Create texture from surface pixels
-    this->windowTexture = SDL_CreateTextureFromSurface( this->gRenderer, textSurface );
-	if( this->windowTexture == NULL )
+    SDL_Texture * windowTexture = SDL_CreateTextureFromSurface( this->gRenderer, textSurface );
+	if( windowTexture == NULL )
 	{
 		printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
 	}
@@ -50,5 +64,7 @@ void TextWindow::Display(const std::string& screenText, TTF_Font * gFont, SDL_Co
 	targetSize.h = sourceSize.h;
 
 	//render
-	SDL_RenderCopy(this->gRenderer, this->windowTexture, &sourceSize, &targetSize);
+	SDL_RenderCopy(this->gRenderer, windowTexture, &sourceSize, &targetSize);
+
+	SDL_DestroyTexture( windowTexture );
 }
