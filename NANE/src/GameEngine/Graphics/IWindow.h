@@ -12,7 +12,10 @@ class IWindow
     public:
     IWindow(SDL_Renderer* gRenderer);
     virtual ~IWindow();
-    void SetDimensions(int width, int height, int posX, int posY);
+    
+    virtual void SetDimensions(int posX, int posY, int width, int height);
+
+    const SDL_Rect& GetDimensions() const;
 };
 
 #endif

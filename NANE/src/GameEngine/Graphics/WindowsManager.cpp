@@ -30,9 +30,9 @@ bool WindowManager::Init()
 		return false;
 	}
 
-	if(TTF_Init() < 0)
+	if(FontManager::Init() == false)
 	{
-		std::cerr << "can't start SDL_TTF. TTF error: " << TTF_GetError() << std::endl;
+		std::cerr << "can't start font manager. TTF error: " << TTF_GetError() << std::endl;
 		return false;
 	}
 
@@ -65,7 +65,7 @@ bool WindowManager::Init()
 	backgroundColor.g = 0x00;
 	backgroundColor.b = 0x00;
 	backgroundColor.a = 0xFF;
-	this->cpuWindow = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, foregroundColor, backgroundColor, false);
+	this->cpuWindow = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, foregroundColor, backgroundColor, TextDirection::bottomAligned);
 	this->colourDisplayWindow = std::make_unique<TextureWindow>(this->gRenderer, COLOUR_DISPLAY_WIDTH, COLOUR_DISPLAY_HEIGHT);
 	this->playerOneInputs = std::make_unique<TextureWindow>(this->gRenderer, PLAYER_ONE_INPUTS_WIDTH, PLAYER_ONE_INPUTS_HEIGHT);
 	SDL_Color fpsTextColour;
@@ -103,13 +103,13 @@ void WindowManager::ChangeScaleFactor(int newScaleFactor)
 
 	int mainOffsetHeight = FILE_BAR_HEIGHT + BORDER_WIDTH;
 	int mainOffsetWidth = BORDER_WIDTH;
-	this->mainWindow->SetDimensions(mainWindowWidth, mainWindowHeight, mainOffsetWidth, mainOffsetHeight);
-	this->chrRomWindow->SetDimensions(chrRomWidth, chrRomHeight, mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, mainOffsetHeight);
-	this->cpuWindow->SetDimensions(cpuDisplayWidth, cpuDisplayHeight, mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, chrRomHeight + BORDER_WIDTH + mainOffsetHeight);
-	this->colourDisplayWindow->SetDimensions(colourDisplayWidth, colourDisplayHeight, mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight);
-	this->playerOneInputs->SetDimensions(playerOneInputsWidth, playerOneInputsHeight, colourDisplayWidth + BORDER_WIDTH + mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight);
-	this->fpsDisplay->SetDimensions(FPS_COUNTER_WIDTH, FPS_COUNTER_HEIGHT, mainOffsetWidth, mainOffsetHeight);
-	this->menuBar->SetDimensions(totalWidth, FILE_BAR_HEIGHT, 0, 0);
+	this->mainWindow->SetDimensions(mainOffsetWidth, mainOffsetHeight, mainWindowWidth, mainWindowHeight);
+	this->chrRomWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, mainOffsetHeight, chrRomWidth, chrRomHeight);
+	this->cpuWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, chrRomHeight + BORDER_WIDTH + mainOffsetHeight, cpuDisplayWidth, cpuDisplayHeight);
+	this->colourDisplayWindow->SetDimensions(mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, colourDisplayWidth, colourDisplayHeight);
+	this->playerOneInputs->SetDimensions(colourDisplayWidth + BORDER_WIDTH + mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, playerOneInputsWidth, playerOneInputsHeight);
+	this->fpsDisplay->SetDimensions(mainOffsetWidth, mainOffsetHeight, FPS_COUNTER_WIDTH, FPS_COUNTER_HEIGHT);
+	this->menuBar->SetDimensions(0, 0, totalWidth, FILE_BAR_HEIGHT);
 
 	//update window size
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
@@ -153,6 +153,7 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 void WindowManager::Close()
 {
 	std::cout << "Destroying SDL" << std::endl;
+	FontManager::Close();
     SDL_DestroyWindow(this->gWindow);
 	this->gWindow = NULL;
 	SDL_DestroyRenderer(this->gRenderer);

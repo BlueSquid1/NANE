@@ -1,30 +1,29 @@
 #include "TextWindow.h"
-#include <algorithm>
 
-TextWindow::TextWindow(SDL_Renderer * gRenderer, std::string fontFile, int fontPt, SDL_Color forgroundColour, SDL_Color backgroundColour, bool writeTopDown)
+#include <algorithm>
+#include "FontManager.h"
+
+TextWindow::TextWindow(SDL_Renderer * gRenderer, std::string fontFile, int fontPt, SDL_Color forgroundColour, SDL_Color backgroundColour, TextDirection direction)
  : IWindow(gRenderer)
 {
-	this->font = TTF_OpenFont( fontFile.c_str(), fontPt );
+	this->font = FontManager::GetInstance()->LoadGenericFont(fontFile, fontPt);
 	this->forgroundColour = forgroundColour;
-	this->backgroundColour = backgroundColour;
-	this->writeTopDown = writeTopDown;
+	this->defaultBackgroundColour = backgroundColour;
+	this->direction = direction;
 }
 
-TextWindow::~TextWindow()
+void TextWindow::Display(const std::string& screenText, SDL_Color * overrideBackgroundColour)
 {
-	if(this->font != NULL)
+	SDL_Color * selectedBackground = &this->defaultBackgroundColour;
+
+	if(overrideBackgroundColour != NULL)
 	{
-		TTF_CloseFont(this->font);
-		this->font = NULL;
+		selectedBackground = overrideBackgroundColour;
 	}
-}
-
-void TextWindow::Display(const std::string& screenText)
-{
 	//colour in the background
-	if(backgroundColour.a != 0x00)
+	if(selectedBackground->a != 0x00)
 	{
-		SDL_SetRenderDrawColor( gRenderer, backgroundColour.r, backgroundColour.g, backgroundColour.b, backgroundColour.a );
+		SDL_SetRenderDrawColor( gRenderer, selectedBackground->r, selectedBackground->g, selectedBackground->b, selectedBackground->a );
 		SDL_RenderFillRect(this->gRenderer, &this->windowDimensions);
 	}
 
@@ -49,16 +48,29 @@ void TextWindow::Display(const std::string& screenText)
 	//scale text for display
 	SDL_Rect sourceSize;
 	sourceSize.x = 0;
-	sourceSize.y = std::max(textHeight - this->windowDimensions.h, 0);
+	sourceSize.y = 0;
 	sourceSize.w = std::min(textWidth, this->windowDimensions.w);
 	sourceSize.h = std::min(textHeight, this->windowDimensions.h);
 
 	SDL_Rect targetSize;
 	targetSize.x = this->windowDimensions.x;
-	targetSize.y = this->windowDimensions.y;
-	if(writeTopDown == false)
+	switch(this->direction)
 	{
-		targetSize.y = this->windowDimensions.y + std::max(this->windowDimensions.h - textHeight, 0);
+		case TextDirection::topAligned:
+		{
+			targetSize.y = this->windowDimensions.y;
+			break;
+		}
+		case TextDirection::bottomAligned:
+		{
+			targetSize.y = this->windowDimensions.y + std::max(this->windowDimensions.h - textHeight, 0);
+			break;
+		}
+		case TextDirection::middleAligned:
+		{
+			targetSize.y = this->windowDimensions.y + std::max((this->windowDimensions.h - textHeight) / 2, 0);;
+			break;
+		}
 	}
 	targetSize.w = sourceSize.w;
 	targetSize.h = sourceSize.h;

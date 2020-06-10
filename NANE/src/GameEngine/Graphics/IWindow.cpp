@@ -9,10 +9,15 @@ IWindow::~IWindow()
 {
 }
 
-void IWindow::SetDimensions(int width, int height, int posX, int posY)
+void IWindow::SetDimensions(int posX, int posY, int width, int height)
 {
 	this->windowDimensions.w = width;
 	this->windowDimensions.h = height;
 	this->windowDimensions.x = posX;
 	this->windowDimensions.y = posY;
+}
+
+const SDL_Rect& IWindow::GetDimensions() const
+{
+	return this->windowDimensions;
 }

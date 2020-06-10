@@ -3,18 +3,21 @@
 
 #include <vector>
 #include "IWindow.h"
-#include "MenuButton.h"
+#include "SubMenu.h"
 
 class MenuBar : public IWindow
 {
     private:
-    std::vector<MenuButton> menuButtons;
+    std::vector<SubMenu> subMenus;
+
     public:
     MenuBar(SDL_Renderer* gRenderer);
 
-    void AppendButton(const MenuButton& button);
+    void SetDimensions(int posX, int posY, int width, int height) override;
 
-    void handle_events();
+    void AppendSubMenu(const SubMenu& button);
+
+    void handleEvents();
     
     void Display();
 };

@@ -10,6 +10,7 @@
 #include "TextureWindow.h"
 #include "TextWindow.h"
 #include "MenuBar.h"
+#include "FontManager.h"
 
 /**
  * responsible for updating the graphical display of the game.
