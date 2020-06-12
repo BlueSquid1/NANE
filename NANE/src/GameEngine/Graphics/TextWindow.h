@@ -1,18 +1,18 @@
 #ifndef TEXT_WINDOW
 #define TEXT_WINDOW
 
-#include "IWindow.h"
-
 #include <memory>
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include <string>
+
+#include "IWindow.h"
+#include "FontManager.h"
 
 enum class TextDirection
 {
-    topAligned,
-    bottomAligned,
-    middleAligned
+    topLeft,
+    bottomLeft,
+    centred
 };
 
 class TextWindow : public IWindow
@@ -24,7 +24,7 @@ class TextWindow : public IWindow
     TextDirection direction;
     
     public:
-    TextWindow(SDL_Renderer * gRenderer, std::string fontFile, int fontPt, SDL_Color forgroundColour, SDL_Color backgroundColour, TextDirection direction = TextDirection::topAligned);
+    TextWindow(SDL_Renderer * gRenderer, TextDirection direction = TextDirection::topLeft, SDL_Color forgroundColour = {0x00, 0x00, 0x00, 0xFF}, SDL_Color backgroundColour = {0xFF, 0xFF, 0xFF, 0xFF}, FontType font = FontType::defaultFont);
 
     void Display(const std::string& screenText, SDL_Color * overrideBackgroundColour = NULL);
 };

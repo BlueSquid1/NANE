@@ -10,12 +10,19 @@
  * SDL_ttf gets confused when working with many fonts. This class ensure all fonts are closed at the end of the program safely.
  */
 
+enum class FontType
+{
+    defaultFont
+};
+
 class FontManager
 {
     private:
     static std::unique_ptr<FontManager> instance;
 
-    std::unordered_map<std::string, TTF_Font *> openFonts;
+    std::unordered_map<FontType, TTF_Font *> openFonts;
+
+    TTF_Font * LoadGenericFont(const std::string& font, int fontPt);
     
     //private constructor
     FontManager();
@@ -27,7 +34,7 @@ class FontManager
 
     ~FontManager();
 
-    TTF_Font * LoadGenericFont(const std::string& font, int fontPt);
+    TTF_Font * LoadFont(FontType type = FontType::defaultFont);
 };
 
 

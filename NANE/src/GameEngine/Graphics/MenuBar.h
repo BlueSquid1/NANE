@@ -17,7 +17,7 @@ class MenuBar : public IWindow
 
     void AppendSubMenu(const SubMenu& button);
 
-    void handleEvents();
+    void HandleEvent(const SDL_Event& e);
     
     void Display();
 };

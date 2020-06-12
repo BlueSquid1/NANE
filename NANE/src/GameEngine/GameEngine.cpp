@@ -56,6 +56,8 @@ bool GameEngine::UserInput()
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
+		this->windowsMgr.HandleEvent(e);
+
         if (e.type == SDL_QUIT)
 		{
             this->shouldExit = true;
@@ -93,7 +95,7 @@ bool GameEngine::UserInput()
 			}
 			else
 			{
-				//key up
+				//key released
 				NesController::NesInputs nesInput = keyMapper.ToNesInput(e.key.keysym.sym);
 				this->nesEmulator.PressButton(nesInput, false);
 			}

@@ -12,6 +12,13 @@
 #include "MenuBar.h"
 #include "FontManager.h"
 
+enum class InputActions
+{
+    none,
+    quit,
+    openRom
+};
+
 /**
  * responsible for updating the graphical display of the game.
  */
@@ -42,6 +49,8 @@ class WindowManager
     bool Init();
     
     void ChangeScaleFactor(int newScaleFactor);
+
+    InputActions HandleEvent(const SDL_Event& e);
     
     /**
      * Invoked everytime the screen is ready to be refreshed.

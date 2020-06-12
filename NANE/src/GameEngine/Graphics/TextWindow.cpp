@@ -1,12 +1,11 @@
 #include "TextWindow.h"
 
 #include <algorithm>
-#include "FontManager.h"
 
-TextWindow::TextWindow(SDL_Renderer * gRenderer, std::string fontFile, int fontPt, SDL_Color forgroundColour, SDL_Color backgroundColour, TextDirection direction)
+TextWindow::TextWindow(SDL_Renderer * gRenderer, TextDirection direction, SDL_Color forgroundColour, SDL_Color backgroundColour, FontType font)
  : IWindow(gRenderer)
 {
-	this->font = FontManager::GetInstance()->LoadGenericFont(fontFile, fontPt);
+	this->font = FontManager::GetInstance()->LoadFont(font);
 	this->forgroundColour = forgroundColour;
 	this->defaultBackgroundColour = backgroundColour;
 	this->direction = direction;
@@ -53,22 +52,24 @@ void TextWindow::Display(const std::string& screenText, SDL_Color * overrideBack
 	sourceSize.h = std::min(textHeight, this->windowDimensions.h);
 
 	SDL_Rect targetSize;
-	targetSize.x = this->windowDimensions.x;
 	switch(this->direction)
 	{
-		case TextDirection::topAligned:
+		case TextDirection::topLeft:
 		{
+			targetSize.x = this->windowDimensions.x;
 			targetSize.y = this->windowDimensions.y;
 			break;
 		}
-		case TextDirection::bottomAligned:
+		case TextDirection::bottomLeft:
 		{
+			targetSize.x = this->windowDimensions.x;
 			targetSize.y = this->windowDimensions.y + std::max(this->windowDimensions.h - textHeight, 0);
 			break;
 		}
-		case TextDirection::middleAligned:
+		case TextDirection::centred:
 		{
-			targetSize.y = this->windowDimensions.y + std::max((this->windowDimensions.h - textHeight) / 2, 0);;
+			targetSize.x = this->windowDimensions.x + (std::max(this->windowDimensions.x - textWidth, 0) / 2);
+			targetSize.y = this->windowDimensions.y + (std::max(this->windowDimensions.h - textHeight, 0) / 2);
 			break;
 		}
 	}

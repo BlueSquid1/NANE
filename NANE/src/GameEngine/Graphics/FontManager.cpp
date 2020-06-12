@@ -1,5 +1,7 @@
 #include "FontManager.h"
 
+#include <exception>
+
 std::unique_ptr<FontManager> FontManager::instance = NULL;
 
 FontManager::FontManager()
@@ -38,15 +40,30 @@ void FontManager::Close()
     instance.reset();
 }
 
-TTF_Font * FontManager::LoadGenericFont(const std::string& font, int fontPt)
+TTF_Font * FontManager::LoadFont(FontType type)
 {
-    //check if font is already loaded
-    std::string key = font + std::to_string(fontPt);
-    if(this->openFonts.count(key) >= 1)
+    int fontPt;
+    std::string fontName;
+    switch(type)
     {
-        return this->openFonts.at(key);
+        case FontType::defaultFont:
+        {
+            fontPt = 15;
+            fontName = "VeraMono.ttf";
+            break;
+        }
+        default:
+        {
+            throw std::invalid_argument("invalid font type");
+        }
     }
-    TTF_Font * ttf_font = TTF_OpenFont( font.c_str(), fontPt );
-    this->openFonts[key] = ttf_font;
+
+    //check if font is already loaded
+    if(this->openFonts.count(type) >= 1)
+    {
+        return this->openFonts.at(type);
+    }
+    TTF_Font * ttf_font = TTF_OpenFont( fontName.c_str(), fontPt );
+    this->openFonts[type] = ttf_font;
     return ttf_font;
 }

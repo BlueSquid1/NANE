@@ -18,7 +18,7 @@ namespace
 	const int BORDER_WIDTH = 5;
 	const int FPS_COUNTER_WIDTH = 100;
 	const int FPS_COUNTER_HEIGHT = 100;
-	const int FILE_BAR_HEIGHT = 25;
+	const int FILE_BAR_HEIGHT = 22;
 }
 
 bool WindowManager::Init()
@@ -53,19 +53,17 @@ bool WindowManager::Init()
 	//create windows
 	this->mainWindow = std::make_unique<TextureWindow>(this->gRenderer, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
 	this->chrRomWindow = std::make_unique<TextureWindow>(this->gRenderer, CHR_ROM_WIDTH, CHR_ROM_HEIGHT);
-	std::string fontFile = "VeraMono.ttf";
-	int fontPt = 15;
-	SDL_Color foregroundColor;
-	foregroundColor.r = 0xFF;
-	foregroundColor.g = 0xFF;
-	foregroundColor.b = 0xFF;
-	foregroundColor.a = 0xFF;
-	SDL_Color backgroundColor;
-	backgroundColor.r = 0x00;
-	backgroundColor.g = 0x00;
-	backgroundColor.b = 0x00;
-	backgroundColor.a = 0xFF;
-	this->cpuWindow = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, foregroundColor, backgroundColor, TextDirection::bottomAligned);
+	SDL_Color cpuForgroundColour;
+	cpuForgroundColour.r = 0xFF;
+	cpuForgroundColour.g = 0xFF;
+	cpuForgroundColour.b = 0xFF;
+	cpuForgroundColour.a = 0xFF;
+	SDL_Color cpuBackgroundColour;
+	cpuBackgroundColour.r = 0x00;
+	cpuBackgroundColour.g = 0x00;
+	cpuBackgroundColour.b = 0x00;
+	cpuBackgroundColour.a = 0xFF;
+	this->cpuWindow = std::make_unique<TextWindow>(this->gRenderer, TextDirection::bottomLeft, cpuForgroundColour, cpuBackgroundColour);
 	this->colourDisplayWindow = std::make_unique<TextureWindow>(this->gRenderer, COLOUR_DISPLAY_WIDTH, COLOUR_DISPLAY_HEIGHT);
 	this->playerOneInputs = std::make_unique<TextureWindow>(this->gRenderer, PLAYER_ONE_INPUTS_WIDTH, PLAYER_ONE_INPUTS_HEIGHT);
 	SDL_Color fpsTextColour;
@@ -75,7 +73,7 @@ bool WindowManager::Init()
 	fpsTextColour.a = 0xFF;
 	SDL_Color transparentColor;
 	transparentColor.a = 0x00;
-	this->fpsDisplay = std::make_unique<TextWindow>(this->gRenderer, fontFile, fontPt, fpsTextColour, transparentColor);
+	this->fpsDisplay = std::make_unique<TextWindow>(this->gRenderer, TextDirection::topLeft, fpsTextColour, transparentColor);
 	this->menuBar = std::make_unique<MenuBar>(this->gRenderer);
 
 	this->ChangeScaleFactor(2);
@@ -113,6 +111,11 @@ void WindowManager::ChangeScaleFactor(int newScaleFactor)
 
 	//update window size
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
+}
+
+InputActions WindowManager::HandleEvent(const SDL_Event& e)
+{
+	this->menuBar->HandleEvent(e);
 }
 
 bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
