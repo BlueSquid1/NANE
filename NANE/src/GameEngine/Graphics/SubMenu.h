@@ -20,6 +20,8 @@ class SubMenu : public ToggleButton
 
     void SetDimensions(int posX, int posY, int width, int height) override;
 
+    void HandleEvent(const SDL_Event& e) override;
+
     void Display() override;
 };
 

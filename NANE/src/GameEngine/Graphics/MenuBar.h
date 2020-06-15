@@ -5,10 +5,22 @@
 #include "IWindow.h"
 #include "SubMenu.h"
 
+enum class MenuEvents : Uint32
+{
+    OpenRom,
+    SimpleView,
+    DisassembleView,
+    PauseEmulator,
+    ContinueEmulator
+};
+
 class MenuBar : public IWindow
 {
     private:
     std::vector<SubMenu> subMenus;
+
+    private:
+    void RegisterEvent(ToggleButton& button, MenuEvents event);
 
     public:
     MenuBar(SDL_Renderer* gRenderer);

@@ -1,5 +1,6 @@
 #include "GameEngine.h"
 
+#include "Graphics/CustomEventMgr.h"
 
 #include <SDL.h> //SDL_PollEvent()
 
@@ -57,6 +58,23 @@ bool GameEngine::UserInput()
 	while (SDL_PollEvent(&e))
 	{
 		this->windowsMgr.HandleEvent(e);
+		if(e.type == CustomEventMgr::GetInstance()->GetCustomEventType())
+		{
+			MenuEvents menuEvent = (MenuEvents)e.user.code;
+			switch(menuEvent)
+			{
+				case MenuEvents::ContinueEmulator:
+				{
+					this->run = true;
+					break;
+				}
+				case MenuEvents::PauseEmulator:
+				{
+					this->run = false;
+					break;
+				}
+			}
+		}
 
         if (e.type == SDL_QUIT)
 		{

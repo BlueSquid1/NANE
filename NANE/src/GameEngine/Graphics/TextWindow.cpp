@@ -68,7 +68,7 @@ void TextWindow::Display(const std::string& screenText, SDL_Color * overrideBack
 		}
 		case TextDirection::centred:
 		{
-			targetSize.x = this->windowDimensions.x + (std::max(this->windowDimensions.x - textWidth, 0) / 2);
+			targetSize.x = this->windowDimensions.x + (std::max(this->windowDimensions.w - textWidth, 0) / 2);
 			targetSize.y = this->windowDimensions.y + (std::max(this->windowDimensions.h - textHeight, 0) / 2);
 			break;
 		}
