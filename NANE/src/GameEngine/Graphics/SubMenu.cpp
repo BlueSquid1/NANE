@@ -1,18 +1,18 @@
 #include "SubMenu.h"
 
 SubMenu::SubMenu(SDL_Renderer* gRenderer, const std::string& name, SDL_Color forgroundColour, SDL_Color inactiveBackgroundColour, SDL_Color activeBackgroundColour, FontType font)
-: ToggleButton(gRenderer, name, NULL, false, forgroundColour, inactiveBackgroundColour, activeBackgroundColour, font)
+: PushButton(gRenderer, name, NULL, forgroundColour, inactiveBackgroundColour, activeBackgroundColour, font)
 {
 }
 
-void SubMenu::AddButton(const ToggleButton& button)
+void SubMenu::AddButton(const PushButton& button)
 {
     this->menuItems.push_back(button);
 }
 
 void SubMenu::SetDimensions(int posX, int posY, int width, int height)
 {
-    ToggleButton::SetDimensions(posX, posY, width, height);
+    PushButton::SetDimensions(posX, posY, width, height);
 
     int itemHeightPadding = 10;
     int itemWidthPadding = 10;
@@ -20,7 +20,7 @@ void SubMenu::SetDimensions(int posX, int posY, int width, int height)
     //calculate dropdown size
     int subMenuHeight = 0;
     int subMenuWidth = 0;
-    for(const ToggleButton& item : this->menuItems)
+    for(const PushButton& item : this->menuItems)
     {
         const SDL_Rect& itemMinSize = item.CalculateMinSize();
         subMenuHeight += itemMinSize.h + itemHeightPadding;
@@ -36,7 +36,7 @@ void SubMenu::SetDimensions(int posX, int posY, int width, int height)
     //reposition submenu items
     int itemPosX = this->dropdownMenuDimensions.x;
     int itemPosY = this->dropdownMenuDimensions.y;
-    for(ToggleButton& item : this->menuItems)
+    for(PushButton& item : this->menuItems)
     {
         const SDL_Rect& itemMinSize = item.CalculateMinSize();
         int itemHeight = itemMinSize.h + itemHeightPadding;
@@ -50,20 +50,17 @@ void SubMenu::HandleEvent(const SDL_Event& e)
     //handle buttons if they are visible
     if(this->GetIsPressed())
     {
-        for(ToggleButton& menuItem : this->menuItems)
+        for(PushButton& menuItem : this->menuItems)
         {
             menuItem.HandleEvent(e);
         }
     }
-
-    //enable or disable submenu
-    ToggleButton::HandleEvent(e);
 }
 
 void SubMenu::Display()
 {
     //display text in bar
-    ToggleButton::Display();
+    PushButton::Display();
 
     //display background panel
     if(this->GetIsPressed())
@@ -78,7 +75,7 @@ void SubMenu::Display()
         SDL_RenderFillRect(this->gRenderer, &this->dropdownMenuDimensions);
 
         //display itens on drop down
-        for(ToggleButton& item : this->menuItems)
+        for(PushButton& item : this->menuItems)
         {
             item.Display();
         }

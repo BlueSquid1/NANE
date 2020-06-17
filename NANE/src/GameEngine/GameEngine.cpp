@@ -63,14 +63,19 @@ bool GameEngine::UserInput()
 			MenuEvents menuEvent = (MenuEvents)e.user.code;
 			switch(menuEvent)
 			{
-				case MenuEvents::ContinueEmulator:
+				case MenuEvents::ContinuePauseEmulator:
 				{
-					this->run = true;
+					this->run = !this->run;
 					break;
 				}
-				case MenuEvents::PauseEmulator:
+				case MenuEvents::StepEmulator:
 				{
-					this->run = false;
+					this->step = true;
+					break;
+				}
+				case MenuEvents::IncrementDefaultColourPalette:
+				{
+					this->nesEmulator.IncrementDefaultColourPalette();
 					break;
 				}
 			}
@@ -97,11 +102,6 @@ bool GameEngine::UserInput()
 					case SDLK_p:
 					{
 						this->run = !this->run;
-						break;
-					}
-					case SDLK_c:
-					{
-						this->nesEmulator.IncrementDefaultColourPalette();
 						break;
 					}
 					default:

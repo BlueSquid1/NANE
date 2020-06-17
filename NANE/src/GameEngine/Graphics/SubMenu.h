@@ -4,19 +4,19 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "ToggleButton.h"
+#include "PushButton.h"
 
 
-class SubMenu : public ToggleButton
+class SubMenu : public PushButton
 {
     private:
     SDL_Rect dropdownMenuDimensions;
-    std::vector<ToggleButton> menuItems;
+    std::vector<PushButton> menuItems;
     
     public:
     SubMenu(SDL_Renderer* gRenderer, const std::string& name, SDL_Color forgroundColour, SDL_Color inactiveBackgroundColour, SDL_Color activeBackgroundColour, FontType font = FontType::defaultFont);
 
-    void AddButton(const ToggleButton& button);
+    void AddButton(const PushButton& button);
 
     void SetDimensions(int posX, int posY, int width, int height) override;
 

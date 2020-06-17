@@ -19,22 +19,31 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
 
     SubMenu fileMenu(gRenderer, "File", submenuForground, submenuInactiveBackground, submenuActiveBackground);
     Uint32 openRomEvent = (Uint32)MenuEvents::OpenRom;
-    fileMenu.AddButton(ToggleButton(gRenderer, "Open ROM", &openRomEvent, true, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    fileMenu.AddButton(PushButton(gRenderer, "Open ROM", &openRomEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 saveSnapshotEvent = (Uint32)MenuEvents::SaveSnapshot;
+    fileMenu.AddButton(PushButton(gRenderer, "Save Snapshot", &saveSnapshotEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 loadSnapshotEvent = (Uint32)MenuEvents::LoadSnapshot;
+    fileMenu.AddButton(PushButton(gRenderer, "Load Snapshot", &loadSnapshotEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(fileMenu);
 
     SubMenu viewMenu(gRenderer, "View", submenuForground, submenuInactiveBackground, submenuActiveBackground);
     Uint32 simpleViewEvent = (Uint32)MenuEvents::SimpleView;
-    viewMenu.AddButton(ToggleButton(gRenderer, "Simple", &simpleViewEvent, true, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    viewMenu.AddButton(PushButton(gRenderer, "Simple View", &simpleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 disassembleViewEvent = (Uint32)MenuEvents::DisassembleView;
-    viewMenu.AddButton(ToggleButton(gRenderer, "Disassemble", &disassembleViewEvent, true, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    viewMenu.AddButton(PushButton(gRenderer, "Disassemble View", &disassembleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(viewMenu);
 
-    SubMenu emulatorView(gRenderer, "Emulator", submenuForground, submenuInactiveBackground, submenuActiveBackground);
-    Uint32 pauseEvent = (Uint32)MenuEvents::PauseEmulator;
-    emulatorView.AddButton(ToggleButton(gRenderer, "Pause", &pauseEvent, true, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 continueEvent = (Uint32)MenuEvents::ContinueEmulator;
-    emulatorView.AddButton(ToggleButton(gRenderer, "Continue", &continueEvent, true, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    this->AppendSubMenu(emulatorView);
+    SubMenu emulatorMenu(gRenderer, "Emulator", submenuForground, submenuInactiveBackground, submenuActiveBackground);
+    Uint32 continueEvent = (Uint32)MenuEvents::ContinuePauseEmulator;
+    emulatorMenu.AddButton(PushButton(gRenderer, "Continue/Pause (p)", &continueEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 pauseEvent = (Uint32)MenuEvents::StepEmulator;
+    emulatorMenu.AddButton(PushButton(gRenderer, "Step (n)", &pauseEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    this->AppendSubMenu(emulatorMenu);
+
+    SubMenu disassembleMenu(gRenderer, "Disassemble", submenuForground, submenuInactiveBackground, submenuActiveBackground);
+    Uint32 IncrementDefaultColourPaletteEvent = (Uint32)MenuEvents::IncrementDefaultColourPalette;
+    disassembleMenu.AddButton(PushButton(gRenderer, "Increment Default Colour Palette", &IncrementDefaultColourPaletteEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    this->AppendSubMenu(disassembleMenu);
 }
 
 void MenuBar::SetDimensions(int posX, int posY, int width, int height)
@@ -61,9 +70,58 @@ void MenuBar::AppendSubMenu(const SubMenu& button)
 
 void MenuBar::HandleEvent(const SDL_Event& e)
 {
+    // handle events raised from submenus
     for(SubMenu& subMenu : this->subMenus)
     {
         subMenu.HandleEvent(e);
+    }
+
+    if(e.type == SDL_MOUSEBUTTONDOWN)
+    {
+        this->isActive = false;
+
+        int mousePosX = e.button.x;
+        int mousePosY = e.button.y;
+
+        for(SubMenu& subMenu : this->subMenus)
+        {
+            if(subMenu.contains(mousePosX, mousePosY))
+            {
+                //user selected on menubar
+                this->isActive = true;
+                subMenu.SetIsPressed(true);
+            }
+            else
+            {
+                subMenu.SetIsPressed(false);
+            }
+        }
+    }
+    else if( e.type == SDL_MOUSEMOTION )
+    {
+        if(this->isActive)
+        {
+            int mousePosX = e.motion.x;
+            int mousePosY = e.motion.y;
+
+            //simulate pressing submenus under curser
+            int activePos = -1;
+            for(int i = 0; i < this->subMenus.size(); ++i)
+            {
+                if(this->subMenus.at(i).contains(mousePosX, mousePosY))
+                {
+                    activePos = i;
+                }
+            }
+            if(activePos >= 0)
+            {
+                for(SubMenu& subMenu : this->subMenus)
+                {
+                    subMenu.SetIsPressed(false);
+                }
+                this->subMenus.at(activePos).SetIsPressed(true);
+            }
+        }
     }
 }
 

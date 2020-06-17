@@ -10,8 +10,11 @@ enum class MenuEvents : Uint32
     OpenRom,
     SimpleView,
     DisassembleView,
-    PauseEmulator,
-    ContinueEmulator
+    ContinuePauseEmulator,
+    StepEmulator,
+    SaveSnapshot,
+    LoadSnapshot,
+    IncrementDefaultColourPalette
 };
 
 class MenuBar : public IWindow
@@ -19,8 +22,11 @@ class MenuBar : public IWindow
     private:
     std::vector<SubMenu> subMenus;
 
+    //set to true when a submenu is activated
+    bool isActive = false;
+
     private:
-    void RegisterEvent(ToggleButton& button, MenuEvents event);
+    void RegisterEvent(PushButton& button, MenuEvents event);
 
     public:
     MenuBar(SDL_Renderer* gRenderer);
