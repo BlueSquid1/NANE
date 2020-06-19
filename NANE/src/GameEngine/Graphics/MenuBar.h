@@ -14,7 +14,12 @@ enum class MenuEvents : Uint32
     StepEmulator,
     SaveSnapshot,
     LoadSnapshot,
-    IncrementDefaultColourPalette
+    IncrementDefaultColourPalette,
+    ScaleFactor1,
+    ScaleFactor2,
+    ScaleFactor3,
+    ScaleFactor4,
+    ScaleFactor5
 };
 
 class MenuBar : public IWindow

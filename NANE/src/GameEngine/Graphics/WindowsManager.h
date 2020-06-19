@@ -12,12 +12,6 @@
 #include "MenuBar.h"
 #include "FontManager.h"
 
-enum class InputActions
-{
-    none,
-    quit,
-    openRom
-};
 
 /**
  * responsible for updating the graphical display of the game.
@@ -25,7 +19,15 @@ enum class InputActions
 class WindowManager
 {
     private:
+    enum class WindowView
+    {
+        Simple,
+        Disassemble
+    };
+
     int windowScale = 1;
+    bool enableMenuBar = true;
+    WindowView curWindowView = WindowView::Disassemble;
 
     //SDL window handler
     SDL_Window * gWindow = NULL;
@@ -42,15 +44,19 @@ class WindowManager
 
     std::stringstream fpsStringStream;
 
+    void UpdateLayout();
+
     public:
     /**
      * Initalizes the graphics engine.
      */
-    bool Init();
+    bool Init(bool showFileMenu = true);
     
     void ChangeScaleFactor(int newScaleFactor);
 
-    InputActions HandleEvent(const SDL_Event& e);
+    void ChangeViewType(WindowView newWindowView);
+
+    void HandleEvent(const SDL_Event& e);
     
     /**
      * Invoked everytime the screen is ready to be refreshed.

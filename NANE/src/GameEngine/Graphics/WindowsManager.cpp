@@ -1,5 +1,7 @@
 #include "WindowsManager.h"
 
+#include "CustomEventMgr.h"
+
 namespace
 {
 	// scalable dimensions
@@ -21,8 +23,10 @@ namespace
 	const int FILE_BAR_HEIGHT = 22;
 }
 
-bool WindowManager::Init()
+bool WindowManager::Init(bool showFileMenu)
 {
+	this->enableMenuBar = showFileMenu;
+	
 	std::cout << "initalizing SDL" << std::endl;
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
 	{
@@ -36,7 +40,7 @@ bool WindowManager::Init()
 		return false;
 	}
 
-    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1, 1, SDL_WINDOW_HIDDEN);
+    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1, 1, SDL_WINDOW_HIDDEN);
 	if (!this->gWindow)
 	{
 		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
@@ -78,43 +82,130 @@ bool WindowManager::Init()
 
 	this->ChangeScaleFactor(2);
 	SDL_ShowWindow(this->gWindow);
+	SDL_SetWindowPosition(this->gWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	return true;
 }
 
-void WindowManager::ChangeScaleFactor(int newScaleFactor)
+void WindowManager::UpdateLayout()
 {
-	this->windowScale = newScaleFactor;
+	int totalWidth;
+	int totalHeight;
 
-	int mainWindowWidth = MAIN_WINDOW_WIDTH * this->windowScale;
-	int mainWindowHeight = MAIN_WINDOW_HEIGHT * this->windowScale;
-	int chrRomWidth = CHR_ROM_WIDTH * this->windowScale;
-	int chrRomHeight = CHR_ROM_HEIGHT * this->windowScale;
-	int cpuDisplayWidth = CPU_DISPLAY_WIDTH * this->windowScale;
-	int cpuDisplayHeight = CPU_DISPLAY_HEIGHT * this->windowScale;
-	int colourDisplayWidth = COLOUR_DISPLAY_WIDTH * this->windowScale;
-	int colourDisplayHeight = COLOUR_DISPLAY_HEIGHT * this->windowScale;
-	int playerOneInputsWidth = PLAYER_ONE_INPUTS_WIDTH * this->windowScale;
-	int playerOneInputsHeight = PLAYER_ONE_INPUTS_HEIGHT * this->windowScale;
+	if(this->curWindowView == WindowView::Disassemble)
+	{
+		int mainWindowWidth = MAIN_WINDOW_WIDTH * this->windowScale;
+		int mainWindowHeight = MAIN_WINDOW_HEIGHT * this->windowScale;
+		int chrRomWidth = CHR_ROM_WIDTH * this->windowScale;
+		int chrRomHeight = CHR_ROM_HEIGHT * this->windowScale;
+		int cpuDisplayWidth = CPU_DISPLAY_WIDTH * this->windowScale;
+		int cpuDisplayHeight = CPU_DISPLAY_HEIGHT * this->windowScale;
+		int colourDisplayWidth = COLOUR_DISPLAY_WIDTH * this->windowScale;
+		int colourDisplayHeight = COLOUR_DISPLAY_HEIGHT * this->windowScale;
+		int playerOneInputsWidth = PLAYER_ONE_INPUTS_WIDTH * this->windowScale;
+		int playerOneInputsHeight = PLAYER_ONE_INPUTS_HEIGHT * this->windowScale;
 
-	int totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
-	int totalHeight = FILE_BAR_HEIGHT + BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
+		totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
+		totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
 
-	int mainOffsetHeight = FILE_BAR_HEIGHT + BORDER_WIDTH;
-	int mainOffsetWidth = BORDER_WIDTH;
-	this->mainWindow->SetDimensions(mainOffsetWidth, mainOffsetHeight, mainWindowWidth, mainWindowHeight);
-	this->chrRomWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, mainOffsetHeight, chrRomWidth, chrRomHeight);
-	this->cpuWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, chrRomHeight + BORDER_WIDTH + mainOffsetHeight, cpuDisplayWidth, cpuDisplayHeight);
-	this->colourDisplayWindow->SetDimensions(mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, colourDisplayWidth, colourDisplayHeight);
-	this->playerOneInputs->SetDimensions(colourDisplayWidth + BORDER_WIDTH + mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, playerOneInputsWidth, playerOneInputsHeight);
-	this->fpsDisplay->SetDimensions(mainOffsetWidth, mainOffsetHeight, FPS_COUNTER_WIDTH, FPS_COUNTER_HEIGHT);
-	this->menuBar->SetDimensions(0, 0, totalWidth, FILE_BAR_HEIGHT);
+		int mainOffsetHeight = BORDER_WIDTH;
+		int mainOffsetWidth = BORDER_WIDTH;
+		if(this->enableMenuBar)
+		{
+			// make space for the memu bar
+			mainOffsetHeight += FILE_BAR_HEIGHT;
+			totalHeight += FILE_BAR_HEIGHT;
+		}
+		this->mainWindow->SetDimensions(mainOffsetWidth, mainOffsetHeight, mainWindowWidth, mainWindowHeight);
+		this->chrRomWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, mainOffsetHeight, chrRomWidth, chrRomHeight);
+		this->cpuWindow->SetDimensions(mainWindowWidth + BORDER_WIDTH + mainOffsetWidth, chrRomHeight + BORDER_WIDTH + mainOffsetHeight, cpuDisplayWidth, cpuDisplayHeight);
+		this->colourDisplayWindow->SetDimensions(mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, colourDisplayWidth, colourDisplayHeight);
+		this->playerOneInputs->SetDimensions(colourDisplayWidth + BORDER_WIDTH + mainOffsetWidth, mainWindowHeight + BORDER_WIDTH + mainOffsetHeight, playerOneInputsWidth, playerOneInputsHeight);
+		this->fpsDisplay->SetDimensions(mainOffsetWidth, mainOffsetHeight, FPS_COUNTER_WIDTH, FPS_COUNTER_HEIGHT);
+	}
+	else if(this->curWindowView == WindowView::Simple)
+	{
+		int mainWindowWidth = MAIN_WINDOW_WIDTH * this->windowScale;
+		int mainWindowHeight = MAIN_WINDOW_HEIGHT * this->windowScale;
+
+		totalWidth = mainWindowWidth;
+		totalHeight = mainWindowHeight;
+
+		int mainOffsetHeight = 0;
+		int mainOffsetWidth = 0;
+		if(this->enableMenuBar)
+		{
+			// make space for the memu bar
+			mainOffsetHeight += FILE_BAR_HEIGHT;
+			totalHeight += FILE_BAR_HEIGHT;
+		}
+		this->mainWindow->SetDimensions(mainOffsetWidth, mainOffsetHeight, mainWindowWidth, mainWindowHeight);
+	}
+	
+	if(this->enableMenuBar)
+	{
+		this->menuBar->SetDimensions(0, 0, totalWidth, FILE_BAR_HEIGHT);
+	}
 
 	//update window size
 	SDL_SetWindowSize(this->gWindow, totalWidth, totalHeight);
 }
 
-InputActions WindowManager::HandleEvent(const SDL_Event& e)
+void WindowManager::ChangeScaleFactor(int newScaleFactor)
 {
+	this->windowScale = newScaleFactor;
+	this->UpdateLayout();
+}
+
+void WindowManager::ChangeViewType(WindowView newWindowView)
+{
+	this->curWindowView = newWindowView;
+	this->UpdateLayout();
+}
+
+void WindowManager::HandleEvent(const SDL_Event& e)
+{
+	if(e.type == CustomEventMgr::GetInstance()->GetCustomEventType())
+	{
+		MenuEvents menuEvent = (MenuEvents)e.user.code;
+		switch(menuEvent)
+		{
+			case MenuEvents::SimpleView:
+			{
+				this->ChangeViewType(WindowView::Simple);
+				break;
+			}
+			case MenuEvents::DisassembleView:
+			{
+				this->ChangeViewType(WindowView::Disassemble);
+				break;
+			}
+			case MenuEvents::ScaleFactor1:
+			{
+				this->ChangeScaleFactor(1);
+				break;
+			}
+			case MenuEvents::ScaleFactor2:
+			{
+				this->ChangeScaleFactor(2);
+				break;
+			}
+			case MenuEvents::ScaleFactor3:
+			{
+				this->ChangeScaleFactor(3);
+				break;
+			}
+			case MenuEvents::ScaleFactor4:
+			{
+				this->ChangeScaleFactor(4);
+				break;
+			}
+			case MenuEvents::ScaleFactor5:
+			{
+				this->ChangeScaleFactor(5);
+				break;
+			}
+		}
+	}
 	this->menuBar->HandleEvent(e);
 }
 
@@ -127,26 +218,32 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 	//render windows
 	const Matrix<rawColour>& mainDisplay = nesEmulator.GetFrameDisplay();
 	this->mainWindow->Display(mainDisplay);
-	std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
 
-	this->chrRomWindow->Display(*chrRomDisplay);
+	if(this->curWindowView == WindowView::Disassemble)
+	{
+		std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
+		this->chrRomWindow->Display(*chrRomDisplay);
 
-	std::string cpuText = nesEmulator.GenerateCpuScreen();
-	this->cpuWindow->Display(cpuText);
+		std::string cpuText = nesEmulator.GenerateCpuScreen();
+		this->cpuWindow->Display(cpuText);
 
-	std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
-	this->colourDisplayWindow->Display(*colourPalettesDisplay);
+		std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
+		this->colourDisplayWindow->Display(*colourPalettesDisplay);
 
-	std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
-	this->playerOneInputs->Display(*playerOneDisplay);
+		std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
+		this->playerOneInputs->Display(*playerOneDisplay);
 
-	//fps
-	fpsStringStream.str("");
-	fpsStringStream << fps << "FPS";
-	const std::string fpsText = fpsStringStream.str();
-	this->fpsDisplay->Display(fpsText);
+		//fps
+		fpsStringStream.str("");
+		fpsStringStream << fps << "FPS";
+		const std::string fpsText = fpsStringStream.str();
+		this->fpsDisplay->Display(fpsText);
+	}
 
-	this->menuBar->Display();
+	if(this->enableMenuBar)
+	{
+		this->menuBar->Display();
+	}
 
 	//Update the surface
 	SDL_RenderPresent( this->gRenderer );

@@ -65,8 +65,12 @@ void PushButton::HandleEvent(const SDL_Event& e)
     }
 
     //highlighted button on hover over if it isn't a toggle button
-    if(e.type == SDL_MOUSEMOTION)
+    if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN)
     {
+        if(this->displayName == "Increment Default Colour Palette")
+        {
+            int i = 0;
+        }
         int mousePosX = e.motion.x;
         int mousePosY = e.motion.y;
 

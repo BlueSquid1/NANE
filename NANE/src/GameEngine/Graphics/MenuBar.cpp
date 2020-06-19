@@ -31,6 +31,16 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
     viewMenu.AddButton(PushButton(gRenderer, "Simple View", &simpleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 disassembleViewEvent = (Uint32)MenuEvents::DisassembleView;
     viewMenu.AddButton(PushButton(gRenderer, "Disassemble View", &disassembleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 scaleFactorEvent1 = (Uint32)MenuEvents::ScaleFactor1;
+    viewMenu.AddButton(PushButton(gRenderer, "Scale 1:1", &scaleFactorEvent1, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 scaleFactorEvent2 = (Uint32)MenuEvents::ScaleFactor2;
+    viewMenu.AddButton(PushButton(gRenderer, "Scale 1:2", &scaleFactorEvent2, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 scaleFactorEvent3 = (Uint32)MenuEvents::ScaleFactor3;
+    viewMenu.AddButton(PushButton(gRenderer, "Scale 1:4", &scaleFactorEvent3, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 scaleFactorEvent4 = (Uint32)MenuEvents::ScaleFactor4;
+    viewMenu.AddButton(PushButton(gRenderer, "Scale 1:8", &scaleFactorEvent4, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 scaleFactorEvent5 = (Uint32)MenuEvents::ScaleFactor5;
+    viewMenu.AddButton(PushButton(gRenderer, "Scale 1:16", &scaleFactorEvent5, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(viewMenu);
 
     SubMenu emulatorMenu(gRenderer, "Emulator", submenuForground, submenuInactiveBackground, submenuActiveBackground);
@@ -51,7 +61,7 @@ void MenuBar::SetDimensions(int posX, int posY, int width, int height)
     IWindow::SetDimensions(posX, posY, width, height);
 
     //layout the submenu buttons
-    int menuSpacer = 16;
+    int menuSpacer = 18;
     int buttonPosX = menuSpacer;
     int buttonPosY = 0;
     for(SubMenu& subMenu : subMenus)
@@ -70,12 +80,6 @@ void MenuBar::AppendSubMenu(const SubMenu& button)
 
 void MenuBar::HandleEvent(const SDL_Event& e)
 {
-    // handle events raised from submenus
-    for(SubMenu& subMenu : this->subMenus)
-    {
-        subMenu.HandleEvent(e);
-    }
-
     if(e.type == SDL_MOUSEBUTTONDOWN)
     {
         this->isActive = false;
@@ -91,7 +95,23 @@ void MenuBar::HandleEvent(const SDL_Event& e)
                 this->isActive = true;
                 subMenu.SetIsPressed(true);
             }
-            else
+        }
+    }
+
+    // handle events raised from submenus
+    for(SubMenu& subMenu : this->subMenus)
+    {
+        subMenu.HandleEvent(e);
+    }
+
+    if(e.type == SDL_MOUSEBUTTONUP)
+    {
+        int mousePosX = e.button.x;
+        int mousePosY = e.button.y;
+
+        for(SubMenu& subMenu : this->subMenus)
+        {
+            if(!subMenu.contains(mousePosX, mousePosY))
             {
                 subMenu.SetIsPressed(false);
             }
@@ -104,7 +124,7 @@ void MenuBar::HandleEvent(const SDL_Event& e)
             int mousePosX = e.motion.x;
             int mousePosY = e.motion.y;
 
-            //simulate pressing submenus under curser
+            //find the submenu that should be active
             int activePos = -1;
             for(int i = 0; i < this->subMenus.size(); ++i)
             {
@@ -115,6 +135,7 @@ void MenuBar::HandleEvent(const SDL_Event& e)
             }
             if(activePos >= 0)
             {
+                //simulate pressing submenus under curser
                 for(SubMenu& subMenu : this->subMenus)
                 {
                     subMenu.SetIsPressed(false);

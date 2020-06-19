@@ -20,8 +20,14 @@ bool GameEngine::Init(const std::string & serverIp)
 	}
 
 	std::cout << "initalizing game engine" << std::endl;
+	bool showFileMenu;
+#ifdef __DESKTOP__
+	showFileMenu = true;
+#else
+	showFileMenu = false;
+#endif
 
-	bool isGraphicsInit = this->windowsMgr.Init();
+	bool isGraphicsInit = this->windowsMgr.Init(showFileMenu);
 	if(isGraphicsInit == false)
 	{
 		std::cerr << "failed to initalize graphics engine" << std::endl;
