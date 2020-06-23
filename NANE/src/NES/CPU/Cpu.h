@@ -10,6 +10,13 @@
 class Cpu
 {
     private:
+    enum class InterruptType
+    {
+        breakCommand,
+        nmiCommand,
+        irqCommand
+    };
+
     Dma& dma;
 
     int totalClockCycles = 0;
@@ -28,9 +35,11 @@ class Cpu
 
     public:
     Cpu(Dma& dma);
-    bool PowerCycle(dword newPcAddress = 0x8000);
+    bool PowerCycle(dword * overridePcAddress = NULL);
     int Step(bool verbose);
-    void HandleNmiEvent();
+    int HandleIrqEvent(bool verbose);
+    int HandleNmiEvent(bool verbose);
+    void HandleInterrupt(InterruptType interruptType, bool verbose);
 
     /**
      * @param instructionsBefore how many instructions to print before current instructions

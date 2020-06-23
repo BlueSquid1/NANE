@@ -4,6 +4,7 @@
 #include <iostream> //std::cout
 #include <sstream> //std::stringstream
 #include <iomanip> //std::setfill and std::setw
+#include <exception> //throw exceptions
 
 Cpu::Cpu(Dma& dma)
 : dma(dma)
@@ -11,7 +12,7 @@ Cpu::Cpu(Dma& dma)
     //this->dma.GetNmiEventHandler() += this->HandleNmiEvent;
 }
 
-bool Cpu::PowerCycle(dword newPcAddress)
+bool Cpu::PowerCycle(dword * overridePcAddress)
 {
     this->GetRegs().name.P = 0x34;
     this->GetRegs().name.A = 0x0;
@@ -28,21 +29,35 @@ bool Cpu::PowerCycle(dword newPcAddress)
     {
         this->dma.Write(i, 0x0);
     }
-    this->GetRegs().name.PC = newPcAddress;
+
+    if(overridePcAddress == NULL)
+    {
+        //the entry point is set at 0xFFFC in the ROM
+        this->GetRegs().name.PC = BitUtil::GetDWord(&this->dma, 0xFFFC);
+    }
+    else
+    {
+        this->GetRegs().name.PC = *overridePcAddress;
+    }
+
+    this->SetTotalClockCycles(7);
     return true;
 }
 
 int Cpu::Step(bool verbose)
 {
+    //handle DMA
     if(this->dma.GetDmaActive())
     {
         //put CPU to sleep for 85 cycles (or 85 * 3 = 256 ppu cycles)
         return 85;
     }
+
+    //decode instruction
     std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->GetRegs().name.PC, false, verbose);
     if(decodedInst == NULL)
     {
-        std::cerr << "failed to decode instruction at " << this->GetRegs().name.PC << std::endl;
+        std::cerr << "failed to decode instruction at " << this->GetRegs().name.PC << " opcode: " << (int)this->dma.Seek(this->GetRegs().name.PC) << std::endl;
         ++this->GetRegs().name.PC;
         return 0;
     }
@@ -78,10 +93,15 @@ int Cpu::Step(bool verbose)
         std::cout << std::endl;
     }
 
+    if(this->totalClockCycles == 116854)
+    {
+        int i = 0;
+    }
+
     //increment PC
     this->GetRegs().name.PC += instLen;
 
-    //execute instructions
+    //execute instruction
     switch(opcode.instr)
     {
         case Instructions::Instr::ADC:
@@ -196,7 +216,7 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::BRK:
         {
-            std::cerr << "Haven't implemented break command" << std::endl;
+            this->HandleInterrupt(InterruptType::breakCommand, verbose);
             break;
         }
         case Instructions::Instr::BVC:
@@ -385,9 +405,12 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::PHP:
         {
-            //magic value from nestest
-            byte setBreakHigh = this->GetRegs().name.P | 0x30;
-            this->Push(setBreakHigh);
+            // As stated here bit4 and bit5 are always set high for the PHP instruction:
+            // https://wiki.nesdev.com/w/index.php/Status_flags#The_B_flag
+            byte statusTemp = this->GetRegs().name.P;
+            statusTemp |= BitUtil::bit4;
+            statusTemp |= BitUtil::bit5;
+            this->Push(statusTemp);
             break;
         }
         case Instructions::Instr::PLA:
@@ -398,7 +421,8 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::PLP:
         {
-            //from nestest rom
+            // TODO revisit this. should be ignoring bit 4 and bit 5 according to:
+            // https://wiki.nesdev.com/w/index.php/Status_flags#The_B_flag
             byte breakBitLow = (this->Pop() & 0xEF) | 0x20;
             this->GetRegs().name.P = breakBitLow;
            
@@ -427,7 +451,6 @@ int Cpu::Step(bool verbose)
             }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal, 7);
             this->UpdateRegsForZeroAndNeg(result);
-            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::ROR:
@@ -453,12 +476,14 @@ int Cpu::Step(bool verbose)
             }
             this->GetRegs().name.C = BitUtil::GetBits(inputVal, 0);
             this->UpdateRegsForZeroAndNeg(result);
-            //this->UpdateRegsForAccZeroAndNeg(result);
             break;
         }
         case Instructions::Instr::RTI:
         {
-            this->GetRegs().name.P = this->Pop() | 0x20; //nestest
+            // TODO: should be ignore bits 4 and 5 according to:
+            // https://wiki.nesdev.com/w/index.php/Status_flags#The_B_flag
+
+            this->GetRegs().name.P = this->Pop() | 0x20;
             this->GetRegs().name.PCL = this->Pop();
             this->GetRegs().name.PCH = this->Pop();
             break;
@@ -556,9 +581,63 @@ int Cpu::Step(bool verbose)
     return cycleCount;
 }
 
-void Cpu::HandleNmiEvent()
+int Cpu::HandleIrqEvent(bool verbose)
 {
-    
+    if(this->GetRegs().name.I == false)
+    {
+        this->HandleInterrupt(InterruptType::irqCommand, verbose);
+        int cyclesTaken = 7;
+        return cyclesTaken;
+    }
+    return 0;
+}
+
+int Cpu::HandleNmiEvent(bool verbose)
+{
+    this->HandleInterrupt(InterruptType::nmiCommand, verbose);
+    int cyclesTaken = 8;
+    return cyclesTaken;
+}
+
+void Cpu::HandleInterrupt(InterruptType interruptType, bool verbose)
+{
+    dword interruptAddress;
+    byte StateTemp = this->GetRegs().name.P;
+    switch(interruptType)
+    {
+        case InterruptType::breakCommand:
+        {
+            interruptAddress = 0xFFFE;
+            StateTemp |= BitUtil::bit4;
+            break;
+        }
+        case InterruptType::irqCommand:
+        {
+            interruptAddress = 0xFFFC;
+            break;
+        }
+        case InterruptType::nmiCommand:
+        {
+            interruptAddress = 0xFFFA;
+            break;
+        }
+        default:
+        {
+            throw std::invalid_argument("unknown interrupt type");
+            break;
+        }
+    }
+    StateTemp |= BitUtil::bit5;
+
+    if(verbose)
+    {
+        std::cout << "interrupt called, jumping to: " << interruptAddress << std::endl;
+    }
+
+    this->Push(this->GetRegs().name.PC);
+    this->GetRegs().name.I = 1;
+    this->Push(StateTemp);
+    this->GetRegs().name.PC = interruptAddress;
 }
 
 void Cpu::Push(dword value)
@@ -871,6 +950,7 @@ std::unique_ptr<Instructions::Instruction> Cpu::DecodeInstruction(dword pcAddres
     }
     catch(const std::exception& e)
     {
+        //if failed to decode instruction then return NULL
         return NULL;
     }
 }

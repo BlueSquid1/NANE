@@ -28,7 +28,7 @@ bool Nes::LoadCartridge(std::string pathToRom)
 
 bool Nes::PowerCycle()
 {
-    bool cputRet = this->cpu.PowerCycle(0xC004);
+    bool cputRet = this->cpu.PowerCycle();
     if(cputRet == false)
     {
         return false;
@@ -45,12 +45,16 @@ bool Nes::processes(bool verbose)
         int cpuCycles = this->cpu.Step(verbose);
 
         //1 CPU step for 3 PPU steps
-        for(int i = 0; i < cpuCycles * 3; ++i)
+        int ppuSteps = cpuCycles * 3;
+        for(int i = 0; i < ppuSteps; ++i)
         {
             this->ppu.Step();
             if(this->dma.GetNmi() == true)
             {
-                this->cpu.HandleNmiEvent();
+                int interruptCycles = this->cpu.HandleNmiEvent(verbose);
+
+                //interupts take time. run PPU during this time
+                ppuSteps += interruptCycles * 3;
                 this->dma.SetNmi(false);
             }
         }

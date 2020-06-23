@@ -8,16 +8,6 @@
 #include "NES/Memory/Dma.h"
 
 /**
- * test turning on the CPU
- */
-TEST_CASE("Power Cycle") {
-    Dma dma;
-    Cpu cpu(dma);
-    bool powerRet = cpu.PowerCycle();
-    REQUIRE(powerRet == true);
-}
-
-/**
  * running the nestest rom
  */
 TEST_CASE("Run NesTest") {
@@ -34,14 +24,13 @@ TEST_CASE("Run NesTest") {
 
     Dma dma;
     Cpu cpu(dma);
-    cpu.PowerCycle(0xC000);
+    dword nesTestEntry = 0xC000;
+    REQUIRE(cpu.PowerCycle(&nesTestEntry) == true);
 
     CpuRegisters& registers = dma.GetCpuMemory().GetRegisters();
     registers.name.Y = 0;
     registers.name.P = 0x24;
     registers.name.S = 0xFD;
-    
-    cpu.SetTotalClockCycles(7);
 
     CartridgeLoader cartridgeLoader;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";

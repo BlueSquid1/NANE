@@ -10,6 +10,19 @@
 
 class BitUtil
 {
+    public:
+    enum BitPosition
+    {
+        bit0 = 0x01,
+        bit1 = 0x02,
+        bit2 = 0x04,
+        bit3 = 0x08,
+        bit4 = 0x10,
+        bit5 = 0x20,
+        bit6 = 0x40,
+        bit7 = 0x80
+    };
+
     private:
     static const byte bitReverseLookup[16];
     public:
