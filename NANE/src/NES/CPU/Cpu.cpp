@@ -601,24 +601,24 @@ int Cpu::HandleNmiEvent(bool verbose)
 
 void Cpu::HandleInterrupt(InterruptType interruptType, bool verbose)
 {
-    dword interruptAddress;
+    dword interruptLookupAddress;
     byte StateTemp = this->GetRegs().name.P;
     switch(interruptType)
     {
         case InterruptType::breakCommand:
         {
-            interruptAddress = 0xFFFE;
+            interruptLookupAddress = 0xFFFE;
             StateTemp |= BitUtil::bit4;
             break;
         }
         case InterruptType::irqCommand:
         {
-            interruptAddress = 0xFFFC;
+            interruptLookupAddress = 0xFFFC;
             break;
         }
         case InterruptType::nmiCommand:
         {
-            interruptAddress = 0xFFFA;
+            interruptLookupAddress = 0xFFFA;
             break;
         }
         default:
@@ -628,16 +628,17 @@ void Cpu::HandleInterrupt(InterruptType interruptType, bool verbose)
         }
     }
     StateTemp |= BitUtil::bit5;
+    dword newPcAddress = BitUtil::GetDWord(&this->dma, interruptLookupAddress);
 
     if(verbose)
     {
-        std::cout << "interrupt called, jumping to: " << interruptAddress << std::endl;
+        std::cout << "interrupt called, jumping to: " << newPcAddress << std::endl;
     }
 
     this->Push(this->GetRegs().name.PC);
     this->GetRegs().name.I = 1;
     this->Push(StateTemp);
-    this->GetRegs().name.PC = interruptAddress;
+    this->GetRegs().name.PC = newPcAddress;
 }
 
 void Cpu::Push(dword value)
