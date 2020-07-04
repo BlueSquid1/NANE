@@ -15,6 +15,8 @@ enum class MenuEvents : Uint32
     SaveSnapshot,
     LoadSnapshot,
     IncrementDefaultColourPalette,
+    StepAssembly,
+    ShowFpsCounter,
     ScaleFactor1,
     ScaleFactor2,
     ScaleFactor3,

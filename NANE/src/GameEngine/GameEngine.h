@@ -25,7 +25,8 @@ class GameEngine
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
 
-    bool step = false;
+    bool frameStep = false;
+    bool assemblyStep = false;
     bool run = false;
     bool verbose = false;
 

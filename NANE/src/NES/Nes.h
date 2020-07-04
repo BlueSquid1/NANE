@@ -28,7 +28,7 @@ class Nes
 
     bool PowerCycle();
 
-    bool processes(bool verbose);
+    bool processes(bool verbose, bool singleStep = false);
 
     const Matrix<rawColour>& GetFrameDisplay();
     long long int& GetFrameCount();

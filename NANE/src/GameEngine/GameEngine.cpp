@@ -76,12 +76,17 @@ bool GameEngine::UserInput()
 				}
 				case MenuEvents::StepEmulator:
 				{
-					this->step = true;
+					this->frameStep = true;
 					break;
 				}
 				case MenuEvents::IncrementDefaultColourPalette:
 				{
 					this->nesEmulator.IncrementDefaultColourPalette();
+					break;
+				}
+				case MenuEvents::StepAssembly:
+				{
+					this->assemblyStep = true;
 					break;
 				}
 			}
@@ -102,12 +107,17 @@ bool GameEngine::UserInput()
 				{
 					case SDLK_n:
 					{
-						this->step = true;
+						this->frameStep = true;
 						break;
 					}
 					case SDLK_p:
 					{
 						this->run = !this->run;
+						break;
+					}
+					case SDLK_m:
+					{
+						this->assemblyStep = true;
 						break;
 					}
 					default:
@@ -130,10 +140,11 @@ bool GameEngine::UserInput()
 
 bool GameEngine::Processing()
 {
-	if(this->step == true || this->run == true)
+	if(this->frameStep == true || this->run == true || this->assemblyStep == true)
 	{
-		this->nesEmulator.processes(this->verbose);
-		this->step = false;
+		this->nesEmulator.processes(this->verbose, this->assemblyStep);
+		this->frameStep = false;
+		this->assemblyStep = false;
 	}
 	return true;
 }

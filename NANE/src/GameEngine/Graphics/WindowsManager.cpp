@@ -204,6 +204,11 @@ void WindowManager::HandleEvent(const SDL_Event& e)
 				this->ChangeScaleFactor(5);
 				break;
 			}
+			case MenuEvents::ShowFpsCounter:
+			{
+				this->enableFpsCounter = !this->enableFpsCounter;
+				break;
+			}
 		}
 	}
 	this->menuBar->HandleEvent(e);
@@ -232,8 +237,11 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 
 		std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
 		this->playerOneInputs->Display(*playerOneDisplay);
+	}
 
-		//fps
+	// fps counter
+	if(this->enableFpsCounter)
+	{
 		fpsStringStream.str("");
 		fpsStringStream << fps << "FPS";
 		const std::string fpsText = fpsStringStream.str();

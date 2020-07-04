@@ -37,7 +37,7 @@ bool Nes::PowerCycle()
     return true;
 }
 
-bool Nes::processes(bool verbose)
+bool Nes::processes(bool verbose, bool singleStep)
 {
     long long int frameCount = this->GetFrameCount();
     while( this->GetFrameCount() == frameCount )
@@ -57,6 +57,12 @@ bool Nes::processes(bool verbose)
                 ppuSteps += interruptCycles * 3;
                 this->dma.SetNmi(false);
             }
+        }
+
+        // if in single step mode then only run 1 assembly instruction at a time
+        if(singleStep == true)
+        {
+            return true;
         }
     }
     return true;

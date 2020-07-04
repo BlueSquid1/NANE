@@ -28,6 +28,7 @@ class WindowManager
     int windowScale = 1;
     bool enableMenuBar = true;
     WindowView curWindowView = WindowView::Disassemble;
+    bool enableFpsCounter = true;
 
     //SDL window handler
     SDL_Window * gWindow = NULL;

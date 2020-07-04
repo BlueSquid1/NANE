@@ -31,6 +31,8 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
     viewMenu.AddButton(PushButton(gRenderer, "Simple View", &simpleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 disassembleViewEvent = (Uint32)MenuEvents::DisassembleView;
     viewMenu.AddButton(PushButton(gRenderer, "Disassemble View", &disassembleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 showFpsEvent = (Uint32)MenuEvents::ShowFpsCounter;
+    viewMenu.AddButton(PushButton(gRenderer, "Show/Hide FPS Counter", &showFpsEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 scaleFactorEvent1 = (Uint32)MenuEvents::ScaleFactor1;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:1", &scaleFactorEvent1, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 scaleFactorEvent2 = (Uint32)MenuEvents::ScaleFactor2;
@@ -47,12 +49,14 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
     Uint32 continueEvent = (Uint32)MenuEvents::ContinuePauseEmulator;
     emulatorMenu.AddButton(PushButton(gRenderer, "Continue/Pause (p)", &continueEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 pauseEvent = (Uint32)MenuEvents::StepEmulator;
-    emulatorMenu.AddButton(PushButton(gRenderer, "Step (n)", &pauseEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    emulatorMenu.AddButton(PushButton(gRenderer, "Step To Next Frame (n)", &pauseEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(emulatorMenu);
 
     SubMenu disassembleMenu(gRenderer, "Disassemble", submenuForground, submenuInactiveBackground, submenuActiveBackground);
     Uint32 IncrementDefaultColourPaletteEvent = (Uint32)MenuEvents::IncrementDefaultColourPalette;
     disassembleMenu.AddButton(PushButton(gRenderer, "Increment Default Colour Palette", &IncrementDefaultColourPaletteEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 stepAssemblyEvent = (Uint32)MenuEvents::StepAssembly;
+    disassembleMenu.AddButton(PushButton(gRenderer, "Step To Next CPU Instruction (m)", &stepAssemblyEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(disassembleMenu);
 }
 
