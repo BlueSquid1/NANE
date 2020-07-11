@@ -39,17 +39,31 @@ bool Nes::PowerCycle()
 
 bool Nes::processes(bool verbose, bool singleStep)
 {
+    // loop until next frame is reached
     long long int frameCount = this->GetFrameCount();
     while( this->GetFrameCount() == frameCount )
     {
-        int cpuCycles = this->cpu.Step(verbose);
+        //run cpu
+        int ppuSteps = 0;
+        if(!this->dma.IsDmaActive())
+        {
+            int cpuCycles = this->cpu.Step(verbose);
 
-        //1 CPU step for 3 PPU steps
-        int ppuSteps = cpuCycles * 3;
+            //1 CPU step for 3 PPU steps
+            ppuSteps = cpuCycles * 3;
+        }
+        else
+        {
+            //cpu skips 1 cpu cycle (= 3 ppu cycles)
+            ppuSteps = 3;
+        }
+
         for(int i = 0; i < ppuSteps; ++i)
         {
             this->ppu.Step();
-            if(this->dma.GetNmi() == true)
+
+            //handle non-maskable interrupts
+            if(this->dma.GetNmi())
             {
                 int interruptCycles = this->cpu.HandleNmiEvent(verbose);
 
@@ -57,10 +71,16 @@ bool Nes::processes(bool verbose, bool singleStep)
                 ppuSteps += interruptCycles * 3;
                 this->dma.SetNmi(false);
             }
+
+            // handle DMA transfers
+            if(this->dma.IsDmaActive())
+            {
+                this->dma.ProcessDma();
+            }
         }
 
         // if in single step mode then only run 1 assembly instruction at a time
-        if(singleStep == true)
+        if(singleStep)
         {
             return true;
         }

@@ -58,10 +58,6 @@ class Ppu
 
     std::unique_ptr<Ppu::Point> CalcNextFetchTile();
 
-    void ProcessDma();
-
-    bool IsDmaActive();
-
     /**
      * just for dissassembly purposes
      */

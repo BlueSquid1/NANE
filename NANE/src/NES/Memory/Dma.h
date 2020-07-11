@@ -43,6 +43,10 @@ class Dma : public IMemoryRW
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
 
+    void ProcessDma();
+
+    bool IsDmaActive();
+
     byte PpuRead(dword address);
     void PpuWrite(dword address, byte value);
     

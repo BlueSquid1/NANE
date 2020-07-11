@@ -213,57 +213,6 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
     }
 }
 
-void Ppu::ProcessDma()
-{
-    //handle DMA active
-    if(this->IsDmaActive())
-    {
-        //should write every second ppu cycle
-        if(this->dma.GetPpuMemory().GetTotalPpuCycles() % 2 == 0)
-        {
-            //read the value
-            dword fetchAddress = this->dma.GetDmaBaseAddress() + this->dma.GetDmaAddressOffset();
-            this->dma.SetDmaBuffer(this->dma.Read(fetchAddress));
-        }
-        else
-        {
-            //write the value
-            dword targetAddress = this->dma.GetDmaAddressOffset();
-            byte bufferVal = this->dma.GetDmaBuffer();
-            this->dma.GetPpuMemory().GetOam().Write(targetAddress, bufferVal);
-
-            ++targetAddress;
-            this->dma.SetDmaAddressOffset(targetAddress);
-
-            if(targetAddress >= 256)
-            {
-                //reached the end of DMA
-                this->dma.SetDmaActive(false);
-            }
-        }
-    }
-}
-
-bool Ppu::IsDmaActive()
-{
-    if(this->dma.GetDmaActive() == false)
-    {
-        return false;
-    }
-
-    if(this->dma.GetDmaGoodCycle() == false)
-    {
-        //dma starts on the next even cycle
-        if(this->dma.GetPpuMemory().GetTotalPpuCycles() % 2 == 1)
-        {
-            this->dma.SetDmaGoodCycle(true);
-        }
-        return false;
-    }
-
-    return true;
-}
-
 rawColour Ppu::calc_background_pixel()
 {
     //get pattern value

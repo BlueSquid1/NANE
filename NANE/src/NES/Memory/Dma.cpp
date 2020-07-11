@@ -99,6 +99,7 @@ void Dma::Write(dword address, byte value)
         }
         case DmaAddresses::DMA_ADDR:
         {
+            // enable DMA
             dword_p startAddress;
             startAddress.val = 0;
             startAddress.upper = value;
@@ -171,6 +172,57 @@ byte Dma::Seek(dword address) const
     {
         throw std::out_of_range("DMA: tried to CPU seek to an invalid memory address.");
     }
+}
+
+void Dma::ProcessDma()
+{
+    //handle DMA active
+    if(this->IsDmaActive())
+    {
+        //should write every second ppu cycle
+        if(this->GetPpuMemory().GetTotalPpuCycles() % 2 == 0)
+        {
+            //read the value
+            dword fetchAddress = this->GetDmaBaseAddress() + this->GetDmaAddressOffset();
+            this->SetDmaBuffer(this->Read(fetchAddress));
+        }
+        else
+        {
+            //write the value
+            dword targetAddress = this->GetDmaAddressOffset();
+            byte bufferVal = this->GetDmaBuffer();
+            this->GetPpuMemory().GetOam().Write(targetAddress, bufferVal);
+
+            ++targetAddress;
+            this->SetDmaAddressOffset(targetAddress);
+
+            if(targetAddress >= 256)
+            {
+                //reached the end of DMA
+                this->SetDmaActive(false);
+            }
+        }
+    }
+}
+
+bool Dma::IsDmaActive()
+{
+    if(this->GetDmaActive() == false)
+    {
+        return false;
+    }
+
+    if(this->GetDmaGoodCycle() == false)
+    {
+        //dma starts on the next even cycle
+        if(this->GetPpuMemory().GetTotalPpuCycles() % 2 == 1)
+        {
+            this->SetDmaGoodCycle(true);
+        }
+        return false;
+    }
+
+    return true;
 }
 
 byte Dma::PpuRead(dword address)
