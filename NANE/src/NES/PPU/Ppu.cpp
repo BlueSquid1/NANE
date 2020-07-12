@@ -190,7 +190,7 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
         case 4:
         {
             //get lower pattern byte
-            int tableNum = 0;
+            int tableNum = this->GetRegs().name.backgroundPatternTable;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
             byte fineY = curLine % PatternTables::TILE_HEIGHT;
@@ -202,7 +202,7 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
         case 6:
         {
             //get upper pattern byte
-            int tableNum = 0;
+            int tableNum = this->GetRegs().name.backgroundPatternTable;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
             byte fineY = curLine % PatternTables::TILE_HEIGHT;
