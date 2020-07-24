@@ -28,12 +28,8 @@ Ppu::Point Ppu::NextPixel()
     return nextPoint;
 }
 
-std::unique_ptr<Ppu::Point> Ppu::CalcNextFetchTile()
+std::unique_ptr<Ppu::Point> Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
 {
-    int curLine = this->dma.GetPpuMemory().GetScanLineNum();
-    int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
-
-
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
     {
         //fetch from next scanline
@@ -61,11 +57,6 @@ std::unique_ptr<Ppu::Point> Ppu::CalcNextFetchTile()
 
     //fetching not needed at current scanline/cycle
     return NULL;
-}
-
-rawColour Ppu::calc_sprite_pixel()
-{
-    return {0x0};
 }
 
 bool Ppu::PowerCycle()
@@ -107,19 +98,18 @@ bool Ppu::PowerCycle()
 
 int Ppu::Step()
 {
-    
-
     int curLine = this->dma.GetPpuMemory().GetScanLineNum();
     int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
 
     //special cases
-    if(curLine == -1 && curCycle == 1)
+    if(curLine == PRE_SCANLINE && curCycle == START_VISIBLE_CYCLE)
     {
-        //start of new frame so clear VBlank flag
+        //start of new frame so clear previous frame registers
         this->GetRegs().name.verticalBlank = false;
+        this->GetRegs().name.spriteOverflow = false;
         ++this->frameCountNum;
     }
-    else if( curLine == 241 && curCycle == 1 )
+    else if( curLine == 241 && curCycle == START_VISIBLE_CYCLE )
     {
         //end of frame, set VBlank flag
         this->GetRegs().name.verticalBlank = true;
@@ -130,16 +120,20 @@ int Ppu::Step()
     }
 
     //attempt to fetch next tile
-    std::unique_ptr<Ppu::Point> fetchTile = this->CalcNextFetchTile();
+    std::unique_ptr<Ppu::Point> fetchTile = this->CalcNextBgrFetchTile(curCycle, curLine);
     if(fetchTile != NULL)
     {
-        this->backgroundFetch(fetchTile);
+        this->backgroundFetch(fetchTile, curCycle, curLine);
     }
+
+    //fetch sprites
+    this->sprite_fetch(curCycle, curLine);
 
     // visible scanlines
     if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE) )
     {
         rawColour bPixel = this->calc_background_pixel();
+        rawColour fPixel = this->dma.GetPpuMemory().GetSecondaryOam().CalcForegroundPixel(curCycle);
 
         //pick between bPixel and sPixel based on some state
         rawColour pixelColour = bPixel;
@@ -161,11 +155,9 @@ int Ppu::Step()
 }
 
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
-void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile)
+void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, int curLine)
 {
-    //called between 1-257 and 321-337
-    int curLine = this->dma.GetPpuMemory().GetScanLineNum();
-    int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
+    //called between 1-256 and 321-337
     curCycle -= PRE_SCANLINE;
     switch(curCycle % 8)
     {
@@ -232,13 +224,66 @@ rawColour Ppu::calc_background_pixel()
     this->GetRegs().bgr.lsbPalletePlane.val >>= 1;
     this->GetRegs().bgr.msbPalletePlane.val >>= 1;
 
-    //this->dma.GetPpuMemory().GetPalettes()->name.backgroundPalettes
     rawColour nesColourIndex = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
     return nesColourIndex;
 }
 
-void Ppu::sprite_fetch()
+void Ppu::sprite_fetch(int curCycle, int curLine)
 {
+    // cycle breakdown and high level description for sprite fetching can be found here:
+    // https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation#Details
+
+    int nextScanline = curLine + 1;
+    if(nextScanline <= LAST_VISIBLE_SCANLINE)
+    {
+        // moving sprites on next scanline to secondary OAM
+        Oam& primaryOam = this->dma.GetPpuMemory().GetPrimaryOam();
+        OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
+
+        // according to diagram below clearing and sprite evaluation don't happen on pre scanline:
+        // https://wiki.nesdev.com/w/images/d/d1/Ntsc_timing.png
+        if(nextScanline >= START_VISIBLE_SCANLINE)
+        {
+            if(curCycle == START_VISIBLE_CYCLE)
+            {
+                // clear previous secondary OAM
+                secondaryOam.Clear();
+            }
+            else if( curCycle == START_SPRITE_EVALUATION_CYCLE )
+            {
+                for(int i = 0; i < Oam::TotalNumOfSprites; ++i)
+                {
+                    const Oam::Sprite& primarySprite = primaryOam.GetSprite(i);
+
+                    // check if sprite is on next scanline
+                    int spriteWidth = 8;
+                    if(this->GetRegs().name.spriteSize)
+                    {
+                        spriteWidth = 16;
+                    }
+                    if(nextScanline >= primarySprite.posY && nextScanline < primarySprite.posY + spriteWidth)
+                    {
+                        //sprite appears on next scanline
+                        secondaryOam.AppendSprite(primarySprite);
+                    }
+                }
+
+                if( secondaryOam.GetActiveSpriteNum() > 8 )
+                {
+                    this->GetRegs().name.spriteOverflow = true;
+                }
+            }
+        }
+
+        if(curCycle == START_SPRITE_TILE_FETCH)
+        {
+            secondaryOam.PopulateOamTableBuffers(nextScanline, curCycle);
+        }
+    }
+
+
+
+
     //sprite evaluation - Turn the attribute data and the pattern table data into palette indices, and combine them with data from sprite data using priority.
     
     //decrement x-position counters in all 8 OAM sprites

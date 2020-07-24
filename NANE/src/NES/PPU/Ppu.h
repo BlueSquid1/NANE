@@ -17,17 +17,20 @@ class Ppu
         int x;
         int y;
     };
-    const int LAST_CYCLE = 340;
-    const int LAST_SCANLINE = 260;
-
-    const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
-    const int LAST_NEXT_SCANLINE_FETCHING = 336; //cycles
-    const int START_VISIBLE_CYCLE = 1; //cycles
-    const int LAST_VISIBLE_CYCLE = 256; //cycles
-    const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8;
-    const int PRE_SCANLINE = -1;
+    const int PRE_SCANLINE = -1; //scanline
     const int START_VISIBLE_SCANLINE = 0; //scanlines
     const int LAST_VISIBLE_SCANLINE = 239; //scanlines
+    const int LAST_SCANLINE = 260; //scanlines
+    const int LAST_CYCLE = 340; //scanlines
+
+    const int START_VISIBLE_CYCLE = 1; //cycles
+    const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
+    const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
+    const int LAST_VISIBLE_CYCLE = 256; //cycles
+    const int START_SPRITE_TILE_FETCH = 261;
+    const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
+    const int LAST_NEXT_SCANLINE_FETCHING = 336; //cycles
+    const int FIRST_NON_VISIBLE_CYCLE = 257; // cycles
 
     Dma& dma;
 
@@ -42,10 +45,9 @@ class Ppu
     Point NextPixel();
 
     rawColour calc_background_pixel();
-    rawColour calc_sprite_pixel();
 
-    void backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile);
-    void sprite_fetch();
+    void backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, int curLine);
+    void sprite_fetch(int curCycle, int curLine);
 
     PpuRegisters& GetRegs();
 
@@ -56,7 +58,7 @@ class Ppu
     bool PowerCycle();
     int Step();
 
-    std::unique_ptr<Ppu::Point> CalcNextFetchTile();
+    std::unique_ptr<Ppu::Point> CalcNextBgrFetchTile(int curCycle, int curLine);
 
     /**
      * just for dissassembly purposes

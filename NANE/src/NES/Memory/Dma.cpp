@@ -191,7 +191,7 @@ void Dma::ProcessDma()
             //write the value
             dword targetAddress = this->GetDmaAddressOffset();
             byte bufferVal = this->GetDmaBuffer();
-            this->GetPpuMemory().GetOam().Write(targetAddress, bufferVal);
+            this->GetPpuMemory().GetPrimaryOam().Write(targetAddress, bufferVal);
 
             ++targetAddress;
             this->SetDmaAddressOffset(targetAddress);

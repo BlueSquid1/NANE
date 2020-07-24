@@ -1,6 +1,7 @@
 #ifndef NAME_TABLES
 #define NAME_TABLES
 
+#include "PatternTables.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 #include "NES/Memory/Matrix.h"
@@ -15,7 +16,6 @@
  */
 
 typedef byte paletteIndex;
-typedef byte patternIndex;
 
 struct QuadAreaPalette
 {

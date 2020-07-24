@@ -14,6 +14,7 @@ PpuRegisters::PpuRegisters()
     this->bgr.scrollY.val = 0;
     this->bgr.ppuScrollLatch = false;
     this->bgr.ppuDataReadBuffer = 0;
+    //todo
     // this->bgr.ntByte = 0;
     // this->bgr.atByte = 0;
     // this->bgr.tileLo = 0;

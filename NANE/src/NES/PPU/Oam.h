@@ -3,19 +3,24 @@
 
 #include "NES/Memory/MemoryRepeaterArray.h"
 
+#include "PatternTables.h"
+
+typedef byte oamIndex;
+
 class Oam : public MemoryRepeaterArray
 {
+    public:
     struct Sprite
     {
         byte posY;
-        byte index;
+        patternIndex index;
         union
         {
             byte attributes;
             struct
             {
                 byte palette : 2; //palette colour to use
-                bit _ : 3; //unimplemented bits 
+                byte _ : 3; //unimplemented bits 
                 bit backgroundPriority : 1; //0: in front of background; 1: behind background
                 bit flipHorizontally : 1; //flip sprite horizontally
                 bit flipVertically : 1; //flip sprite vertically
@@ -24,12 +29,15 @@ class Oam : public MemoryRepeaterArray
         byte posX;
     };
 
+    static const int TotalNumOfSprites = 64;
+    static const int rawLen = 256;
+
     struct OamStruct
     {
-        Sprite sprites[64];
+        // sprite at 0 has highest priority
+        //sprite at 64 has lowest priority
+        Sprite sprites[TotalNumOfSprites];
     };
-
-    static const int rawLen = 256;
 
     //anonymous union
     union
@@ -40,6 +48,12 @@ class Oam : public MemoryRepeaterArray
 
     public:
     Oam();
+
+    //dissamble methods:
+    std::string GenerateSpritesProperties() const;
+
+    //getter/setters
+    const Oam::Sprite& GetSprite(int spriteNum) const;
 };
 
 #endif

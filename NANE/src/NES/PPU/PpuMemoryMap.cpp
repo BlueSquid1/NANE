@@ -3,9 +3,7 @@
 #include <iostream> //std::cerr
 
 PpuMemoryMap::PpuMemoryMap()
-    : IMemoryRW(0x2000, 0x3FFF),
-    primOam( 256 ),
-    secOam( 32 )
+    : IMemoryRW(0x2000, 0x3FFF)
 {
 }
 
@@ -16,7 +14,16 @@ byte PpuMemoryMap::Read(dword address)
     {
         case PpuRegisters::OAMDATA_ADDR:
         {
-            return this->oamMem.Read(this->ppuRegMem.name.OAMADDR);
+            byte oamAddress = this->ppuRegMem.name.OAMADDR;
+            //expose the internal secondary OAM (32 byte in length)
+            if(oamAddress < 32)
+            {
+                return this->secondaryOamMem.Read(oamAddress);
+            }
+            else
+            {
+                return this->primaryOamMem.Read(oamAddress);
+            }
             break;
         }
     }
@@ -43,7 +50,7 @@ void PpuMemoryMap::Write(dword address, byte value)
     {
         case PpuRegisters::OAMDATA_ADDR:
         {
-            this->oamMem.Write(this->ppuRegMem.name.OAMADDR, value);
+            this->primaryOamMem.Write(this->ppuRegMem.name.OAMADDR, value);
             ++this->ppuRegMem.name.OAMADDR;
             return;
             break;
@@ -121,9 +128,14 @@ int PpuMemoryMap::GetScanCycleNum() const
     return this->scanCycleNum;
 }
 
-Oam& PpuMemoryMap::GetOam()
+Oam& PpuMemoryMap::GetPrimaryOam()
 {
-    return this->oamMem;
+    return this->primaryOamMem;
+}
+
+OamSecondary& PpuMemoryMap::GetSecondaryOam()
+{
+    return this->secondaryOamMem;
 }
 
 long long& PpuMemoryMap::GetTotalPpuCycles()

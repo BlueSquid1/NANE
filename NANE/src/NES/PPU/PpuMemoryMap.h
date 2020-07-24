@@ -6,6 +6,7 @@
 #include "PatternTables.h"
 #include "NameTables.h"
 #include "Oam.h"
+#include "OamSecondary.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
 
@@ -15,10 +16,10 @@ class PpuMemoryMap : public IMemoryRW
     PpuRegisters ppuRegMem;
     NameTables nametableMem; //layout (vram)
     ColourPalettes palettesMem; //colours
-    Oam oamMem;
+    Oam primaryOamMem; //all active sprites
+    OamSecondary secondaryOamMem; //just active sprites on current scanline
     
-    std::vector<byte> primOam; //256 bytes
-    std::vector<byte> secOam; //32 bytes (8 sprites to render on scanline)
+    //std::vector<byte> secOam; //32 bytes (8 sprites to render on scanline)
 
     //these are here because this state is useful when restoring the PPU to a previous save
     int scanlineNum = -1; //the current scanline being rendered between -1 and 260
@@ -39,11 +40,12 @@ class PpuMemoryMap : public IMemoryRW
     PpuRegisters& GetRegisters();
     const PpuRegisters& GetRegisters() const;
     NameTables& GetNameTables();
+    Oam& GetPrimaryOam();
+    OamSecondary& GetSecondaryOam();
     void SetScanLineNum(int scanLineNum);
     int GetScanLineNum() const;
     void SetScanCycleNum(int scanCycleNum);
     int GetScanCycleNum() const;
-    Oam& GetOam();
     long long& GetTotalPpuCycles();
     void SetTotalPpuCycles(long long& cycles);
 };

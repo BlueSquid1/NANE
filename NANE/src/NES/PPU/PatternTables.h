@@ -5,6 +5,8 @@
 #include "NES/Memory/Matrix.h"
 #include "NES/Memory/BitUtil.h"
 
+typedef byte patternIndex;
+
 class PatternTables
 {
     public:

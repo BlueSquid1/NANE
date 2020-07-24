@@ -2,6 +2,7 @@
 #define PPU_REGISTERS
 
 #include "NameTables.h"
+#include "Oam.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 
@@ -74,21 +75,6 @@ class PpuRegisters : public MemoryRepeaterArray
         byte PPUDATA; //0x2007
     };
 
-    //https://wiki.nesdev.com/w/index.php/PPU_scrolling
-    // union LoopyRegister
-    // {
-    //     struct
-    //     {
-    //         dword coarseX : 5;
-    //         dword coarseY : 5;
-    //         dword nametableX : 1;
-    //         dword nametableY : 1;
-    //         dword fineY : 3;
-    //         dword unused : 1;
-    //     };
-    //     dword_p reg;
-    // };
-
     union scrollRegister
     {
         struct
@@ -127,23 +113,6 @@ class PpuRegisters : public MemoryRepeaterArray
 
         byte lsbNextTile;
         byte msbNextTile;
-
-        // // Temporary Registers
-        // byte ntByte;
-        // byte atByte;
-        // byte tileLo;
-        // byte tileHi;
-        
-        // // Shift Registers for background
-        // struct 
-        // {
-        //     byte paletteAttribute1; //colour attribute 1 (controls bit 0)
-        //     byte paletteAttribute2; //colour attribute 1 (controls bit 1)
-        //     // bool atLatch1;
-        //     // bool atLatch2;
-        //     dword_p patternPlane1; //background pattern plane 1 (controls bit 0)
-        //     dword_p patternPlane2; //background pattern plane 2 (controls bit 1)
-        // } shift;
     };
 
     static const int rawLen = 8;

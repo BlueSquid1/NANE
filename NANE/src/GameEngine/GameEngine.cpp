@@ -41,6 +41,7 @@ bool GameEngine::LoadMedia()
 {
 	//std::string romPath = "./NANE/test/resources/nestest.nes";
 	std::string romPath = "./NANE/test/resources/DonkeyKong.nes";
+	//std::string romPath = "./NANE/test/resources/SuperMarioBros.nes";
 	if(this->nesEmulator.LoadCartridge(romPath) == false)
 	{
 		return false;

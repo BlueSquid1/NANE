@@ -14,6 +14,10 @@
 struct paletteStruct
 {
     colourIndex backgroundPalettes[4][4];
+    /*
+    Note: the first index for each sprite palette can be considered 
+    'transparent' as is redirrects to the background colour.
+    */
     colourIndex spritePalettes[4][4];
 };
 
