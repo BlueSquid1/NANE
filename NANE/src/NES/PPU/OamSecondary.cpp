@@ -1,5 +1,7 @@
 #include "OamSecondary.h"
 
+#include "PatternTables.h"
+
 #include <exception>
 
 OamSecondary::OamSecondary()
@@ -8,42 +10,71 @@ OamSecondary::OamSecondary()
     this->Clear();
 }
 
-void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite)
+void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex)
 {
     if(this->activeSpriteNum < 0 && this->activeSpriteNum >= OamPrimary::TotalNumOfSprites)
     {
         throw std::invalid_argument("invalid activeSpriteNum to append the current sprite");
     }
     this->name.sprites[this->activeSpriteNum] = sprite;
+    this->SpriteBuffers[this->activeSpriteNum].primaryOamIndex = primaryOamIndex;
     ++this->activeSpriteNum;
 }
 
-void OamSecondary::PopulateOamTableBuffers(int scanline, int curCycle)
+std::unique_ptr<OamSecondary::ScanlineTile> OamSecondary::CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const PatternTables::BitTile& spriteTile) const
 {
-    // const Oam::Sprite& sprite = this->name.sprites[i];
-    // patternIndex spritePattern = sprite.index;
-    // int tableNum = this->GetRegs().name.sprite8x8PatternTable;
-    // PatternTables::BitTile& spriteTile = this->dma.GetPatternTile(tableNum, spritePattern);
+    //TODO large sprites
+    int tileLine = scanline - sprite.posY;
+    if(tileLine < 0 || tileLine > 8)
+    {
+        throw std::invalid_argument("scanline does not contain the sprite");
+    }
+
+    if(sprite.flipVertically)
+    {
+        tileLine = 7 - tileLine;
+    }
+
+    std::unique_ptr<OamSecondary::ScanlineTile> spriteBuffer = std::make_unique<OamSecondary::ScanlineTile>();
+    spriteBuffer->lsbSpriteTile = spriteTile.LsbPlane[tileLine];
+    spriteBuffer->msbSpriteTile = spriteTile.MsbPlane[tileLine];
+
+    if(!sprite.flipHorizontally)
+    {
+        spriteBuffer->lsbSpriteTile = BitUtil::FlipByte(spriteBuffer->lsbSpriteTile);
+        spriteBuffer->msbSpriteTile = BitUtil::FlipByte(spriteBuffer->msbSpriteTile);
+    }
+    return spriteBuffer;
 }
 
-rawColour OamSecondary::CalcForegroundPixel(int curCycle) const
+OamSecondary::SpritePixel OamSecondary::CalcForgroundPixel(int curCycle) const
 {
-    // //loop through secondary OAM
-    // OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
-    // for(int i = 0; i < secondaryOam.GetActiveSpriteNum(); ++i)
-    // {
-    //     const Oam::Sprite& sprite = secondaryOam.GetSprite(i);
-
-    // }
-    // //look at scanline and compare to secondary OAM X values
-    // //calculate first non-transparent pattern value
-
-    // //lookup colour for pattern value (only can use the last 4 palletes)
-
-    // //handle sprite zero hits here (cycle 4)
-
-    // //return colour
-    return {0x0};
+    // loop through secondary OAM and return the first non transparent sprite
+    for(int i = 0; i < this->activeSpriteNum; ++i)
+    {
+        const Sprite& sprite = this->GetSprite(i);
+        //check if the cycle is within the sprite width
+        int spriteOffset = curCycle - sprite.posX;
+        if(spriteOffset >= 0 && spriteOffset < PatternTables::TILE_WIDTH)
+        {
+            //check if the pixel is transparent (i.e. pattern = 0)
+            const ScanlineTile& spriteBuffer = this->GetSpriteScanlineTile(i);
+            bit lsbSpriteTile = BitUtil::GetBits(spriteBuffer.lsbSpriteTile, spriteOffset);
+            bit msbSpriteTile = BitUtil::GetBits(spriteBuffer.msbSpriteTile, spriteOffset);
+            patternIndex patternValue = (msbSpriteTile << 1) | lsbSpriteTile;
+            if(patternValue != 0)
+            {
+                SpritePixel spritePixel;
+                spritePixel.primaryOamIndex = i;
+                spritePixel.pattern = patternValue;
+                return spritePixel;
+            }
+        }
+    }
+    //no sprite at current PPU position
+    SpritePixel spritePixel;
+    spritePixel.primaryOamIndex = -1;
+    return spritePixel;
 }
 
 void OamSecondary::Clear()
@@ -60,11 +91,20 @@ int OamSecondary::GetActiveSpriteNum() const
     return this->activeSpriteNum;
 }
 
-const byte& OamSecondary::GetLsbSpriteTiles(int spriteNum) const
+const OamSecondary::ScanlineTile& OamSecondary::GetSpriteScanlineTile(int spriteNum) const
 {
     if(spriteNum >= this->activeSpriteNum || spriteNum < 0)
     {
         throw std::invalid_argument("Invalid sprite tile");
     }
-    return this->lsbSpriteTiles[spriteNum];
+    return this->SpriteBuffers[spriteNum].scanlineTile;
+}
+
+void OamSecondary::SetSpriteScanlineTile(int spriteNum, const OamSecondary::ScanlineTile& spriteBuffer)
+{
+    if(spriteNum >= this->activeSpriteNum || spriteNum < 0)
+    {
+        throw std::invalid_argument("Invalid sprite tile");
+    }
+    this->SpriteBuffers[spriteNum].scanlineTile = spriteBuffer;
 }

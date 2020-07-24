@@ -13,7 +13,7 @@ class OamPrimary : public MemoryRepeaterArray
     struct Sprite
     {
         byte posY;
-        patternIndex index;
+        patternIndex index; //pattern table index
         union
         {
             byte attributes;

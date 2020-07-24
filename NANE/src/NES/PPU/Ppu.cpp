@@ -127,16 +127,25 @@ int Ppu::Step()
     }
 
     //fetch sprites
-    this->sprite_fetch(curCycle, curLine);
+    this->SpriteFetch(curCycle, curLine);
 
     // visible scanlines
     if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE) )
     {
-        rawColour bPixel = this->calc_background_pixel();
-        rawColour sPixel = this->dma.GetPpuMemory().GetSecondaryOam().CalcForegroundPixel(curCycle);
+        std::unique_ptr<Ppu::BackgroundPixelInfo> bPixel = this->calcBackgroundPixel();
+        std::unique_ptr<Ppu::ForegroundPixelInfo> sPixel = this->calcForgroundPixel(curCycle);
+
+        // -sprite priority with background
+        // -if a sprite is present
+        // -if sprite colour is transparent
+        // -if background is transparent
 
         //pick between bPixel and sPixel
-        rawColour pixelColour = bPixel;
+        rawColour pixelColour = bPixel->pixelColour;
+        if(sPixel != nullptr)
+        {
+            pixelColour = sPixel->pixelColour;
+        }
         if(this->GetRegs().name.showBackground == true)
         {
             int pixelX = curCycle - START_VISIBLE_CYCLE;
@@ -205,7 +214,7 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, 
     }
 }
 
-rawColour Ppu::calc_background_pixel()
+std::unique_ptr<Ppu::BackgroundPixelInfo> Ppu::calcBackgroundPixel()
 {
     //get pattern value
     byte fineX = this->GetRegs().bgr.scrollX.fineX;
@@ -224,11 +233,36 @@ rawColour Ppu::calc_background_pixel()
     this->GetRegs().bgr.lsbPalletePlane.val >>= 1;
     this->GetRegs().bgr.msbPalletePlane.val >>= 1;
 
-    rawColour nesColourIndex = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
-    return nesColourIndex;
+    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
+    std::unique_ptr<Ppu::BackgroundPixelInfo> backgroundPixel = std::make_unique<Ppu::BackgroundPixelInfo>();
+    backgroundPixel->pixelColour = nesColour;
+    backgroundPixel->isTransparent = (patternValue == 0);
+    return backgroundPixel;
 }
 
-void Ppu::sprite_fetch(int curCycle, int curLine)
+std::unique_ptr<Ppu::ForegroundPixelInfo> Ppu::calcForgroundPixel(int curCycle)
+{
+    OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
+    OamSecondary::SpritePixel spritePixel = secondaryOam.CalcForgroundPixel(curCycle);
+
+    if(spritePixel.primaryOamIndex < 0)
+    {
+        // no sprite at current PPU cycle
+        return nullptr;
+    }
+
+    // lookup colour for pattern value (only can use the last 4 palletes)
+    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(4, spritePixel.pattern);
+
+    // handle sprite zero hits here (cycle 4)
+    std::unique_ptr<Ppu::ForegroundPixelInfo> forgroundPixel = std::make_unique<Ppu::ForegroundPixelInfo>();
+    forgroundPixel->frontOfBackground = true;
+    forgroundPixel->isTransparent = (spritePixel.pattern == 0);
+    forgroundPixel->pixelColour = nesColour;
+    return forgroundPixel;
+}
+
+void Ppu::SpriteFetch(int curCycle, int curLine)
 {
     // cycle breakdown and high level description for sprite fetching can be found here:
     // https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation#Details
@@ -264,7 +298,7 @@ void Ppu::sprite_fetch(int curCycle, int curLine)
                     if(nextScanline >= primarySprite.posY && nextScanline < primarySprite.posY + spriteWidth)
                     {
                         //sprite appears on next scanline
-                        secondaryOam.AppendSprite(primarySprite);
+                        secondaryOam.AppendSprite(primarySprite, i);
                     }
                 }
 
@@ -277,7 +311,16 @@ void Ppu::sprite_fetch(int curCycle, int curLine)
 
         if(curCycle == START_SPRITE_TILE_FETCH)
         {
-            secondaryOam.PopulateOamTableBuffers(nextScanline, curCycle);
+            // set sprite buffers
+            int tableNum = this->GetRegs().name.sprite8x8PatternTable;
+            for(int i = 0; i < secondaryOam.GetActiveSpriteNum(); ++i)
+            {
+                const OamPrimary::Sprite& activeSprite = secondaryOam.GetSprite(i);
+                patternIndex spritePattern = activeSprite.index;
+                const PatternTables::BitTile& spriteTile = this->dma.GetPatternTile(tableNum, spritePattern);
+                std::unique_ptr<OamSecondary::ScanlineTile> spriteBuffer = secondaryOam.CalcSpriteBuffer(nextScanline, activeSprite, spriteTile);
+                secondaryOam.SetSpriteScanlineTile(i, *spriteBuffer);
+            }
         }
     }
 

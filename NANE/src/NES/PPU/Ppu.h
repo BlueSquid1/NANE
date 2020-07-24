@@ -17,6 +17,17 @@ class Ppu
         int x;
         int y;
     };
+    struct BackgroundPixelInfo
+    {
+        bool isTransparent; //true: anything behind the background will be drawn instead of the background colour. False: background is solid.
+        rawColour pixelColour; //background colour
+    };
+
+    struct ForegroundPixelInfo : public Ppu::BackgroundPixelInfo
+    {
+        bool frontOfBackground; //true: sprite should be drawn infront of the background
+    };
+
     const int PRE_SCANLINE = -1; //scanline
     const int START_VISIBLE_SCANLINE = 0; //scanlines
     const int LAST_VISIBLE_SCANLINE = 239; //scanlines
@@ -44,10 +55,15 @@ class Ppu
 
     Point NextPixel();
 
-    rawColour calc_background_pixel();
+    std::unique_ptr<Ppu::BackgroundPixelInfo> calcBackgroundPixel();
+
+    /**
+     * returns null if no sprite at current PPU cycle
+     */
+    std::unique_ptr<Ppu::ForegroundPixelInfo> calcForgroundPixel(int curCycle);
 
     void backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, int curLine);
-    void sprite_fetch(int curCycle, int curLine);
+    void SpriteFetch(int curCycle, int curLine);
 
     PpuRegisters& GetRegs();
 
