@@ -3,14 +3,14 @@
 #include <exception>
 
 OamSecondary::OamSecondary()
-: Oam()
+: OamPrimary()
 {
     this->Clear();
 }
 
-void OamSecondary::AppendSprite(const Oam::Sprite& sprite)
+void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite)
 {
-    if(this->activeSpriteNum < 0 && this->activeSpriteNum >= Oam::TotalNumOfSprites)
+    if(this->activeSpriteNum < 0 && this->activeSpriteNum >= OamPrimary::TotalNumOfSprites)
     {
         throw std::invalid_argument("invalid activeSpriteNum to append the current sprite");
     }

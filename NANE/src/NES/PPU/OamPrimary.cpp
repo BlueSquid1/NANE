@@ -1,18 +1,18 @@
-#include "Oam.h"
+#include "OamPrimary.h"
 
 #include <sstream>
 #include <exception>
 
-const int Oam::rawLen;
-const int Oam::TotalNumOfSprites;
+const int OamPrimary::rawLen;
+const int OamPrimary::TotalNumOfSprites;
 
-Oam::Oam()
+OamPrimary::OamPrimary()
 : MemoryRepeaterArray(0x0, 0x100, this->raw, this->rawLen)
 {
     memset(this->raw, 0xFF, sizeof(this->name));
 }
 
-std::string Oam::GenerateSpritesProperties() const
+std::string OamPrimary::GenerateSpritesProperties() const
 {
     std::stringstream ss;
     for(const Sprite& sprite : this->name.sprites)
@@ -22,9 +22,9 @@ std::string Oam::GenerateSpritesProperties() const
     return ss.str();
 }
 
-const Oam::Sprite& Oam::GetSprite(int spriteNum) const
+const OamPrimary::Sprite& OamPrimary::GetSprite(int spriteNum) const
 {
-    if(spriteNum < 0 || spriteNum >= Oam::TotalNumOfSprites)
+    if(spriteNum < 0 || spriteNum >= OamPrimary::TotalNumOfSprites)
     {
         throw std::invalid_argument("invalid sprite number to retreive");
     }

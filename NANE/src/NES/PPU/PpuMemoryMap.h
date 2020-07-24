@@ -5,7 +5,7 @@
 #include "ColourPalettes.h"
 #include "PatternTables.h"
 #include "NameTables.h"
-#include "Oam.h"
+#include "OamPrimary.h"
 #include "OamSecondary.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/IMemoryRW.h"
@@ -16,7 +16,7 @@ class PpuMemoryMap : public IMemoryRW
     PpuRegisters ppuRegMem;
     NameTables nametableMem; //layout (vram)
     ColourPalettes palettesMem; //colours
-    Oam primaryOamMem; //all active sprites
+    OamPrimary primaryOamMem; //all active sprites
     OamSecondary secondaryOamMem; //just active sprites on current scanline
     
     //std::vector<byte> secOam; //32 bytes (8 sprites to render on scanline)
@@ -40,7 +40,7 @@ class PpuMemoryMap : public IMemoryRW
     PpuRegisters& GetRegisters();
     const PpuRegisters& GetRegisters() const;
     NameTables& GetNameTables();
-    Oam& GetPrimaryOam();
+    OamPrimary& GetPrimaryOam();
     OamSecondary& GetSecondaryOam();
     void SetScanLineNum(int scanLineNum);
     int GetScanLineNum() const;

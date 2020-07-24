@@ -2,7 +2,7 @@
 #define PPU_REGISTERS
 
 #include "NameTables.h"
-#include "Oam.h"
+#include "OamPrimary.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 

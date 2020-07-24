@@ -128,7 +128,7 @@ int PpuMemoryMap::GetScanCycleNum() const
     return this->scanCycleNum;
 }
 
-Oam& PpuMemoryMap::GetPrimaryOam()
+OamPrimary& PpuMemoryMap::GetPrimaryOam()
 {
     return this->primaryOamMem;
 }

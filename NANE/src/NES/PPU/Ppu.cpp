@@ -133,9 +133,9 @@ int Ppu::Step()
     if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE) )
     {
         rawColour bPixel = this->calc_background_pixel();
-        rawColour fPixel = this->dma.GetPpuMemory().GetSecondaryOam().CalcForegroundPixel(curCycle);
+        rawColour sPixel = this->dma.GetPpuMemory().GetSecondaryOam().CalcForegroundPixel(curCycle);
 
-        //pick between bPixel and sPixel based on some state
+        //pick between bPixel and sPixel
         rawColour pixelColour = bPixel;
         if(this->GetRegs().name.showBackground == true)
         {
@@ -237,7 +237,7 @@ void Ppu::sprite_fetch(int curCycle, int curLine)
     if(nextScanline <= LAST_VISIBLE_SCANLINE)
     {
         // moving sprites on next scanline to secondary OAM
-        Oam& primaryOam = this->dma.GetPpuMemory().GetPrimaryOam();
+        OamPrimary& primaryOam = this->dma.GetPpuMemory().GetPrimaryOam();
         OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
 
         // according to diagram below clearing and sprite evaluation don't happen on pre scanline:
@@ -251,9 +251,9 @@ void Ppu::sprite_fetch(int curCycle, int curLine)
             }
             else if( curCycle == START_SPRITE_EVALUATION_CYCLE )
             {
-                for(int i = 0; i < Oam::TotalNumOfSprites; ++i)
+                for(int i = 0; i < OamPrimary::TotalNumOfSprites; ++i)
                 {
-                    const Oam::Sprite& primarySprite = primaryOam.GetSprite(i);
+                    const OamPrimary::Sprite& primarySprite = primaryOam.GetSprite(i);
 
                     // check if sprite is on next scanline
                     int spriteWidth = 8;

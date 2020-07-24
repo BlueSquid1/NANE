@@ -1,18 +1,18 @@
 #ifndef OAM_SECONDARY
 #define OAM_SECONDARY
 
-#include "Oam.h"
+#include "OamPrimary.h"
 #include "NesColour.h"
 #include "NES/Memory/Types.h"
 
 
-class OamSecondary : public Oam
+class OamSecondary : public OamPrimary
 {
     private:
     int activeSpriteNum;
 
-    byte lsbSpriteTiles[Oam::TotalNumOfSprites];
-    byte msbSpriteTiles[Oam::TotalNumOfSprites];
+    byte lsbSpriteTiles[OamPrimary::TotalNumOfSprites];
+    byte msbSpriteTiles[OamPrimary::TotalNumOfSprites];
 
     private:
     
@@ -20,7 +20,7 @@ class OamSecondary : public Oam
     public:
     OamSecondary();
 
-    void AppendSprite(const Oam::Sprite& sprite);
+    void AppendSprite(const OamPrimary::Sprite& sprite);
 
     void PopulateOamTableBuffers(int scanline, int curCycle);
     

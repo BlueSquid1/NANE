@@ -7,7 +7,7 @@
 
 typedef byte oamIndex;
 
-class Oam : public MemoryRepeaterArray
+class OamPrimary : public MemoryRepeaterArray
 {
     public:
     struct Sprite
@@ -47,13 +47,13 @@ class Oam : public MemoryRepeaterArray
     };
 
     public:
-    Oam();
+    OamPrimary();
 
     //dissamble methods:
     std::string GenerateSpritesProperties() const;
 
     //getter/setters
-    const Oam::Sprite& GetSprite(int spriteNum) const;
+    const OamPrimary::Sprite& GetSprite(int spriteNum) const;
 };
 
 #endif
