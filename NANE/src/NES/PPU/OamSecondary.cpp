@@ -21,28 +21,51 @@ void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite, int primaryOam
     ++this->activeSpriteNum;
 }
 
-std::unique_ptr<OamSecondary::ScanlineTile> OamSecondary::CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const PatternTables::BitTile& spriteTile) const
+OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const OamSecondary::SpritePatternTiles& spriteTiles) const
 {
-    //TODO large sprites
     int tileLine = scanline - sprite.posY;
-    if(tileLine < 0 || tileLine > 8)
+    if(tileLine < 0 || tileLine > (PatternTables::TILE_HEIGHT * spriteTiles.numOfTiles))
     {
         throw std::invalid_argument("scanline does not contain the sprite");
     }
 
-    if(sprite.flipVertically)
+    // handle vertical flipping
+    const PatternTables::BitTile* activeSpriteTile = nullptr;
+    if(spriteTiles.numOfTiles == 1)
     {
-        tileLine = 7 - tileLine;
+        // standard 8 x 8 sprite
+        if(sprite.flipVertically)
+        {
+            tileLine = 7 - tileLine;
+        }
+        activeSpriteTile = &spriteTiles.firstTile;
+    }
+    else
+    {
+        // large 8 x 16 sprite
+        if(sprite.flipVertically)
+        {
+            tileLine = 15 - tileLine;
+        }
+
+        if(tileLine < 8)
+        {
+            activeSpriteTile = &spriteTiles.firstTile;
+        }
+        else
+        {
+            activeSpriteTile = &spriteTiles.secondTile;
+        }
     }
 
-    std::unique_ptr<OamSecondary::ScanlineTile> spriteBuffer = std::make_unique<OamSecondary::ScanlineTile>();
-    spriteBuffer->lsbSpriteTile = spriteTile.LsbPlane[tileLine];
-    spriteBuffer->msbSpriteTile = spriteTile.MsbPlane[tileLine];
+    OamSecondary::ScanlineTile spriteBuffer;
+    spriteBuffer.lsbSpriteTile = activeSpriteTile->LsbPlane[tileLine];
+    spriteBuffer.msbSpriteTile = activeSpriteTile->MsbPlane[tileLine];
 
     if(!sprite.flipHorizontally)
     {
-        spriteBuffer->lsbSpriteTile = BitUtil::FlipByte(spriteBuffer->lsbSpriteTile);
-        spriteBuffer->msbSpriteTile = BitUtil::FlipByte(spriteBuffer->msbSpriteTile);
+        spriteBuffer.lsbSpriteTile = BitUtil::FlipByte(spriteBuffer.lsbSpriteTile);
+        spriteBuffer.msbSpriteTile = BitUtil::FlipByte(spriteBuffer.msbSpriteTile);
     }
     return spriteBuffer;
 }
@@ -54,7 +77,7 @@ OamSecondary::SpritePixel OamSecondary::CalcForgroundPixel(int curCycle) const
     {
         const Sprite& sprite = this->GetSprite(i);
         //check if the cycle is within the sprite width
-        int spriteOffset = curCycle - sprite.posX;
+        int spriteOffset = curCycle - sprite.posX - 1;
         if(spriteOffset >= 0 && spriteOffset < PatternTables::TILE_WIDTH)
         {
             //check if the pixel is transparent (i.e. pattern = 0)

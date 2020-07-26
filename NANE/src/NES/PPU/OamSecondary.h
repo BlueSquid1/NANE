@@ -29,6 +29,13 @@ class OamSecondary : public OamPrimary
         int primaryOamIndex;
     };
 
+    struct SpritePatternTiles
+    {
+        int numOfTiles;
+        PatternTables::BitTile firstTile;
+        PatternTables::BitTile secondTile;
+    };
+
     private:
     int activeSpriteNum;
 
@@ -40,7 +47,7 @@ class OamSecondary : public OamPrimary
 
     void AppendSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex);
 
-    std::unique_ptr<OamSecondary::ScanlineTile> CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const PatternTables::BitTile& spriteTile) const;
+    OamSecondary::ScanlineTile CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const OamSecondary::SpritePatternTiles& spriteTile) const;
     
     OamSecondary::SpritePixel CalcForgroundPixel(int curCycle) const;
 

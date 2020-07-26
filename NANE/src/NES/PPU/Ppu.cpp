@@ -28,35 +28,38 @@ Ppu::Point Ppu::NextPixel()
     return nextPoint;
 }
 
-std::unique_ptr<Ppu::Point> Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
+Ppu::Point Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
 {
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
     {
         //fetch from next scanline
-        std::unique_ptr<Ppu::Point> nextTile = std::unique_ptr<Ppu::Point>( new Ppu::Point() );
+        Ppu::Point nextTile;
         if(curLine <= -1)
         {
-            nextTile->y = 0;
+            nextTile.y = 0;
         }
         else
         {
             //convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
-            nextTile->y = curLine >> 3;
+            nextTile.y = curLine >> 3;
         }
-        nextTile->x = (curCycle - START_NEXT_SCANLINE_FETCHING) >> 3;
+        nextTile.x = (curCycle - START_NEXT_SCANLINE_FETCHING) >> 3;
         return nextTile;
     }
     else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE - 8) )
     {
         //fetch from current scanline
-        std::unique_ptr<Ppu::Point> nextTile = std::unique_ptr<Ppu::Point>( new Ppu::Point() );
-        nextTile->y = curLine >> 3;
-        nextTile->x = (curCycle >> 3) + 2;
+        Ppu::Point nextTile;
+        nextTile.y = curLine >> 3;
+        nextTile.x = (curCycle >> 3) + 2;
         return nextTile;
     }
 
     //fetching not needed at current scanline/cycle
-    return NULL;
+    Ppu::Point invalidTile;
+    invalidTile.x = -1;
+    invalidTile.y = -1;
+    return invalidTile;
 }
 
 bool Ppu::PowerCycle()
@@ -120,8 +123,8 @@ int Ppu::Step()
     }
 
     //attempt to fetch next tile
-    std::unique_ptr<Ppu::Point> fetchTile = this->CalcNextBgrFetchTile(curCycle, curLine);
-    if(fetchTile != NULL)
+    const Ppu::Point& fetchTile = this->CalcNextBgrFetchTile(curCycle, curLine);
+    if(fetchTile.x != -1)
     {
         this->backgroundFetch(fetchTile, curCycle, curLine);
     }
@@ -164,7 +167,7 @@ int Ppu::Step()
 }
 
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
-void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, int curLine)
+void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine)
 {
     //called between 1-256 and 321-337
     curCycle -= PRE_SCANLINE;
@@ -179,12 +182,12 @@ void Ppu::backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, 
             this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
 
             //get next pattern
-            this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile->y, fetchTile->x);
+            this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
             break;
         }
         case 2: //get next pallette
         {
-            this->GetRegs().bgr.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile->y, fetchTile->x);
+            this->GetRegs().bgr.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile.y, fetchTile.x);
             break;
         }
 
@@ -243,7 +246,7 @@ std::unique_ptr<Ppu::BackgroundPixelInfo> Ppu::calcBackgroundPixel()
 std::unique_ptr<Ppu::ForegroundPixelInfo> Ppu::calcForgroundPixel(int curCycle)
 {
     OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
-    OamSecondary::SpritePixel spritePixel = secondaryOam.CalcForgroundPixel(curCycle);
+    const OamSecondary::SpritePixel& spritePixel = secondaryOam.CalcForgroundPixel(curCycle);
 
     if(spritePixel.primaryOamIndex < 0)
     {
@@ -285,41 +288,62 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
             }
             else if( curCycle == START_SPRITE_EVALUATION_CYCLE )
             {
+                // load sprites on the next scanline into secondary OAM
                 for(int i = 0; i < OamPrimary::TotalNumOfSprites; ++i)
                 {
                     const OamPrimary::Sprite& primarySprite = primaryOam.GetSprite(i);
 
                     // check if sprite is on next scanline
-                    int spriteWidth = 8;
+                    int spriteHeight = PatternTables::TILE_HEIGHT;
                     if(this->GetRegs().name.spriteSize)
                     {
-                        spriteWidth = 16;
+                        spriteHeight = 2 * PatternTables::TILE_HEIGHT;
                     }
-                    if(nextScanline >= primarySprite.posY && nextScanline < primarySprite.posY + spriteWidth)
+                    if(nextScanline >= primarySprite.posY && nextScanline < primarySprite.posY + spriteHeight)
                     {
                         //sprite appears on next scanline
                         secondaryOam.AppendSprite(primarySprite, i);
                     }
                 }
 
-                if( secondaryOam.GetActiveSpriteNum() > 8 )
-                {
-                    this->GetRegs().name.spriteOverflow = true;
-                }
+                // set overflow register
+                this->GetRegs().name.spriteOverflow = (secondaryOam.GetActiveSpriteNum() > 8);
             }
         }
 
         if(curCycle == START_SPRITE_TILE_FETCH)
         {
             // set sprite buffers
-            int tableNum = this->GetRegs().name.sprite8x8PatternTable;
             for(int i = 0; i < secondaryOam.GetActiveSpriteNum(); ++i)
             {
                 const OamPrimary::Sprite& activeSprite = secondaryOam.GetSprite(i);
-                patternIndex spritePattern = activeSprite.index;
-                const PatternTables::BitTile& spriteTile = this->dma.GetPatternTile(tableNum, spritePattern);
-                std::unique_ptr<OamSecondary::ScanlineTile> spriteBuffer = secondaryOam.CalcSpriteBuffer(nextScanline, activeSprite, spriteTile);
-                secondaryOam.SetSpriteScanlineTile(i, *spriteBuffer);
+                patternIndex spriteIndex = activeSprite.index;
+
+                OamSecondary::SpritePatternTiles spriteTiles;
+                if(this->GetRegs().name.spriteSize == false)
+                {
+                    //sprites are 8 x 8
+                    spriteTiles.numOfTiles = 1;
+                    int tableNum = this->GetRegs().name.sprite8x8PatternTable;
+                    spriteTiles.firstTile = this->dma.GetPatternTile(tableNum, spriteIndex);
+                }
+                else
+                {
+                    //sprites are 8 x 16
+                    spriteTiles.numOfTiles = 2;
+                    int tableNum = BitUtil::GetBits(activeSprite.index, 0);
+                    patternIndex spritePattern = BitUtil::GetBits(spriteIndex, 1, 7);
+                    // int yOffset = curCycle - activeSprite.posY;
+                    // if(yOffset >= 8)
+                    // {
+                    //     //lower pattern table
+                    //     spritePattern += 1;
+                    // }
+                    spriteTiles.firstTile = this->dma.GetPatternTile(tableNum, spritePattern);
+                    spriteTiles.secondTile = this->dma.GetPatternTile(tableNum, spritePattern + 1);
+                }
+                const OamSecondary::ScanlineTile& spriteBuffer = secondaryOam.CalcSpriteBuffer(nextScanline, activeSprite, spriteTiles);
+                secondaryOam.SetSpriteScanlineTile(i, spriteBuffer);
             }
         }
     }

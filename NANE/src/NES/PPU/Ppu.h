@@ -41,7 +41,6 @@ class Ppu
     const int START_SPRITE_TILE_FETCH = 261;
     const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
     const int LAST_NEXT_SCANLINE_FETCHING = 336; //cycles
-    const int FIRST_NON_VISIBLE_CYCLE = 257; // cycles
 
     Dma& dma;
 
@@ -62,7 +61,7 @@ class Ppu
      */
     std::unique_ptr<Ppu::ForegroundPixelInfo> calcForgroundPixel(int curCycle);
 
-    void backgroundFetch(std::unique_ptr<Ppu::Point>& fetchTile, int curCycle, int curLine);
+    void backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine);
     void SpriteFetch(int curCycle, int curLine);
 
     PpuRegisters& GetRegs();
@@ -74,7 +73,7 @@ class Ppu
     bool PowerCycle();
     int Step();
 
-    std::unique_ptr<Ppu::Point> CalcNextBgrFetchTile(int curCycle, int curLine);
+    Ppu::Point CalcNextBgrFetchTile(int curCycle, int curLine);
 
     /**
      * just for dissassembly purposes
