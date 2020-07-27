@@ -64,7 +64,7 @@ class PpuRegisters : public MemoryRepeaterArray
             {
                 byte lsbRegWritten : 5;
                 bit spriteOverflow : 1; //more than eight sprites appear on a scanline
-                bit sprite0Hit : 1; //Sprite 0 Hit.  Set when a nonzero pixel of sprite 0 overlaps a nonzero background pixel; cleared at dot 1 of the pre-render line.  Used for raster timing.
+                bit spriteZeroHit : 1; //Sprite 0 Hit.  Set when a nonzero pixel of sprite 0 overlaps a nonzero background pixel; cleared at dot 1 of the pre-render line.  Used for raster timing.
                 bit verticalBlank : 1; //Vertical blank has started (0: not in vblank; 1: in vblank). Set at dot 1 of line 241 (the line *after* the post-render line); cleared after reading $2002 and at dot 1 of the pre-render line.
             };
         };

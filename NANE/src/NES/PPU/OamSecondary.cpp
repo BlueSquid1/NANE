@@ -24,10 +24,6 @@ void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite, int primaryOam
 OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const OamSecondary::SpritePatternTiles& spriteTiles) const
 {
     int tileLine = scanline - sprite.posY;
-    if(tileLine < 0 || tileLine > (PatternTables::TILE_HEIGHT * spriteTiles.numOfTiles))
-    {
-        throw std::invalid_argument("scanline does not contain the sprite");
-    }
 
     // handle vertical flipping
     const PatternTables::BitTile* activeSpriteTile = nullptr;
@@ -58,10 +54,16 @@ OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const Oa
         }
     }
 
+    if(tileLine < 0 || tileLine >= PatternTables::TILE_HEIGHT)
+    {
+        throw std::invalid_argument("scanline does not contain the sprite");
+    }
+
     OamSecondary::ScanlineTile spriteBuffer;
     spriteBuffer.lsbSpriteTile = activeSpriteTile->LsbPlane[tileLine];
     spriteBuffer.msbSpriteTile = activeSpriteTile->MsbPlane[tileLine];
 
+    // because number are little endian numbers are flip horizontally by default. unflip is necassary
     if(!sprite.flipHorizontally)
     {
         spriteBuffer.lsbSpriteTile = BitUtil::FlipByte(spriteBuffer.lsbSpriteTile);
@@ -77,7 +79,7 @@ OamSecondary::SpritePixel OamSecondary::CalcForgroundPixel(int curCycle) const
     {
         const Sprite& sprite = this->GetSprite(i);
         //check if the cycle is within the sprite width
-        int spriteOffset = curCycle - sprite.posX - 1;
+        int spriteOffset = curCycle - sprite.posX;
         if(spriteOffset >= 0 && spriteOffset < PatternTables::TILE_WIDTH)
         {
             //check if the pixel is transparent (i.e. pattern = 0)

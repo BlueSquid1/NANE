@@ -26,6 +26,7 @@ class Ppu
     struct ForegroundPixelInfo : public Ppu::BackgroundPixelInfo
     {
         bool frontOfBackground; //true: sprite should be drawn infront of the background
+        byte primaryOamIndex; //the sprite primary OAM index
     };
 
     const int PRE_SCANLINE = -1; //scanline
@@ -54,12 +55,12 @@ class Ppu
 
     Point NextPixel();
 
-    std::unique_ptr<Ppu::BackgroundPixelInfo> calcBackgroundPixel();
+    Ppu::BackgroundPixelInfo calcBackgroundPixel();
 
     /**
      * returns null if no sprite at current PPU cycle
      */
-    std::unique_ptr<Ppu::ForegroundPixelInfo> calcForgroundPixel(int curCycle);
+    Ppu::ForegroundPixelInfo calcForgroundPixel(int curCycle);
 
     void backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine);
     void SpriteFetch(int curCycle, int curLine);

@@ -110,6 +110,7 @@ int Ppu::Step()
         //start of new frame so clear previous frame registers
         this->GetRegs().name.verticalBlank = false;
         this->GetRegs().name.spriteOverflow = false;
+        this->GetRegs().name.spriteZeroHit = false;
         ++this->frameCountNum;
     }
     else if( curLine == 241 && curCycle == START_VISIBLE_CYCLE )
@@ -135,26 +136,53 @@ int Ppu::Step()
     // visible scanlines
     if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE) )
     {
-        std::unique_ptr<Ppu::BackgroundPixelInfo> bPixel = this->calcBackgroundPixel();
-        std::unique_ptr<Ppu::ForegroundPixelInfo> sPixel = this->calcForgroundPixel(curCycle);
-
-        // -sprite priority with background
-        // -if a sprite is present
-        // -if sprite colour is transparent
-        // -if background is transparent
+        Ppu::BackgroundPixelInfo bPixel = this->calcBackgroundPixel();
+        Ppu::ForegroundPixelInfo sPixel = this->calcForgroundPixel(curCycle);
 
         //pick between bPixel and sPixel
-        rawColour pixelColour = bPixel->pixelColour;
-        if(sPixel != nullptr)
+        rawColour pixelColour = bPixel.pixelColour;
+        if(this->GetRegs().name.showSprites == false || sPixel.isTransparent)
         {
-            pixelColour = sPixel->pixelColour;
+            //sprites disabled or transparent. draw background
+            pixelColour = bPixel.pixelColour;
         }
-        if(this->GetRegs().name.showBackground == true)
+        else if(this->GetRegs().name.showBackground == false || bPixel.isTransparent)
         {
-            int pixelX = curCycle - START_VISIBLE_CYCLE;
-            int pixelY = curLine - START_VISIBLE_SCANLINE;
-            this->framebuffer.Set(pixelY, pixelX, pixelColour);
+            //background disabled draw sprites
+            pixelColour = sPixel.pixelColour;
         }
+        else
+        {
+            // sprites and background enabled
+
+            // handle sprite zero hit
+            if(sPixel.primaryOamIndex == 0)
+            {
+                // following logic detailed here:
+                // https://wiki.nesdev.com/w/index.php/PPU_OAM#Sprite_zero_hits
+                if(curCycle > 7 || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showBackgroundLeftmost))
+                {
+                    if(curCycle != 255)
+                    {
+                        this->GetRegs().name.spriteZeroHit = true;
+                    }
+                }
+            }
+
+            if(sPixel.frontOfBackground)
+            {
+                pixelColour = sPixel.pixelColour;
+            }
+            else
+            {
+                pixelColour = bPixel.pixelColour;
+            }
+        }
+
+        // draw pixel to the view
+        int pixelX = curCycle - START_VISIBLE_CYCLE;
+        int pixelY = curLine - START_VISIBLE_SCANLINE;
+        this->framebuffer.Set(pixelY, pixelX, pixelColour);
     }
 
     //move to next pixel
@@ -217,7 +245,7 @@ void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine
     }
 }
 
-std::unique_ptr<Ppu::BackgroundPixelInfo> Ppu::calcBackgroundPixel()
+Ppu::BackgroundPixelInfo Ppu::calcBackgroundPixel()
 {
     //get pattern value
     byte fineX = this->GetRegs().bgr.scrollX.fineX;
@@ -237,31 +265,37 @@ std::unique_ptr<Ppu::BackgroundPixelInfo> Ppu::calcBackgroundPixel()
     this->GetRegs().bgr.msbPalletePlane.val >>= 1;
 
     rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
-    std::unique_ptr<Ppu::BackgroundPixelInfo> backgroundPixel = std::make_unique<Ppu::BackgroundPixelInfo>();
-    backgroundPixel->pixelColour = nesColour;
-    backgroundPixel->isTransparent = (patternValue == 0);
+    Ppu::BackgroundPixelInfo backgroundPixel;
+    backgroundPixel.pixelColour = nesColour;
+    backgroundPixel.isTransparent = (patternValue == 0);
     return backgroundPixel;
 }
 
-std::unique_ptr<Ppu::ForegroundPixelInfo> Ppu::calcForgroundPixel(int curCycle)
+Ppu::ForegroundPixelInfo Ppu::calcForgroundPixel(int curCycle)
 {
     OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
     const OamSecondary::SpritePixel& spritePixel = secondaryOam.CalcForgroundPixel(curCycle);
 
     if(spritePixel.primaryOamIndex < 0)
     {
-        // no sprite at current PPU cycle
-        return nullptr;
+        // no sprite at current PPU cycle. just say the pixel has a transparent foreground
+        ForegroundPixelInfo forgroundPixel;
+        forgroundPixel.isTransparent = true;
+        forgroundPixel.primaryOamIndex = -1;
+        return forgroundPixel;
     }
 
     // lookup colour for pattern value (only can use the last 4 palletes)
-    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(4, spritePixel.pattern);
+    const OamPrimary::Sprite& selectedSprite = secondaryOam.GetSprite(spritePixel.primaryOamIndex);
+    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(4 + selectedSprite.palette, spritePixel.pattern);
 
-    // handle sprite zero hits here (cycle 4)
-    std::unique_ptr<Ppu::ForegroundPixelInfo> forgroundPixel = std::make_unique<Ppu::ForegroundPixelInfo>();
-    forgroundPixel->frontOfBackground = true;
-    forgroundPixel->isTransparent = (spritePixel.pattern == 0);
-    forgroundPixel->pixelColour = nesColour;
+
+    //return pixel
+    ForegroundPixelInfo forgroundPixel;
+    forgroundPixel.frontOfBackground = !selectedSprite.backgroundPriority;
+    forgroundPixel.isTransparent = (spritePixel.pattern == 0);
+    forgroundPixel.pixelColour = nesColour;
+    forgroundPixel.primaryOamIndex = spritePixel.primaryOamIndex;
     return forgroundPixel;
 }
 
@@ -346,17 +380,9 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
                 secondaryOam.SetSpriteScanlineTile(i, spriteBuffer);
             }
         }
-    }
-
-
-
-
-    //sprite evaluation - Turn the attribute data and the pattern table data into palette indices, and combine them with data from sprite data using priority.
-    
-    //decrement x-position counters in all 8 OAM sprites
-    //make OAM sprite active if x-position == 0
-    //shift shift registers for each active OAM once every cycle    
+    } 
 }
+
 
 PpuRegisters& Ppu::GetRegs()
 {

@@ -114,7 +114,7 @@ TEST_CASE("PPUCTRL, PPUMASK and PPUSTATUS union tests") {
     registers.name.PPUSTATUS = 178; //1011 0010
     REQUIRE(registers.name.lsbRegWritten == 18);
     REQUIRE(registers.name.spriteOverflow == 1);
-    REQUIRE(registers.name.sprite0Hit == 0);
+    REQUIRE(registers.name.spriteZeroHit == 0);
     REQUIRE(registers.name.verticalBlank == 1);
 
     registers.name.lsbRegWritten = 7;
