@@ -5,11 +5,11 @@ Ppu::Ppu(Dma& dma)
 {
 }
 
-Ppu::Point Ppu::NextPixel()
+Ppu::Point Ppu::NextPixel(int curCycle, int curLine)
 {
     Ppu::Point nextPoint;
-    nextPoint.y = this->dma.GetPpuMemory().GetScanLineNum();
-    nextPoint.x = this->dma.GetPpuMemory().GetScanCycleNum();
+    nextPoint.y = curLine;
+    nextPoint.x = curCycle;
 
     ++nextPoint.x;
 
@@ -22,43 +22,57 @@ Ppu::Point Ppu::NextPixel()
         if(nextPoint.y > LAST_SCANLINE)
         {
             //new frame
-            nextPoint.y = -1;
+            nextPoint.y = PRE_SCANLINE;
         }
     }
     return nextPoint;
 }
 
-Ppu::Point Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
+Ppu::Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
 {
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
     {
         //fetch from next scanline
-        int nextYPixel = curLine + 1;
-        int nextXPixel = curCycle - START_NEXT_SCANLINE_FETCHING;
+        int nextYPixel = (curLine - START_VISIBLE_SCANLINE) + 1;
+        int nextXPixel = (curCycle - START_NEXT_SCANLINE_FETCHING);
 
-        Ppu::Point nextTile;
-        //convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
-        nextTile.y = nextYPixel >> 3;
-        nextTile.x = nextXPixel >> 3;
-        return nextTile;
+        Ppu::Point nextFetchPixel;
+        nextFetchPixel.y = nextYPixel;
+        nextFetchPixel.x = nextXPixel;
+        return nextFetchPixel;
     }
-    else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE - 8) )
+    else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_FETCH_CYCLE) )
     {
         //fetch from current scanline
-        int curYPixel = curLine - START_VISIBLE_SCANLINE;
-        int curXPixel = curCycle - START_VISIBLE_CYCLE;
+        int nextYPixel = curLine - START_VISIBLE_SCANLINE;
+        int nextXPixel = (curCycle - START_VISIBLE_CYCLE) + 16;
 
-        Ppu::Point nextTile;
-        nextTile.y = curYPixel >> 3;
-        nextTile.x = (curXPixel >> 3) + 2;
-        return nextTile;
+        Ppu::Point nextFetchPixel;
+        nextFetchPixel.y = nextYPixel;
+        nextFetchPixel.x = nextXPixel;
+        return nextFetchPixel;
     }
 
     //fetching not needed at current scanline/cycle
-    Ppu::Point invalidTile;
-    invalidTile.x = -1;
-    invalidTile.y = -1;
-    return invalidTile;
+    Ppu::Point invalidFetchPixel;
+    invalidFetchPixel.x = -1;
+    invalidFetchPixel.y = -1;
+    return invalidFetchPixel;
+}
+
+Ppu::Point Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
+{
+    Ppu::Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+
+    if(nextFetchPixel.x < 0)
+    {
+        // invalid fetch
+        return nextFetchPixel;
+    }
+    // convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
+    nextFetchPixel.x = nextFetchPixel.x >> 3;
+    nextFetchPixel.y = nextFetchPixel.y >> 3;
+    return nextFetchPixel;
 }
 
 bool Ppu::PowerCycle()
@@ -185,7 +199,7 @@ int Ppu::Step()
     }
 
     //move to next pixel
-    const Ppu::Point& nextPoint = this->NextPixel();
+    const Ppu::Point& nextPoint = this->NextPixel(curCycle, curLine);
     this->dma.GetPpuMemory().SetScanLineNum(nextPoint.y);
     this->dma.GetPpuMemory().SetScanCycleNum(nextPoint.x);
 
@@ -196,49 +210,61 @@ int Ppu::Step()
 //https://wiki.nesdev.com/w/index.php/PPU_rendering
 void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine)
 {
-    //called between 1-256 and 321-337
-    int pixelX = curCycle - START_VISIBLE_CYCLE;
-    switch(pixelX % 8)
+    //called between 1-248 and 321-336
+    switch(curCycle % 8)
     {
-        case 0: //reload shift registers and get pattern index
+        case 1: //get pattern index
         {
-            //reload shift registers on 1(?), 9, 17, 25 ... 257
-            this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
-            this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
-            this->GetRegs().bgr.lsbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 0) ? 0xFF : 0x00;
-            this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
-
-            //get next pattern
             this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
             break;
         }
-        case 2: //get next pallette
+        case 3: //get next pallette
         {
             this->GetRegs().bgr.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile.y, fetchTile.x);
             break;
         }
 
-        case 4:
+        case 5:
         {
             //get lower pattern byte
             int tableNum = this->GetRegs().name.backgroundPatternTable;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
-            byte fineY = curLine % PatternTables::TILE_HEIGHT;
+
+            Ppu::Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+            if(nextFetchPixel.y < 0 )
+            {
+                // shouldn't be doing a background fetch on this cycle
+                throw std::invalid_argument("invalid background fetch");
+            }
+            byte fineY = nextFetchPixel.y % PatternTables::TILE_HEIGHT;
             byte revBitPlane = bitTile.LsbPlane[fineY];
             this->GetRegs().bgr.lsbNextTile = BitUtil::FlipByte(revBitPlane);
             break;
         }
 
-        case 6:
+        case 7:
         {
             //get upper pattern byte
             int tableNum = this->GetRegs().name.backgroundPatternTable;
             //TODO scrolling
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().bgr.nextNametableIndex);
-            byte fineY = curLine % PatternTables::TILE_HEIGHT;
+            
+            Ppu::Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+            if(nextFetchPixel.y < 0 )
+            {
+                // shouldn't be doing a background fetch on this cycle
+                throw std::invalid_argument("invalid background fetch");
+            }
+            byte fineY = nextFetchPixel.y % PatternTables::TILE_HEIGHT;
             byte revBitPlane = bitTile.MsbPlane[fineY];
             this->GetRegs().bgr.msbNextTile = BitUtil::FlipByte(revBitPlane);
+
+            // reload shift registers
+            this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
+            this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
+            this->GetRegs().bgr.lsbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 0) ? 0xFF : 0x00;
+            this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
             break;
         }
     }

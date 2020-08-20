@@ -37,8 +37,8 @@ class Ppu
 
     const int START_VISIBLE_CYCLE = 1; //cycles
     const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
-    const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
     const int LAST_VISIBLE_CYCLE = 256; //cycles
+    const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
     const int START_SPRITE_TILE_FETCH = 261;
     const int START_NEXT_SCANLINE_FETCHING = 321; //cycles
     const int LAST_NEXT_SCANLINE_FETCHING = 336; //cycles
@@ -53,7 +53,7 @@ class Ppu
     long long int frameCountNum; //how many frames have been rendered
     byte defaultPalette = 0;
 
-    Point NextPixel();
+    Point NextPixel(int curCycle, int curLine);
 
     Ppu::BackgroundPixelInfo calcBackgroundPixel();
 
@@ -75,6 +75,8 @@ class Ppu
     int Step();
 
     Ppu::Point CalcNextBgrFetchTile(int curCycle, int curLine);
+
+    Ppu::Point CalcNextFetchPixel(int curCycle, int curLine);
 
     /**
      * just for dissassembly purposes
