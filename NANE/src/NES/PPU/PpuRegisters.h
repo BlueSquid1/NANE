@@ -88,19 +88,18 @@ class PpuRegisters : public MemoryRepeaterArray
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
     struct BackgroundRegisters
     {
-        //LoopyRegister tramPpuAddress;
-
-
-        dword_p vramPpuAddress; //holds current VRAM address written into PPUADDR (0x2006)
+        //holds current VRAM address written into PPUADDR (0x2006)
+        dword_p vramPpuAddress;
         bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
 
-        scrollRegister scrollX;
-        scrollRegister scrollY;
-        bool ppuScrollLatch;
-        
         // buffer used for:
         // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
         byte ppuDataReadBuffer;
+
+        // scrollX and scrollY are both stored at 0x2005
+        scrollRegister scrollX;
+        scrollRegister scrollY;
+        bool ppuScrollLatch; // false == write to scrollX, true = write to scrollY
 
         //registers used for background fetching/rendering
         dword_p lsbPatternPlane;

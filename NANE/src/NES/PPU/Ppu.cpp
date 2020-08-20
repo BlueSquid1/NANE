@@ -33,25 +33,24 @@ Ppu::Point Ppu::CalcNextBgrFetchTile(int curCycle, int curLine)
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING && curCycle <= LAST_NEXT_SCANLINE_FETCHING) )
     {
         //fetch from next scanline
+        int nextYPixel = curLine + 1;
+        int nextXPixel = curCycle - START_NEXT_SCANLINE_FETCHING;
+
         Ppu::Point nextTile;
-        if(curLine <= -1)
-        {
-            nextTile.y = 0;
-        }
-        else
-        {
-            //convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
-            nextTile.y = curLine >> 3;
-        }
-        nextTile.x = (curCycle - START_NEXT_SCANLINE_FETCHING) >> 3;
+        //convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
+        nextTile.y = nextYPixel >> 3;
+        nextTile.x = nextXPixel >> 3;
         return nextTile;
     }
     else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE - 8) )
     {
         //fetch from current scanline
+        int curYPixel = curLine - START_VISIBLE_SCANLINE;
+        int curXPixel = curCycle - START_VISIBLE_CYCLE;
+
         Ppu::Point nextTile;
-        nextTile.y = curLine >> 3;
-        nextTile.x = (curCycle >> 3) + 2;
+        nextTile.y = curYPixel >> 3;
+        nextTile.x = (curXPixel >> 3) + 2;
         return nextTile;
     }
 
@@ -158,7 +157,7 @@ int Ppu::Step()
             // handle sprite zero hit
             if(sPixel.primaryOamIndex == 0)
             {
-                // following logic detailed here:
+                //following logic detailed here:
                 // https://wiki.nesdev.com/w/index.php/PPU_OAM#Sprite_zero_hits
                 if(curCycle > 7 || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showBackgroundLeftmost))
                 {
@@ -198,8 +197,8 @@ int Ppu::Step()
 void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine)
 {
     //called between 1-256 and 321-337
-    curCycle -= PRE_SCANLINE;
-    switch(curCycle % 8)
+    int pixelX = curCycle - START_VISIBLE_CYCLE;
+    switch(pixelX % 8)
     {
         case 0: //reload shift registers and get pattern index
         {
