@@ -215,6 +215,12 @@ void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine
     {
         case 1: //get pattern index
         {
+            // reload shift registers
+            this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
+            this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
+            this->GetRegs().bgr.lsbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 0) ? 0xFF : 0x00;
+            this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
+
             this->GetRegs().bgr.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
             break;
         }
@@ -259,12 +265,6 @@ void Ppu::backgroundFetch(const Ppu::Point& fetchTile, int curCycle, int curLine
             byte fineY = nextFetchPixel.y % PatternTables::TILE_HEIGHT;
             byte revBitPlane = bitTile.MsbPlane[fineY];
             this->GetRegs().bgr.msbNextTile = BitUtil::FlipByte(revBitPlane);
-
-            // reload shift registers
-            this->GetRegs().bgr.lsbPatternPlane.upper = this->GetRegs().bgr.lsbNextTile;
-            this->GetRegs().bgr.msbPatternPlane.upper = this->GetRegs().bgr.msbNextTile;
-            this->GetRegs().bgr.lsbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 0) ? 0xFF : 0x00;
-            this->GetRegs().bgr.msbPalletePlane.upper = BitUtil::GetBits(this->GetRegs().bgr.nextAttributeIndex, 1) ? 0xFF : 0x00;
             break;
         }
     }
