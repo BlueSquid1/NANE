@@ -31,7 +31,7 @@ class Nes
     bool processes(bool verbose, bool singleStep = false);
 
     const Matrix<rawColour>& GetFrameDisplay();
-    long long int& GetFrameCount();
+    const long long int& GetFrameCount() const;
 
     bool PressButton(NesController::NesInputs input, bool isPressed, int controller = 0);
 

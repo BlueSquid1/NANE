@@ -3,6 +3,8 @@
 
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
+#include "NES/Memory/Matrix.h"
+
 #include "NesColour.h"
 
 /**
@@ -32,7 +34,6 @@ class ColourPalettes : public MemoryRepeaterArray
         byte raw[rawLen];
     };
 
-    private:
     /**
      * Some pallete address re-route to the background colour. This method handles those special cases.
      * @param address the address being read/written to
@@ -48,6 +49,9 @@ class ColourPalettes : public MemoryRepeaterArray
     byte Seek(dword address) const override;
 
     rawColour PatternValueToColour(byte palletteId, byte patternVal) const;
+
+    // Disassemble methods
+    std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes(byte disassemblePalette);
 };
 
 #endif

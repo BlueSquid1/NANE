@@ -93,7 +93,7 @@ const Matrix<rawColour>& Nes::GetFrameDisplay()
     return this->ppu.GetFrameDisplay();
 }
 
-long long int& Nes::GetFrameCount()
+const long long int& Nes::GetFrameCount() const
 {
     return this->ppu.GetTotalFrameCount();
 }
@@ -133,13 +133,13 @@ const std::string Nes::GenerateCpuScreen()
 
 void Nes::IncrementDefaultColourPalette()
 {
-    byte palette = this->ppu.GetDefaultPalette();
+    byte palette = this->ppu.GetDisassemblePalette();
     ++palette;
     if(palette >= 8)
     {
         palette = 0;
     }
-    this->ppu.SetDefaultPalette(palette);
+    this->ppu.SetDisassemblePalette(palette);
 }
 
 const std::string Nes::GenerateFirstNameTable()

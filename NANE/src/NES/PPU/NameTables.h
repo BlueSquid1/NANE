@@ -17,6 +17,12 @@
 
 typedef byte paletteIndex;
 
+struct Point
+{
+    int x;
+    int y;
+};
+
 struct QuadAreaPalette
 {
     union
@@ -75,6 +81,13 @@ class NameTables : public MemoryRepeaterArray
 
     patternIndex GetPatternIndex(dword globalY, dword globalX);
     paletteIndex GetPaletteIndex(dword globalY, dword globalX);
+
+    /**
+     * @brief Calculates the next tile to be fetched from the given pixel.
+     * @param fetchPixel the pixel being fetched.
+     * @return the corresponding tile.
+     */
+    Point CalcBgrFetchTile(const Point& fetchPixel);
 
     //dissassemble commands
     std::unique_ptr<Matrix<patternIndex>> GenerateFirstNameTable();

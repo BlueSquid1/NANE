@@ -60,3 +60,33 @@ rawColour ColourPalettes::PatternValueToColour(byte palletteId, byte patternVal)
     byte colourIndex = this->Seek(this->startAddress + 4 * palletteId + patternVal);
     return NesColour::GetRawColour(colourIndex);
 }
+
+
+std::unique_ptr<Matrix<rawColour>> ColourPalettes::GenerateColourPalettes(byte disassemblePalette)
+{
+    const int colourWidth = 3;
+    const int borderWidth = 2;
+    rawColour backgroundColour;
+    backgroundColour.raw = 0x000000FF;
+
+    std::unique_ptr<Matrix<rawColour>> colourOutput = std::unique_ptr<Matrix<rawColour>>( new Matrix<rawColour>(borderWidth * 9 + colourWidth * 8, borderWidth + colourWidth * 4 + borderWidth, backgroundColour) );
+
+    int curCol = borderWidth;
+    for(int paletteId = 0; paletteId < 8; ++paletteId)
+    {
+        if(paletteId == disassemblePalette)
+        {
+            rawColour selectedColour = {0xBBBBBBFF};
+            colourOutput->SetRegion(0, curCol - borderWidth, colourWidth + 2 * borderWidth, colourOutput->GetHeight(), selectedColour);
+        }
+        for(int colourNum = 0; colourNum < 4; ++colourNum)
+        {
+            rawColour colour = this->PatternValueToColour(paletteId, colourNum);
+            colourOutput->SetRegion(borderWidth + (colourWidth * colourNum), curCol, colourWidth, colourWidth, colour);
+        }
+        curCol += colourWidth;
+        curCol += borderWidth;
+    }
+
+    return colourOutput;
+}

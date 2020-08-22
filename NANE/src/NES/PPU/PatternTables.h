@@ -2,8 +2,12 @@
 #define PATTERN_TABLES
 
 #include <vector>
+#include <memory>
+
 #include "NES/Memory/Matrix.h"
 #include "NES/Memory/BitUtil.h"
+#include "NesColour.h"
+#include "ColourPalettes.h"
 
 typedef byte patternIndex;
 
@@ -55,6 +59,9 @@ class PatternTables
     PatternTables(std::shared_ptr<std::vector<byte>> chrRomVec);
 
     Matrix<byte>& GetTile(int tableNum, int y, int x);
+
+    // dissassembly method(s)
+    std::unique_ptr<Matrix<rawColour>> GeneratePatternDisplay(const ColourPalettes& colourPalettes, byte disassemblePalette);
 };
 
 #endif

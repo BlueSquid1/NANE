@@ -147,6 +147,22 @@ paletteIndex NameTables::GetPaletteIndex(dword globalY, dword globalX)
     return palette;
 }
 
+Point NameTables::CalcBgrFetchTile(const Point& fetchPixel)
+{
+    Point fetchTile;
+    if(fetchPixel.x < 0)
+    {
+        // invalid fetch pixel
+        fetchTile.x = -1;
+        fetchTile.y = -1;
+        return fetchTile;
+    }
+    // convert from pixels to tiles (8 pixel per tile so bitshift 3 right)
+    fetchTile.x = fetchPixel.x >> 3;
+    fetchTile.y = fetchPixel.y >> 3;
+    return fetchTile;
+}
+
 std::unique_ptr<Matrix<patternIndex>> NameTables::GenerateFirstNameTable()
 {
     std::unique_ptr<Matrix<patternIndex>> patterns = std::unique_ptr<Matrix<patternIndex>>( new Matrix<patternIndex>(32, 32) );
