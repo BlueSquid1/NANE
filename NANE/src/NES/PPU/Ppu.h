@@ -36,12 +36,14 @@ class Ppu
     const int PRE_SCANLINE = -1; //scanline
     const int START_VISIBLE_SCANLINE = 0; //scanlines
     const int LAST_VISIBLE_SCANLINE = 239; //scanlines
+    const int VBLANK_SCANLINE = 241;
     const int LAST_SCANLINE = 260; //scanlines
 
+    const int START_CYCLE = 0;
     const int START_VISIBLE_CYCLE = 1; //cycles
     const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
-    const int LAST_VISIBLE_CYCLE = 256; //cycles
     const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
+    const int LAST_VISIBLE_CYCLE = 256; //cycles
     const int START_SPRITE_TILE_FETCH_CYCLE = 261; //cycles
     const int START_NEXT_SCANLINE_FETCHING_CYCLE = 321; //cycles
     const int LAST_NEXT_SCANLINE_FETCHING_CYCLE = 336; //cycles
@@ -107,14 +109,19 @@ class Ppu
      * @brief Calculates the background pixel from the working background buffer.
      * @return background colour and whether or not the background is invisible.
      */
-    Ppu::BackgroundPixelInfo calcBackgroundPixel();
+    Ppu::BackgroundPixelInfo CalcBackgroundPixel();
 
     /**
      * @brief calculates the forground pixel.
      * @param curCycle the current cycle.
      * @return sprite colour, front of background, and primary sprite OAM index (set to -1 if no sprite).
      */
-    Ppu::ForegroundPixelInfo calcForgroundPixel(int curCycle);
+    Ppu::ForegroundPixelInfo CalcForgroundPixel(int curCycle);
+
+    /**
+     * @brief picks between the background and foreground pixel
+     */
+    rawColour CalcFinalPixel(const Ppu::BackgroundPixelInfo& bPixel, const Ppu::ForegroundPixelInfo& sPixel, int curCycle);
 
     /**
      * @brief Getter for PPU registers.

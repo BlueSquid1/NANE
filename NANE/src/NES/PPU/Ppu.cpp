@@ -40,7 +40,7 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
     {
         //fetch from current scanline
         int nextYPixel = curLine - START_VISIBLE_SCANLINE;
-        int nextXPixel = (curCycle - START_VISIBLE_CYCLE) + 16;
+        int nextXPixel = (curCycle - START_VISIBLE_CYCLE) + (2 * PatternTables::TILE_HEIGHT);
 
         Point nextFetchPixel;
         nextFetchPixel.y = nextYPixel;
@@ -186,12 +186,6 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
                     spriteTiles.numOfTiles = 2;
                     int tableNum = BitUtil::GetBits(activeSprite.index, 0);
                     patternIndex spritePattern = BitUtil::GetBits(spriteIndex, 1, 7);
-                    // int yOffset = curCycle - activeSprite.posY;
-                    // if(yOffset >= 8)
-                    // {
-                    //     //lower pattern table
-                    //     spritePattern += 1;
-                    // }
                     spriteTiles.firstTile = this->dma.GetPatternTile(tableNum, spritePattern);
                     spriteTiles.secondTile = this->dma.GetPatternTile(tableNum, spritePattern + 1);
                 }
@@ -202,7 +196,7 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
     } 
 }
 
-Ppu::BackgroundPixelInfo Ppu::calcBackgroundPixel()
+Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel()
 {
     //get pattern value
     byte fineX = this->GetRegs().bgr.scrollX.fineX;
@@ -228,7 +222,7 @@ Ppu::BackgroundPixelInfo Ppu::calcBackgroundPixel()
     return backgroundPixel;
 }
 
-Ppu::ForegroundPixelInfo Ppu::calcForgroundPixel(int curCycle)
+Ppu::ForegroundPixelInfo Ppu::CalcForgroundPixel(int curCycle)
 {
     OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
     const OamSecondary::SpritePixel& spritePixel = secondaryOam.CalcForgroundPixel(curCycle);
@@ -254,6 +248,50 @@ Ppu::ForegroundPixelInfo Ppu::calcForgroundPixel(int curCycle)
     forgroundPixel.pixelColour = nesColour;
     forgroundPixel.primaryOamIndex = spritePixel.primaryOamIndex;
     return forgroundPixel;
+}
+
+rawColour Ppu::CalcFinalPixel(const Ppu::BackgroundPixelInfo& bPixel, const Ppu::ForegroundPixelInfo& sPixel, int curCycle)
+{
+    rawColour pixelColour = bPixel.pixelColour;
+    if(this->GetRegs().name.showSprites == false || sPixel.isTransparent)
+    {
+        //sprites disabled or transparent. draw background
+        pixelColour = bPixel.pixelColour;
+    }
+    else if(this->GetRegs().name.showBackground == false || bPixel.isTransparent)
+    {
+        //background disabled draw sprites
+        pixelColour = sPixel.pixelColour;
+    }
+    else
+    {
+        // sprites and background enabled
+
+        // handle sprite zero hit
+        if(sPixel.primaryOamIndex == 0)
+        {
+            //following logic detailed here:
+            // https://wiki.nesdev.com/w/index.php/PPU_OAM#Sprite_zero_hits
+            if(curCycle > 7 || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showBackgroundLeftmost))
+            {
+                if(curCycle != 255)
+                {
+                    this->GetRegs().name.spriteZeroHit = true;
+                }
+            }
+        }
+
+        if(sPixel.frontOfBackground)
+        {
+            pixelColour = sPixel.pixelColour;
+        }
+        else
+        {
+            pixelColour = bPixel.pixelColour;
+        }
+    }
+
+    return pixelColour;
 }
 
 PpuRegisters& Ppu::GetRegs()
@@ -293,8 +331,8 @@ bool Ppu::PowerCycle()
     this->GetRegs().bgr.lsbNextTile = 0;
     this->GetRegs().bgr.msbNextTile = 0;
 
-    this->dma.GetPpuMemory().SetScanLineNum(-1);
-    this->dma.GetPpuMemory().SetScanCycleNum(0);
+    this->dma.GetPpuMemory().SetScanLineNum(PRE_SCANLINE);
+    this->dma.GetPpuMemory().SetScanCycleNum(START_CYCLE);
     this->frameCountNum = 0;
     long long cycles = 0;
     this->dma.GetPpuMemory().SetTotalPpuCycles(cycles);
@@ -317,7 +355,7 @@ void Ppu::Step()
         this->GetRegs().name.spriteZeroHit = false;
         ++this->frameCountNum;
     }
-    else if( curLine == 241 && curCycle == START_VISIBLE_CYCLE )
+    else if( curLine == VBLANK_SCANLINE && curCycle == START_VISIBLE_CYCLE )
     {
         //end of frame, set VBlank flag
         this->GetRegs().name.verticalBlank = true;
@@ -341,48 +379,11 @@ void Ppu::Step()
     // visible scanlines
     if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_CYCLE) )
     {
-        Ppu::BackgroundPixelInfo bPixel = this->calcBackgroundPixel();
-        Ppu::ForegroundPixelInfo sPixel = this->calcForgroundPixel(curCycle);
+        Ppu::BackgroundPixelInfo bPixel = this->CalcBackgroundPixel();
+        Ppu::ForegroundPixelInfo sPixel = this->CalcForgroundPixel(curCycle);
 
-        //pick between bPixel and sPixel
-        rawColour pixelColour = bPixel.pixelColour;
-        if(this->GetRegs().name.showSprites == false || sPixel.isTransparent)
-        {
-            //sprites disabled or transparent. draw background
-            pixelColour = bPixel.pixelColour;
-        }
-        else if(this->GetRegs().name.showBackground == false || bPixel.isTransparent)
-        {
-            //background disabled draw sprites
-            pixelColour = sPixel.pixelColour;
-        }
-        else
-        {
-            // sprites and background enabled
-
-            // handle sprite zero hit
-            if(sPixel.primaryOamIndex == 0)
-            {
-                //following logic detailed here:
-                // https://wiki.nesdev.com/w/index.php/PPU_OAM#Sprite_zero_hits
-                if(curCycle > 7 || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showBackgroundLeftmost))
-                {
-                    if(curCycle != 255)
-                    {
-                        this->GetRegs().name.spriteZeroHit = true;
-                    }
-                }
-            }
-
-            if(sPixel.frontOfBackground)
-            {
-                pixelColour = sPixel.pixelColour;
-            }
-            else
-            {
-                pixelColour = bPixel.pixelColour;
-            }
-        }
+        //picks between bPixel and sPixel
+        rawColour pixelColour = this->CalcFinalPixel(bPixel, sPixel, curCycle);
 
         // draw pixel to the view
         int pixelX = curCycle - START_VISIBLE_CYCLE;
