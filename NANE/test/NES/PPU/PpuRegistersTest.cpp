@@ -26,9 +26,9 @@ TEST_CASE("registers cleared by default") {
     PpuRegisters registers;
 
     //test the internal registers
-    REQUIRE(registers.bgr.vramPpuAddress.val == 0);
-    REQUIRE(registers.bgr.ppuAddressLatch == 0);
-    REQUIRE(registers.bgr.ppuDataReadBuffer == 0);
+    REQUIRE(registers.vRegs.vramPpuAddress.val == 0);
+    REQUIRE(registers.vRegs.ppuAddressLatch == 0);
+    REQUIRE(registers.vRegs.ppuDataReadBuffer == 0);
     
 
     REQUIRE(registers.rawLen > 0);
@@ -66,13 +66,13 @@ TEST_CASE("PPU latching registers") {
     dword ppuAddr = 0x2006;
     registers.Write(ppuAddr, 0x21);
 
-    REQUIRE(registers.bgr.ppuAddressLatch == true);
-    REQUIRE(registers.bgr.vramPpuAddress.upper == 0x21);
+    REQUIRE(registers.vRegs.ppuAddressLatch == true);
+    REQUIRE(registers.vRegs.vramPpuAddress.upper == 0x21);
 
     registers.Write(ppuAddr, 0x08);
 
-    REQUIRE(registers.bgr.ppuAddressLatch == false);
-    REQUIRE(registers.bgr.vramPpuAddress.val == 0x2108);
+    REQUIRE(registers.vRegs.ppuAddressLatch == false);
+    REQUIRE(registers.vRegs.vramPpuAddress.val == 0x2108);
 }
 
 /**

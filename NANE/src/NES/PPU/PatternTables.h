@@ -25,8 +25,8 @@ class PatternTables
      */
     struct BitTile
     {
-        byte LsbPlane[TILE_HEIGHT];
-        byte MsbPlane[TILE_HEIGHT];
+        byte lsbPlane[TILE_HEIGHT];
+        byte msbPlane[TILE_HEIGHT];
     };
     struct BitPatternTable
     {

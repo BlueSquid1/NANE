@@ -17,5 +17,14 @@ union dword_p
     };
 };
 typedef uint32_t qword; //quadtuple word
+union qword_p
+{
+    qword val;
+    struct
+    {
+        dword_p first;
+        dword_p second;
+    };
+};
 
 #endif

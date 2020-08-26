@@ -26,8 +26,8 @@ PatternTables::PatternTables(std::shared_ptr<std::vector<byte>> chrRomVec)
                 Matrix<byte>& curOutputTitle = curOutputTable.tiles.Get(y, x);
                 for(int row = 0; row < TILE_HEIGHT; ++row)
                 {
-                    byte lsbyte = curInputTile.LsbPlane[row];
-                    byte msbyte = curInputTile.MsbPlane[row];
+                    byte lsbyte = curInputTile.lsbPlane[row];
+                    byte msbyte = curInputTile.msbPlane[row];
                     for(int col = 0; col < TILE_WIDTH; ++col)
                     {
                         bit msbit = BitUtil::GetBits(msbyte, col);

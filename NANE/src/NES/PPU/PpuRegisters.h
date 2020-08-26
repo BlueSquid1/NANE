@@ -86,7 +86,7 @@ class PpuRegisters : public MemoryRepeaterArray
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
-    struct BackgroundRegisters
+    struct VirtualRegisters
     {
         //holds current VRAM address written into PPUADDR (0x2006)
         dword_p vramPpuAddress;
@@ -96,22 +96,26 @@ class PpuRegisters : public MemoryRepeaterArray
         // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
         byte ppuDataReadBuffer;
 
-        // scrollX and scrollY are both stored at 0x2005
-        scrollRegister scrollX;
-        scrollRegister scrollY;
         bool ppuScrollLatch; // false == write to scrollX, true = write to scrollY
 
-        //registers used for background fetching/rendering
-        dword_p lsbPatternPlane;
-        dword_p msbPatternPlane;
-        dword_p lsbPalletePlane;
-        dword_p msbPalletePlane;
+        struct BackgroundDrawRegisters
+        {
+            // scrollX and scrollY are both stored at 0x2005
+            scrollRegister scrollX;
+            scrollRegister scrollY;
 
+            //registers used for background fetching/rendering
+            dword_p lsbPatternPlane;
+            dword_p msbPatternPlane;
+            dword_p lsbPalletePlane;
+            dword_p msbPalletePlane;
+        }bckgndDrawing;
+
+        // background fetch registers
         patternIndex nextNametableIndex;
         paletteIndex nextAttributeIndex;
-
-        byte lsbNextTile;
-        byte msbNextTile;
+        byte backgroundFetchTileLsb;
+        byte backgroundFetchTileMsb;
     };
 
     static const int rawLen = 8;
@@ -123,7 +127,7 @@ class PpuRegisters : public MemoryRepeaterArray
         byte raw[rawLen];
     };
 
-    BackgroundRegisters bgr;
+    VirtualRegisters vRegs;
 
     public:
     //constructor

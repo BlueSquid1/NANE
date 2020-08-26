@@ -7,18 +7,14 @@
 OamSecondary::OamSecondary()
 : OamPrimary()
 {
-    this->Clear();
+    this->ClearFetchData();
 }
 
-void OamSecondary::AppendSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex)
+void OamSecondary::AppendFetchedSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex)
 {
-    if(this->activeSpriteNum < 0 && this->activeSpriteNum >= OamPrimary::TotalNumOfSprites)
-    {
-        throw std::invalid_argument("invalid activeSpriteNum to append the current sprite");
-    }
-    this->name.sprites[this->activeSpriteNum] = sprite;
-    this->SpriteBuffers[this->activeSpriteNum].primaryOamIndex = primaryOamIndex;
-    ++this->activeSpriteNum;
+    this->name.sprites[this->spriteFetchNum] = sprite;
+    this->fetchSpritesOamIndex.at(this->spriteFetchNum) = primaryOamIndex;
+    ++this->spriteFetchNum;
 }
 
 OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const OamSecondary::SpritePatternTiles& spriteTiles) const
@@ -60,8 +56,8 @@ OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const Oa
     }
 
     OamSecondary::ScanlineTile spriteBuffer;
-    spriteBuffer.lsbSpriteTile = activeSpriteTile->LsbPlane[tileLine];
-    spriteBuffer.msbSpriteTile = activeSpriteTile->MsbPlane[tileLine];
+    spriteBuffer.lsbSpriteTile = activeSpriteTile->lsbPlane[tileLine];
+    spriteBuffer.msbSpriteTile = activeSpriteTile->msbPlane[tileLine];
 
     // because number are little endian numbers are flip horizontally by default. unflip is necassary
     if(!sprite.flipHorizontally)
@@ -72,64 +68,70 @@ OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const Oa
     return spriteBuffer;
 }
 
-OamSecondary::SpritePixel OamSecondary::CalcForgroundPixel(int curCycle) const
+OamSecondary::IndexPattern OamSecondary::CalcForgroundPixel(int pixelX) const
 {
     // loop through secondary OAM and return the first non transparent sprite
-    for(int i = 0; i < this->activeSpriteNum; ++i)
+    for(int i = 0; i < this->activeSpriteBufferLen; ++i)
     {
-        const Sprite& sprite = this->GetSprite(i);
+        const IndexSpriteBuffer& spriteBuffer = this->activeSpriteBuffer.at(i);
         //check if the cycle is within the sprite width
-        int spriteOffset = curCycle - sprite.posX;
+        int spriteOffset = pixelX - spriteBuffer.sprite.posX;
         if(spriteOffset >= 0 && spriteOffset < PatternTables::TILE_WIDTH)
         {
             //check if the pixel is transparent (i.e. pattern = 0)
-            const ScanlineTile& spriteBuffer = this->GetSpriteScanlineTile(i);
-            bit lsbSpriteTile = BitUtil::GetBits(spriteBuffer.lsbSpriteTile, spriteOffset);
-            bit msbSpriteTile = BitUtil::GetBits(spriteBuffer.msbSpriteTile, spriteOffset);
+            const ScanlineTile& scanlineBuffer = spriteBuffer.scanlineTile;
+            bit lsbSpriteTile = BitUtil::GetBits(scanlineBuffer.lsbSpriteTile, spriteOffset);
+            bit msbSpriteTile = BitUtil::GetBits(scanlineBuffer.msbSpriteTile, spriteOffset);
             patternIndex patternValue = (msbSpriteTile << 1) | lsbSpriteTile;
             if(patternValue != 0)
             {
-                SpritePixel spritePixel;
-                spritePixel.primaryOamIndex = i;
-                spritePixel.pattern = patternValue;
-                return spritePixel;
+                IndexPattern forgroundPixel;
+                forgroundPixel.pattern = patternValue;
+                forgroundPixel.sprite = spriteBuffer.sprite;
+                forgroundPixel.primaryOamIndex = spriteBuffer.primaryOamIndex;
+                return forgroundPixel;
             }
         }
     }
     //no sprite at current PPU position
-    SpritePixel spritePixel;
-    spritePixel.primaryOamIndex = -1;
-    return spritePixel;
+    IndexPattern noForgroundPixel;
+    noForgroundPixel.primaryOamIndex = -1;
+    return noForgroundPixel;
 }
 
-void OamSecondary::Clear()
+OamSecondary::IndexedSprite OamSecondary::GetFetchedSprite(int spriteNum) const
+{
+    if(spriteNum < 0 || spriteNum >= this->spriteFetchNum)
+    {
+        throw std::invalid_argument("invalid sprite number");
+    }
+    OamSecondary::IndexedSprite indexedSprite;
+    indexedSprite.sprite = this->GetSprite(spriteNum);
+    indexedSprite.primaryOamIndex = this->fetchSpritesOamIndex.at(spriteNum);
+    return indexedSprite;
+}
+
+void OamSecondary::ClearFetchData()
 {
     // this hinted at that fact that OAM is cleared to 0xFF instead of 0x00:
     // https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation#Details
     memset(this->raw, 0xFF, sizeof(this->name));
 
-    this->activeSpriteNum = 0;
+    this->spriteFetchNum = 0;
 }
 
-int OamSecondary::GetActiveSpriteNum() const
+void OamSecondary::ClearActiveBuffer()
 {
-    return this->activeSpriteNum;
+    this->activeSpriteBufferLen = 0;
 }
 
-const OamSecondary::ScanlineTile& OamSecondary::GetSpriteScanlineTile(int spriteNum) const
+int OamSecondary::GetSpriteFetchNum() const
 {
-    if(spriteNum >= this->activeSpriteNum || spriteNum < 0)
-    {
-        throw std::invalid_argument("Invalid sprite tile");
-    }
-    return this->SpriteBuffers[spriteNum].scanlineTile;
+    return this->spriteFetchNum;
 }
 
-void OamSecondary::SetSpriteScanlineTile(int spriteNum, const OamSecondary::ScanlineTile& spriteBuffer)
+void OamSecondary::AppendToActiveBuffer(const IndexSpriteBuffer& indexedScanline)
 {
-    if(spriteNum >= this->activeSpriteNum || spriteNum < 0)
-    {
-        throw std::invalid_argument("Invalid sprite tile");
-    }
-    this->SpriteBuffers[spriteNum].scanlineTile = spriteBuffer;
+    this->activeSpriteBuffer.at(this->activeSpriteBufferLen) = indexedScanline;
+    ++this->activeSpriteBufferLen;
 }

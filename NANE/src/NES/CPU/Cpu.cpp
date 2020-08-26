@@ -82,7 +82,7 @@ int Cpu::Step(bool verbose)
         std::cout << "PPU:" << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << ",";
         std::cout << std::dec << std::setfill(' ') << std::setw(3) << std::right << (int) 0 << " ";
         std::cout << "CYC:" << std::dec << std::setfill(' ') << std::setw(4) << std::left << (int) this->totalClockCycles << " ";
-        std::cout << "PPUADDR: " << std::hex << std::setfill('0') << std::setw(4) << std::right << (int) this->dma.GetPpuMemory().GetRegisters().bgr.vramPpuAddress.val << " ";
+        std::cout << "PPUADDR: " << std::hex << std::setfill('0') << std::setw(4) << std::right << (int) this->dma.GetPpuMemory().GetRegisters().vRegs.vramPpuAddress.val << " ";
         std::cout << std::endl;
     }
 

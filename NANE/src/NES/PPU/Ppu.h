@@ -12,6 +12,13 @@
 class Ppu
 {
     private:
+    struct BackgroundFetchInfo
+    {
+        byte lsbFetchPattern;
+        byte msbFetchPattern;
+        paletteIndex paletteColour : 4;
+    };
+
     /**
      * @brief Stores background pixel info.
      */
@@ -96,7 +103,7 @@ class Ppu
      * @param curCycle the current cycle.
      * @param curLine the current scanline.
      */
-    void backgroundFetch(const Point& fetchTile, int curCycle, int curLine);
+    std::unique_ptr<Ppu::BackgroundFetchInfo> backgroundFetch(const Point& fetchTile, int curCycle, int curLine);
 
     /**
      * @brief Handles populating the forground buffer.
@@ -107,9 +114,10 @@ class Ppu
 
     /**
      * @brief Calculates the background pixel from the working background buffer.
+     * @param curCycle the current cycle.
      * @return background colour and whether or not the background is invisible.
      */
-    Ppu::BackgroundPixelInfo CalcBackgroundPixel();
+    Ppu::BackgroundPixelInfo CalcBackgroundPixel(int curCycle, const PpuRegisters::VirtualRegisters::BackgroundDrawRegisters& bDrawingRegs);
 
     /**
      * @brief calculates the forground pixel.
@@ -119,7 +127,11 @@ class Ppu
     Ppu::ForegroundPixelInfo CalcForgroundPixel(int curCycle);
 
     /**
-     * @brief picks between the background and foreground pixel
+     * @brief Picks between the background and foreground pixel.
+     * @param bPixel background pixel info.
+     * @param sPixel forground pixel info.
+     * @param curCycle current cycle.
+     * @return the final colour to draw on the screen.
      */
     rawColour CalcFinalPixel(const Ppu::BackgroundPixelInfo& bPixel, const Ppu::ForegroundPixelInfo& sPixel, int curCycle);
 

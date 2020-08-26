@@ -2,6 +2,7 @@
 #define OAM_SECONDARY
 
 #include <memory>
+#include <vector>
 
 #include "OamPrimary.h"
 #include "NesColour.h"
@@ -17,16 +18,25 @@ class OamSecondary : public OamPrimary
         byte msbSpriteTile;
     };
 
-    struct SpriteProperties
+    struct Indexed
     {
-        ScanlineTile scanlineTile;
         int primaryOamIndex;
     };
 
-    struct SpritePixel
+    struct IndexedSprite : public Indexed
+    {
+        OamPrimary::Sprite sprite;
+    };
+
+    struct IndexPattern : IndexedSprite
     {
         patternIndex pattern;
-        int primaryOamIndex;
+    };
+
+    struct IndexSpriteBuffer : public Indexed
+    {
+        OamPrimary::Sprite sprite;
+        ScanlineTile scanlineTile;
     };
 
     struct SpritePatternTiles
@@ -37,26 +47,33 @@ class OamSecondary : public OamPrimary
     };
 
     private:
-    int activeSpriteNum;
+    // Stores the number of sprites that have been fetched for the next scanline
+    int spriteFetchNum;
+    std::vector<int> fetchSpritesOamIndex = std::vector<int>(OamPrimary::TotalNumOfSprites);
 
-    SpriteProperties SpriteBuffers[OamPrimary::TotalNumOfSprites];
+    // Stores sprites for current scanline
+    int activeSpriteBufferLen;
+    std::vector<IndexSpriteBuffer> activeSpriteBuffer = std::vector<IndexSpriteBuffer>(OamPrimary::TotalNumOfSprites);
     
 
     public:
     OamSecondary();
 
-    void AppendSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex);
+    void AppendFetchedSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex);
 
     OamSecondary::ScanlineTile CalcSpriteBuffer(int scanline, const OamPrimary::Sprite& sprite, const OamSecondary::SpritePatternTiles& spriteTile) const;
     
-    OamSecondary::SpritePixel CalcForgroundPixel(int curCycle) const;
+    OamSecondary::IndexPattern CalcForgroundPixel(int pixelX) const;
 
-    void Clear();
+    OamSecondary::IndexedSprite GetFetchedSprite(int spriteNum) const;
+
+    void ClearFetchData();
+
+    void ClearActiveBuffer();
 
     // getters/setters
-    int GetActiveSpriteNum() const;
-    const OamSecondary::ScanlineTile& GetSpriteScanlineTile(int spriteNum) const;
-    void SetSpriteScanlineTile(int spriteNum, const OamSecondary::ScanlineTile& spriteBuffer);
+    int GetSpriteFetchNum() const;
+    void AppendToActiveBuffer(const IndexSpriteBuffer& indexedScanline);
 };
 
 #endif

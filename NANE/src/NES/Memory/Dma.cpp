@@ -12,7 +12,7 @@ void Dma::IncrementPpuAddress()
     {
         incrementAmount = 32;
     }
-    this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val += incrementAmount;
+    this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val += incrementAmount;
 }
 
 
@@ -31,14 +31,14 @@ byte Dma::Read(dword address)
         case PpuRegisters::PPUDATA_ADDR:
         {
             //read value to VRAM address
-            byte returnVal = this->ppuMemory.GetRegisters().bgr.ppuDataReadBuffer;
-            dword vramAddress = this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val;
-            this->ppuMemory.GetRegisters().bgr.ppuDataReadBuffer = this->PpuRead(vramAddress);
+            byte returnVal = this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer;
+            dword vramAddress = this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val;
+            this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer = this->PpuRead(vramAddress);
 
             if(vramAddress >= 0x3F00)
             {
                 //buffer is not delayed when accessing from 0x3F00 and above
-                returnVal = this->ppuMemory.GetRegisters().bgr.ppuDataReadBuffer;
+                returnVal = this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer;
             }
             this->IncrementPpuAddress();
             return returnVal;
@@ -91,7 +91,7 @@ void Dma::Write(dword address, byte value)
         case PpuRegisters::PPUDATA_ADDR:
         {
             //write value to VRAM address
-            dword vramAddress = this->ppuMemory.GetRegisters().bgr.vramPpuAddress.val;
+            dword vramAddress = this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val;
             this->PpuWrite(vramAddress, value);
             this->IncrementPpuAddress();
             return;
