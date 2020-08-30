@@ -22,7 +22,8 @@ class WindowManager
     enum class WindowView
     {
         Simple,
-        Disassemble
+        Disassemble,
+         OpenRom
     };
 
     int windowScale = 1;
@@ -42,10 +43,13 @@ class WindowManager
     std::unique_ptr<TextWindow> fpsDisplay;
     std::unique_ptr<TextureWindow> playerOneInputs;
     std::unique_ptr<MenuBar> menuBar;
+    std::unique_ptr<TextWindow> openRomWindow;
 
     std::stringstream fpsStringStream;
 
     void UpdateLayout();
+
+    void RenderMainDisplay(Nes& nesEmulator,unsigned int fps);
 
     public:
     /**
@@ -62,7 +66,7 @@ class WindowManager
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display(Nes& nesEmulator,unsigned int fps);
+    bool Display(Nes& nesEmulator,unsigned int fps, const std::string& fileSystemText);
 
     /**
      * Close the graphics engine.

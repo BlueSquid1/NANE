@@ -152,8 +152,9 @@ bool GameEngine::Processing()
 
 bool GameEngine::Display()
 {
-	unsigned int fps = fpsTimer.CalcFps();
-	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, fps);
+	unsigned int fps = this->fpsTimer.CalcFps();
+	std::string files = this->romLoader.GetFilesAtCurrentPath();
+	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, fps, files);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;
