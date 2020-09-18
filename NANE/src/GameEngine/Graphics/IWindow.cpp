@@ -9,6 +9,10 @@ IWindow::~IWindow()
 {
 }
 
+void IWindow::HandleEvent(const SDL_Event& /*e*/)
+{
+}
+
 void IWindow::SetDimensions(int posX, int posY, int width, int height)
 {
 	this->windowDimensions.w = width;

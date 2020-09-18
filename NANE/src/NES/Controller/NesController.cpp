@@ -18,7 +18,7 @@ void NesController::SetKey(NesInputs& input, bool isPressed)
     this->keyPressed.at(input) = isPressed;
 }
 
-void NesController::Write(dword address, byte value)
+void NesController::Write(dword /*address*/, byte /*value*/)
 {
     for(int i = 0; i < 8; ++i)
     {
@@ -27,7 +27,7 @@ void NesController::Write(dword address, byte value)
     this->bufferIndex = 0;
 }
 
-byte NesController::Read(dword address)
+byte NesController::Read(dword /*address*/)
 {
     if(this->bufferIndex >= 8)
     {
@@ -38,7 +38,7 @@ byte NesController::Read(dword address)
     return keyPress;
 }
 
-byte NesController::Seek(dword address) const
+byte NesController::Seek(dword /*address*/) const
 {
     // official Nintendo brand controllers always return 1 by default
     return true;

@@ -2,27 +2,10 @@
 #define MENU_BAR
 
 #include <vector>
+
 #include "IWindow.h"
 #include "SubMenu.h"
-
-enum class MenuEvents : Uint32
-{
-    OpenRom,
-    SimpleView,
-    DisassembleView,
-    ContinuePauseEmulator,
-    StepEmulator,
-    SaveSnapshot,
-    LoadSnapshot,
-    IncrementDefaultColourPalette,
-    StepAssembly,
-    ShowFpsCounter,
-    ScaleFactor1,
-    ScaleFactor2,
-    ScaleFactor3,
-    ScaleFactor4,
-    ScaleFactor5
-};
+#include "CustomEventMgr.h"
 
 class MenuBar : public IWindow
 {
@@ -32,9 +15,6 @@ class MenuBar : public IWindow
     //set to true when a submenu is activated
     bool isActive = false;
 
-    private:
-    void RegisterEvent(PushButton& button, MenuEvents event);
-
     public:
     MenuBar(SDL_Renderer* gRenderer);
 
@@ -42,7 +22,7 @@ class MenuBar : public IWindow
 
     void AppendSubMenu(const SubMenu& button);
 
-    void HandleEvent(const SDL_Event& e);
+    void HandleEvent(const SDL_Event& e) override;
     
     void Display();
 };

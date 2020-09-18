@@ -12,6 +12,8 @@ class IWindow
     public:
     IWindow(SDL_Renderer* gRenderer);
     virtual ~IWindow();
+
+    virtual void HandleEvent(const SDL_Event& e);
     
     virtual void SetDimensions(int posX, int posY, int width, int height);
 

@@ -1,15 +1,19 @@
 #include "RomLoader.h"
-#include <sstream>
 
-std::string RomLoader::ListFilesInPath(const std::string& fileSystemPath )
+std::vector<std::string> RomLoader::ListFilesInPath(const std::string& fileSystemPath )
 {
-    std::stringstream fileStringStream;
-    fileStringStream << "hello" << std::endl;
-    fileStringStream << "world" << std::endl;
-    return fileStringStream.str();
+    std::vector<std::string> fileList;
+    fileList.push_back("hello");
+    fileList.push_back("world");
+    return fileList;
 }
 
-std::string RomLoader::GetFilesAtCurrentPath()
+std::string RomLoader::GetCurrentFilesystemPath() const
 {
-    return this->ListFilesInPath(this->currentFilesystemPath);
+    return this->currentFilesystemPath;
+}
+
+void RomLoader::SetCurrentFilesystemPath(const std::string& path)
+{
+    this->currentFilesystemPath = path;
 }

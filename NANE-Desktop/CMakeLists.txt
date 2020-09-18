@@ -28,7 +28,7 @@ file(GLOB_RECURSE SOURCES
     ${source_dir}/src/NES/*.cpp)
 
 #NANE library
-add_library(NANE_Lib ${SOURCES})
+add_library(NANE_Lib STATIC ${SOURCES})
 target_link_libraries(NANE_Lib ${SDL2_LIBRARIES})
 target_link_libraries(NANE_Lib ${SDL2_TTF_LIBRARIES})
 

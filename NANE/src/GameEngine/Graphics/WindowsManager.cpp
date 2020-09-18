@@ -78,7 +78,7 @@ bool WindowManager::Init(bool showFileMenu)
 	SDL_Color transparentColor;
 	transparentColor.a = 0x00;
 	this->fpsDisplay = std::make_unique<TextWindow>(this->gRenderer, TextDirection::topLeft, fpsTextColour, transparentColor);
-	this->openRomWindow = std::make_unique<TextWindow>(this->gRenderer, TextDirection::centred, cpuForgroundColour, cpuBackgroundColour);
+	this->openRomWindow = std::make_unique<FileNavigator>(this->gRenderer);
 	this->menuBar = std::make_unique<MenuBar>(this->gRenderer);
 
 	this->ChangeScaleFactor(2);
@@ -107,19 +107,25 @@ void WindowManager::UpdateLayout()
 	int mainOffsetHeight;
 	int mainOffsetWidth;
 
-	if(this->curWindowView == WindowView::Disassemble)
+	switch(this->curWindowView)
 	{
-		totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
-		totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
-		mainOffsetHeight = BORDER_WIDTH;
-		mainOffsetWidth = BORDER_WIDTH;
-	}
-	else if (this->curWindowView == WindowView::Simple)
-	{
-		totalWidth = mainWindowWidth;
-		totalHeight = mainWindowHeight;
-		mainOffsetHeight = 0;
-		mainOffsetWidth = 0;
+		case WindowView::Disassemble:
+		{
+			totalWidth = BORDER_WIDTH + mainWindowWidth + BORDER_WIDTH + chrRomWidth + BORDER_WIDTH;
+			totalHeight = BORDER_WIDTH + chrRomHeight + BORDER_WIDTH + cpuDisplayHeight + BORDER_WIDTH;
+			mainOffsetHeight = BORDER_WIDTH;
+			mainOffsetWidth = BORDER_WIDTH;
+			break;
+		}
+		case WindowView::Simple:
+		case WindowView::OpenRom:
+		{
+			totalWidth = mainWindowWidth;
+			totalHeight = mainWindowHeight;
+			mainOffsetHeight = 0;
+			mainOffsetWidth = 0;
+			break;
+		}
 	}
 
 	if(this->enableMenuBar)
@@ -175,59 +181,64 @@ void WindowManager::HandleEvent(const SDL_Event& e)
 {
 	if(e.type == CustomEventMgr::GetInstance()->GetCustomEventType())
 	{
-		MenuEvents menuEvent = (MenuEvents)e.user.code;
+		CustomEvents menuEvent = (CustomEvents)e.user.code;
 		switch(menuEvent)
 		{
-			case MenuEvents::SimpleView:
+			case CustomEvents::SimpleView:
 			{
 				this->ChangeViewType(WindowView::Simple);
 				break;
 			}
-			case MenuEvents::DisassembleView:
+			case CustomEvents::DisassembleView:
 			{
 				this->ChangeViewType(WindowView::Disassemble);
 				break;
 			}
-			case MenuEvents::ScaleFactor1:
+			case CustomEvents::ScaleFactor1:
 			{
 				this->ChangeScaleFactor(1);
 				break;
 			}
-			case MenuEvents::ScaleFactor2:
+			case CustomEvents::ScaleFactor2:
 			{
 				this->ChangeScaleFactor(2);
 				break;
 			}
-			case MenuEvents::ScaleFactor3:
+			case CustomEvents::ScaleFactor3:
 			{
 				this->ChangeScaleFactor(3);
 				break;
 			}
-			case MenuEvents::ScaleFactor4:
+			case CustomEvents::ScaleFactor4:
 			{
 				this->ChangeScaleFactor(4);
 				break;
 			}
-			case MenuEvents::ScaleFactor5:
+			case CustomEvents::ScaleFactor5:
 			{
 				this->ChangeScaleFactor(5);
 				break;
 			}
-			case MenuEvents::ShowFpsCounter:
+			case CustomEvents::ShowFpsCounter:
 			{
 				this->enableFpsCounter = !this->enableFpsCounter;
 				break;
 			}
-			case MenuEvents::OpenRom:
+			default:
 			{
-				this->curWindowView = WindowView::OpenRom;
+				break;
 			}
 		}
 	}
 	this->menuBar->HandleEvent(e);
+
+	if(this->curWindowView == WindowView::OpenRom)
+	{
+		this->openRomWindow->HandleEvent(e);
+	}
 }
 
-bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, const std::string& fileSystemText)
+bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 {
     //clear the screen
 	SDL_SetRenderDrawColor(this->gRenderer, 0x80, 0x80, 0x80, 0xFF);
@@ -260,7 +271,7 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps, const std::string
 		}
 		case WindowView::OpenRom:
 		{
-			this->openRomWindow->Display(fileSystemText);
+			this->openRomWindow->Display();
 			break;
 		}
 	}
@@ -284,4 +295,9 @@ void WindowManager::Close()
 	SDL_DestroyRenderer(this->gRenderer);
 	this->gRenderer = NULL;
     SDL_Quit();
+}
+
+std::unique_ptr<FileNavigator>& WindowManager::GetFileNavigator()
+{
+	return this->openRomWindow;
 }

@@ -1,6 +1,7 @@
 #include "FontManager.h"
 
 #include <exception>
+#include <iostream>
 
 std::unique_ptr<FontManager> FontManager::instance = NULL;
 
@@ -64,6 +65,11 @@ TTF_Font * FontManager::LoadFont(FontType type)
         return this->openFonts.at(type);
     }
     TTF_Font * ttf_font = TTF_OpenFont( fontName.c_str(), fontPt );
+    if(ttf_font == nullptr)
+    {
+        std::cerr << "failed to load font: " << fontName << std::endl;
+        return nullptr;
+    }
     this->openFonts[type] = ttf_font;
     return ttf_font;
 }

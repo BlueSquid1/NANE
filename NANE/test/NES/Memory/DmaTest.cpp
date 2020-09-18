@@ -53,7 +53,7 @@ TEST_CASE("DMA: test reading chr rom data") {
     //test that first tile in test rom is blank
     Matrix<byte> firstTile = patternTables->GetTile(0,0,0);
     std::vector<byte> firstData = firstTile.dump();
-    for(int i = 0; i < firstData.size(); ++i)
+    for(unsigned int i = 0; i < firstData.size(); ++i)
     {
         REQUIRE(firstData.at(i) == 0);
     }

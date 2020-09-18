@@ -50,8 +50,6 @@ bool CartridgeLoader::UpdateHead( std::unique_ptr<INes> & rom, std::ifstream * f
     rom->SetTrainerPresent(trainerPresent);
 
     byte flag_7 = header[7];
-    bool isVsUniSystem = BitUtil::GetBits(flag_7, 0);
-    bool isPlayChoice = BitUtil::GetBits(flag_7, 1);
     byte Nes2Flag = BitUtil::GetBits(flag_7, 2,3);
     if( Nes2Flag == 2 )
     {

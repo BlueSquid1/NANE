@@ -18,44 +18,44 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
     submenuActiveBackground.a = 0xFF;
 
     SubMenu fileMenu(gRenderer, "File", submenuForground, submenuInactiveBackground, submenuActiveBackground);
-    Uint32 openRomEvent = (Uint32)MenuEvents::OpenRom;
+    Uint32 openRomEvent = (Uint32)CustomEvents::OpenRom;
     fileMenu.AddButton(PushButton(gRenderer, "Open ROM", &openRomEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 saveSnapshotEvent = (Uint32)MenuEvents::SaveSnapshot;
+    Uint32 saveSnapshotEvent = (Uint32)CustomEvents::SaveSnapshot;
     fileMenu.AddButton(PushButton(gRenderer, "Save Snapshot", &saveSnapshotEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 loadSnapshotEvent = (Uint32)MenuEvents::LoadSnapshot;
+    Uint32 loadSnapshotEvent = (Uint32)CustomEvents::LoadSnapshot;
     fileMenu.AddButton(PushButton(gRenderer, "Load Snapshot", &loadSnapshotEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(fileMenu);
 
     SubMenu viewMenu(gRenderer, "View", submenuForground, submenuInactiveBackground, submenuActiveBackground);
-    Uint32 simpleViewEvent = (Uint32)MenuEvents::SimpleView;
+    Uint32 simpleViewEvent = (Uint32)CustomEvents::SimpleView;
     viewMenu.AddButton(PushButton(gRenderer, "Simple View", &simpleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 disassembleViewEvent = (Uint32)MenuEvents::DisassembleView;
+    Uint32 disassembleViewEvent = (Uint32)CustomEvents::DisassembleView;
     viewMenu.AddButton(PushButton(gRenderer, "Disassemble View", &disassembleViewEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 showFpsEvent = (Uint32)MenuEvents::ShowFpsCounter;
+    Uint32 showFpsEvent = (Uint32)CustomEvents::ShowFpsCounter;
     viewMenu.AddButton(PushButton(gRenderer, "Show/Hide FPS Counter", &showFpsEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 scaleFactorEvent1 = (Uint32)MenuEvents::ScaleFactor1;
+    Uint32 scaleFactorEvent1 = (Uint32)CustomEvents::ScaleFactor1;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:1", &scaleFactorEvent1, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 scaleFactorEvent2 = (Uint32)MenuEvents::ScaleFactor2;
+    Uint32 scaleFactorEvent2 = (Uint32)CustomEvents::ScaleFactor2;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:2", &scaleFactorEvent2, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 scaleFactorEvent3 = (Uint32)MenuEvents::ScaleFactor3;
+    Uint32 scaleFactorEvent3 = (Uint32)CustomEvents::ScaleFactor3;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:4", &scaleFactorEvent3, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 scaleFactorEvent4 = (Uint32)MenuEvents::ScaleFactor4;
+    Uint32 scaleFactorEvent4 = (Uint32)CustomEvents::ScaleFactor4;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:8", &scaleFactorEvent4, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 scaleFactorEvent5 = (Uint32)MenuEvents::ScaleFactor5;
+    Uint32 scaleFactorEvent5 = (Uint32)CustomEvents::ScaleFactor5;
     viewMenu.AddButton(PushButton(gRenderer, "Scale 1:16", &scaleFactorEvent5, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(viewMenu);
 
     SubMenu emulatorMenu(gRenderer, "Emulator", submenuForground, submenuInactiveBackground, submenuActiveBackground);
-    Uint32 continueEvent = (Uint32)MenuEvents::ContinuePauseEmulator;
+    Uint32 continueEvent = (Uint32)CustomEvents::ContinuePauseEmulator;
     emulatorMenu.AddButton(PushButton(gRenderer, "Continue/Pause (p)", &continueEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 pauseEvent = (Uint32)MenuEvents::StepEmulator;
+    Uint32 pauseEvent = (Uint32)CustomEvents::StepEmulator;
     emulatorMenu.AddButton(PushButton(gRenderer, "Step To Next Frame (n)", &pauseEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(emulatorMenu);
 
     SubMenu disassembleMenu(gRenderer, "Disassemble", submenuForground, submenuInactiveBackground, submenuActiveBackground);
-    Uint32 IncrementDefaultColourPaletteEvent = (Uint32)MenuEvents::IncrementDefaultColourPalette;
+    Uint32 IncrementDefaultColourPaletteEvent = (Uint32)CustomEvents::IncrementDefaultColourPalette;
     disassembleMenu.AddButton(PushButton(gRenderer, "Increment Default Colour Palette", &IncrementDefaultColourPaletteEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
-    Uint32 stepAssemblyEvent = (Uint32)MenuEvents::StepAssembly;
+    Uint32 stepAssemblyEvent = (Uint32)CustomEvents::StepAssembly;
     disassembleMenu.AddButton(PushButton(gRenderer, "Step To Next CPU Instruction (m)", &stepAssemblyEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(disassembleMenu);
 }
@@ -130,7 +130,7 @@ void MenuBar::HandleEvent(const SDL_Event& e)
 
             //find the submenu that should be active
             int activePos = -1;
-            for(int i = 0; i < this->subMenus.size(); ++i)
+            for(unsigned int i = 0; i < this->subMenus.size(); ++i)
             {
                 if(this->subMenus.at(i).contains(mousePosX, mousePosY))
                 {

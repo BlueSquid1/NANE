@@ -4,7 +4,7 @@
 /**
  * program entry point
  */
-int main(int argc, char *argv[])
+int main()
 {    
     std::string logServerIp = std::string();
     #ifdef LOG_SERVER_IP

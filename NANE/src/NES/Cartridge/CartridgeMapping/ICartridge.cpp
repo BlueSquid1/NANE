@@ -13,7 +13,6 @@ ICartridge::~ICartridge()
 
 bool ICartridge::Contains(dword address) const
 {
-    bool result = false;
     if(this->prgRom != NULL && this->prgRom->Contains(address))
     {
         return true;
@@ -92,7 +91,7 @@ byte ICartridge::Seek(dword address) const
     return 0;
 }
 
-const unsigned int ICartridge::GetMapNumber() const
+unsigned int ICartridge::GetMapNumber() const
 {
     return this->mapNumber;
 }

@@ -33,7 +33,7 @@ class ICartridge : public IMemoryRW
     byte Seek(dword address) const override;
 
     //getters and setters
-    const unsigned int GetMapNumber() const;
+    unsigned int GetMapNumber() const;
     std::shared_ptr<MemoryRepeaterVec> GetChrRom();
     std::shared_ptr<MemoryRepeaterVec> GetPrgRom();
     INes::MirrorType GetMirroringType();

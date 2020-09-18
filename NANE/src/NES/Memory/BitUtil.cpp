@@ -12,7 +12,7 @@ std::unique_ptr<std::vector<byte>> BitUtil::ArrayToVec(byte * array, unsigned in
         return NULL;
     }
     std::unique_ptr<std::vector<byte>> returnVec( new std::vector<byte>(arrayLen) );
-    for(int i = 0; i < arrayLen; ++i)
+    for(unsigned int i = 0; i < arrayLen; ++i)
     {;
         returnVec->at(i) = array[i];
     }
@@ -37,7 +37,7 @@ bool BitUtil::VecEqual(const std::vector<byte> * vec1, const std::vector<byte> *
         return false;
     }
 
-    for(int i = 0; i < vec1->size(); ++i)
+    for(unsigned int i = 0; i < vec1->size(); ++i)
     {
         if(vec1->at(i) != vec2->at(i))
         {

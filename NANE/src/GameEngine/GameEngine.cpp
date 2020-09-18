@@ -3,6 +3,7 @@
 #include "Graphics/CustomEventMgr.h"
 
 #include <SDL.h> //SDL_PollEvent()
+#include <vector>
 
 GameEngine::GameEngine()
 {
@@ -20,13 +21,14 @@ bool GameEngine::Init(const std::string & serverIp)
 	}
 
 	std::cout << "initalizing game engine" << std::endl;
+	std::string defaultRomPath;
+
 	bool showFileMenu;
 #ifdef __DESKTOP__
 	showFileMenu = true;
 #else
 	showFileMenu = false;
 #endif
-
 	bool isGraphicsInit = this->windowsMgr.Init(showFileMenu);
 	if(isGraphicsInit == false)
 	{
@@ -67,27 +69,65 @@ bool GameEngine::UserInput()
 		this->windowsMgr.HandleEvent(e);
 		if(e.type == CustomEventMgr::GetInstance()->GetCustomEventType())
 		{
-			MenuEvents menuEvent = (MenuEvents)e.user.code;
+			CustomEvents menuEvent = (CustomEvents)e.user.code;
 			switch(menuEvent)
 			{
-				case MenuEvents::ContinuePauseEmulator:
+				case CustomEvents::ContinuePauseEmulator:
 				{
 					this->run = !this->run;
 					break;
 				}
-				case MenuEvents::StepEmulator:
+				case CustomEvents::StepEmulator:
 				{
 					this->frameStep = true;
 					break;
 				}
-				case MenuEvents::IncrementDefaultColourPalette:
+				case CustomEvents::IncrementDefaultColourPalette:
 				{
 					this->nesEmulator.IncrementDefaultColourPalette();
 					break;
 				}
-				case MenuEvents::StepAssembly:
+				case CustomEvents::StepAssembly:
 				{
 					this->assemblyStep = true;
+					break;
+				}
+				case CustomEvents::OpenRom:
+				{
+					std::string filePath = this->romLoader.GetCurrentFilesystemPath();
+					std::vector<std::string> filesInPath = this->romLoader.ListFilesInPath(filePath);
+					this->windowsMgr.ChangeViewType(WindowView::OpenRom);
+					this->windowsMgr.GetFileNavigator()->SetFileSystemData(filePath, filesInPath);
+					break;
+				}
+				case CustomEvents::FileSelected:
+				{
+					std::unique_ptr<FileNavigator>& fileNavigator = this->windowsMgr.GetFileNavigator();
+					std::string file_selected = fileNavigator->GetSelectedFile();
+					std::string old_file_path = this->romLoader.GetCurrentFilesystemPath();
+
+					//TODO handle filesystem navigation
+					if(file_selected.empty()) //TODO is file
+					{
+						// file
+						this->windowsMgr.ChangeViewType(WindowView::Simple);
+					}
+					else
+					{
+						// folder
+						std::string new_file_path = old_file_path + "/" + file_selected; //TODO
+						this->romLoader.SetCurrentFilesystemPath(new_file_path);
+						std::vector<std::string> filesInPath = this->romLoader.ListFilesInPath(new_file_path);
+						fileNavigator->SetFileSystemData(new_file_path, filesInPath);
+					}
+					break;
+				}
+				case CustomEvents::SimpleView:
+				{
+					break;
+				}
+				default:
+				{
 					break;
 				}
 			}
@@ -153,8 +193,7 @@ bool GameEngine::Processing()
 bool GameEngine::Display()
 {
 	unsigned int fps = this->fpsTimer.CalcFps();
-	std::string files = this->romLoader.GetFilesAtCurrentPath();
-	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, fps, files);
+	bool graphicsRet = this->windowsMgr.Display(this->nesEmulator, fps);
 	if(graphicsRet == false)
 	{
 		std::cerr << "graphics failed to display" << std::endl;

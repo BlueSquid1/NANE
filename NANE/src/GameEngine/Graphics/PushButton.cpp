@@ -16,11 +16,8 @@ PushButton::PushButton(SDL_Renderer* gRenderer, const std::string& name, Uint32 
 
 void PushButton::RegisterEvent(Uint32 eventName)
 {
-    SDL_Event triggerEvent;
-    SDL_memset(&triggerEvent, 0, sizeof(triggerEvent));
-    triggerEvent.type = CustomEventMgr::GetInstance()->GetCustomEventType();
-    triggerEvent.user.code = eventName;
-    this->triggerEvents.push_back(triggerEvent);
+    std::unique_ptr<SDL_Event> triggerEvent = CustomEventMgr::GetInstance()->GenerateEvent(eventName);
+    this->triggerEvents.push_back(*triggerEvent);
 }
 
 SDL_Rect PushButton::CalculateMinSize() const
@@ -67,10 +64,6 @@ void PushButton::HandleEvent(const SDL_Event& e)
     //highlighted button on hover over if it isn't a toggle button
     if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN)
     {
-        if(this->displayName == "Increment Default Colour Palette")
-        {
-            int i = 0;
-        }
         int mousePosX = e.motion.x;
         int mousePosY = e.motion.y;
 
@@ -109,4 +102,14 @@ bool PushButton::GetIsPressed() const
 void PushButton::SetIsPressed(bool isPressed)
 {
     this->isPressed = isPressed;
+}
+
+bool PushButton::GetIsHighlighted() const
+{
+    return this->isHighlighted;
+}
+
+std::string PushButton::GetDisplayName() const
+{
+    return this->displayName;
 }

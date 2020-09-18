@@ -23,8 +23,6 @@ class Logger
     static Logger * stdOutLogger;
     static Logger * stdErrLogger;
 
-    //log server port address to send over
-    int serverPort = -1;
     //network socket
     int serverSocket = -1;
     

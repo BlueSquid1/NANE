@@ -3,15 +3,19 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 class RomLoader
 {
     private:
-    std::string currentFilesystemPath;
+    std::string currentFilesystemPath = "A";
 
     public:
-    std::string ListFilesInPath(const std::string& filesystemPath );
-    std::string GetFilesAtCurrentPath();
+    std::vector<std::string> ListFilesInPath(const std::string& filesystemPath );
+
+    //getter/setters
+    std::string GetCurrentFilesystemPath() const;
+    void SetCurrentFilesystemPath(const std::string& path);
 };
 
 #endif

@@ -23,7 +23,7 @@ class PushButton : public TextWindow
 
     void RegisterEvent(Uint32 eventName);
 
-    virtual void HandleEvent(const SDL_Event& e);
+    virtual void HandleEvent(const SDL_Event& e) override;
 
     virtual void Display();
 
@@ -32,6 +32,8 @@ class PushButton : public TextWindow
     //getters/setters
     bool GetIsPressed() const;
     void SetIsPressed(bool isPressed);
+    bool GetIsHighlighted() const;
+    std::string GetDisplayName() const;
 };
 
 #endif

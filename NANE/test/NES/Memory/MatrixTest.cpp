@@ -27,7 +27,6 @@ TEST_CASE("constructor test") {
 TEST_CASE("get and set elements") {
     int width = 5;
     int height = 3;
-    int length = width * height;
     Matrix<int> mat(width,height, 0);
     int startVal = 134;
     mat.Set(0,0, startVal);

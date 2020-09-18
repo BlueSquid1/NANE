@@ -11,6 +11,14 @@
 #include "TextWindow.h"
 #include "MenuBar.h"
 #include "FontManager.h"
+#include "FileNavigator.h"
+
+enum class WindowView
+{
+    Simple,
+    Disassemble,
+    OpenRom
+};
 
 
 /**
@@ -18,14 +26,6 @@
  */
 class WindowManager
 {
-    private:
-    enum class WindowView
-    {
-        Simple,
-        Disassemble,
-         OpenRom
-    };
-
     int windowScale = 1;
     bool enableMenuBar = true;
     WindowView curWindowView = WindowView::Disassemble;
@@ -43,7 +43,7 @@ class WindowManager
     std::unique_ptr<TextWindow> fpsDisplay;
     std::unique_ptr<TextureWindow> playerOneInputs;
     std::unique_ptr<MenuBar> menuBar;
-    std::unique_ptr<TextWindow> openRomWindow;
+    std::unique_ptr<FileNavigator> openRomWindow;
 
     std::stringstream fpsStringStream;
 
@@ -66,12 +66,15 @@ class WindowManager
     /**
      * Invoked everytime the screen is ready to be refreshed.
      */
-    bool Display(Nes& nesEmulator,unsigned int fps, const std::string& fileSystemText);
+    bool Display(Nes& nesEmulator,unsigned int fps);
 
     /**
      * Close the graphics engine.
      */
     void Close();
+
+    //getters/setters
+    std::unique_ptr<FileNavigator>& GetFileNavigator();
 };
 
 #endif

@@ -86,11 +86,6 @@ int Cpu::Step(bool verbose)
         std::cout << std::endl;
     }
 
-    if(this->totalClockCycles == 116854)
-    {
-        int i = 0;
-    }
-
     //increment PC
     this->GetRegs().name.PC += instLen;
 
@@ -198,7 +193,6 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::BPL:
         {
-            byte p = this->GetRegs().name.P;
             if( this->GetRegs().name.N == false )
             {
                 cycleCount += 1;
