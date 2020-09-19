@@ -53,15 +53,10 @@ class GameEngine
 
     /**
      * Handles loading emulator media
+     * @param romFilePath path to a nes ROM.
      * @return false if a fatal error has occured.
      */
-    bool LoadMedia();
-
-    /**
-     * Final initalisation before entering game loop
-     * @return false if a fatal error has occured.
-     */
-    bool PostInit();
+    bool LoadMedia( const std::string& romFilePath );
 
     /**
      * Handles any proccessing that needs to take place in the game loop.

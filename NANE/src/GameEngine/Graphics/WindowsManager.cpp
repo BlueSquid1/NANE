@@ -251,17 +251,20 @@ bool WindowManager::Display(Nes& nesEmulator,unsigned int fps)
 		{
 			this->RenderMainDisplay(nesEmulator, fps);
 
-			std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
-			this->chrRomWindow->Display(*chrRomDisplay);
+			if(nesEmulator.IsCartridgeLoaded())
+			{
+				std::unique_ptr<Matrix<rawColour>> chrRomDisplay = nesEmulator.GeneratePatternTables();
+				this->chrRomWindow->Display(*chrRomDisplay);
 
-			std::string cpuText = nesEmulator.GenerateCpuScreen();
-			this->cpuWindow->Display(cpuText);
+				std::string cpuText = nesEmulator.GenerateCpuScreen();
+				this->cpuWindow->Display(cpuText);
 
-			std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
-			this->colourDisplayWindow->Display(*colourPalettesDisplay);
+				std::unique_ptr<Matrix<rawColour>> colourPalettesDisplay = nesEmulator.GenerateColourPalettes();
+				this->colourDisplayWindow->Display(*colourPalettesDisplay);
 
-			std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
-			this->playerOneInputs->Display(*playerOneDisplay);
+				std::unique_ptr<Matrix<rawColour>> playerOneDisplay = nesEmulator.GenerateControllerState();
+				this->playerOneInputs->Display(*playerOneDisplay);
+			}
 			break;
 		}
 		case WindowView::Simple:

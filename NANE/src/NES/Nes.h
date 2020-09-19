@@ -25,6 +25,8 @@ class Nes
      * @return false if failed to load .nes ROM
      */
     bool LoadCartridge(std::string pathToRom);
+    
+    bool IsCartridgeLoaded();
 
     bool PowerCycle();
 

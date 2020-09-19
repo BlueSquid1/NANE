@@ -26,6 +26,11 @@ bool Nes::LoadCartridge(std::string pathToRom)
     return true;
 }
 
+bool Nes::IsCartridgeLoaded()
+{
+    return this->dma.GetCartridge() != nullptr;
+}
+
 bool Nes::PowerCycle()
 {
     bool cputRet = this->cpu.PowerCycle();
@@ -39,6 +44,11 @@ bool Nes::PowerCycle()
 
 bool Nes::processes(bool verbose, bool singleStep)
 {
+    if(!this->IsCartridgeLoaded())
+    {
+        //can only process once a ROM has been loaded
+        return false;
+    }
     // loop until next frame is reached
     long long int frameCount = this->GetFrameCount();
     while( this->GetFrameCount() == frameCount )

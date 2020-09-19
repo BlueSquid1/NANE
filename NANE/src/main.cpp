@@ -4,7 +4,7 @@
 /**
  * program entry point
  */
-int main()
+int main(int argc, char *argv[])
 {    
     std::string logServerIp = std::string();
     #ifdef LOG_SERVER_IP
@@ -19,18 +19,15 @@ int main()
 		return 1;
     }
 
-    std::cout << "loading media" << std::endl;
-    if(gameEngine.LoadMedia() == false)
+    if(argc == 2)
     {
-        std::cerr << "failed to load media" << std::endl;
-		return 1;
-    }
-
-    std::cout << "entering postInit" << std::endl;
-    if(gameEngine.PostInit() == false)
-    {
-        std::cerr << "failed to post init" << std::endl;
-		return 1;
+        std::string romPath = argv[1];
+        std::cout << "loading rom: " << romPath << std::endl;
+        if(gameEngine.LoadMedia(romPath) == false)
+        {
+            std::cerr << "failed to load media" << std::endl;
+            return 1;
+        }
     }
 
     std::cout << "Entering main loop" << std::endl;

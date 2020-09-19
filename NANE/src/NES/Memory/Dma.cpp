@@ -282,6 +282,11 @@ bool Dma::SetCartridge(std::unique_ptr<ICartridge> cartridge)
     return true;
 }
 
+const std::unique_ptr<ICartridge>& Dma::GetCartridge() const
+{
+    return this->cartridge;
+}
+
 PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNum)
 {
     if(this->cartridge == NULL)
@@ -328,9 +333,10 @@ void Dma::SetNmi(bool isActive)
 
 std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
 {
-    if(this->cartridge == NULL)
+    if(this->cartridge == nullptr)
     {
         std::cerr << "can't get chr rom data because cartridge is NULL" << std::endl;
+        return nullptr;
     }
     std::shared_ptr<MemoryRepeaterVec> chrRom = this->cartridge->GetChrRom();
     std::shared_ptr<std::vector<byte>> chrDataVec = chrRom->GetDataVec();

@@ -57,6 +57,7 @@ class Dma : public IMemoryRW
     std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 
     //getters/setters
+    const std::unique_ptr<ICartridge>& GetCartridge() const;
     CpuMemoryMap& GetCpuMemory();
     PpuMemoryMap& GetPpuMemory();
     ApuRegisters& GetApuRegisters();

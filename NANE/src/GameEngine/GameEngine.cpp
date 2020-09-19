@@ -39,25 +39,21 @@ bool GameEngine::Init(const std::string & serverIp)
 	return true;
 }
 
-bool GameEngine::LoadMedia()
+bool GameEngine::LoadMedia( const std::string& romFilePath )
 {
-	//std::string romPath = "./NANE/test/resources/nestest.nes";
-	std::string romPath = "./NANE/test/resources/DonkeyKong.nes";
-	//std::string romPath = "./NANE/test/resources/SuperMarioBros.nes";
-	if(this->nesEmulator.LoadCartridge(romPath) == false)
+	if(this->nesEmulator.LoadCartridge(romFilePath) == false)
 	{
 		return false;
 	}
 
-	return true;
-}
-
-bool GameEngine::PostInit()
-{
 	if(this->nesEmulator.PowerCycle() == false)
 	{
 		return false;
 	}
+
+	// run the rom
+	this->run = true;
+
 	return true;
 }
 
@@ -74,7 +70,10 @@ bool GameEngine::UserInput()
 			{
 				case CustomEvents::ContinuePauseEmulator:
 				{
-					this->run = !this->run;
+					if(this->nesEmulator.IsCartridgeLoaded())
+					{
+						this->run = !this->run;
+					}
 					break;
 				}
 				case CustomEvents::StepEmulator:
@@ -106,19 +105,24 @@ bool GameEngine::UserInput()
 					std::string file_selected = fileNavigator->GetSelectedFile();
 					std::string old_file_path = this->romLoader.GetCurrentFilesystemPath();
 
+					std::string absolutePath = RomLoader::CombinePath(old_file_path, file_selected);
+
 					//TODO handle filesystem navigation
-					if(file_selected.empty()) //TODO is file
-					{
-						// file
-						this->windowsMgr.ChangeViewType(WindowView::Simple);
-					}
-					else
+					if(RomLoader::IsDir(absolutePath))
 					{
 						// folder
-						std::string new_file_path = old_file_path + "/" + file_selected; //TODO
+						std::string new_file_path = RomLoader::CombinePath(old_file_path, file_selected);
 						this->romLoader.SetCurrentFilesystemPath(new_file_path);
 						std::vector<std::string> filesInPath = this->romLoader.ListFilesInPath(new_file_path);
 						fileNavigator->SetFileSystemData(new_file_path, filesInPath);
+					}
+					else
+					{
+						// file
+						this->windowsMgr.ChangeViewType(WindowView::Simple);
+						
+						// load rom
+						this->LoadMedia(absolutePath);
 					}
 					break;
 				}
@@ -183,9 +187,12 @@ bool GameEngine::Processing()
 {
 	if(this->frameStep == true || this->run == true || this->assemblyStep == true)
 	{
-		this->nesEmulator.processes(this->verbose, this->assemblyStep);
-		this->frameStep = false;
-		this->assemblyStep = false;
+		if(this->nesEmulator.IsCartridgeLoaded())
+		{
+			this->nesEmulator.processes(this->verbose, this->assemblyStep);
+			this->frameStep = false;
+			this->assemblyStep = false;
+		}
 	}
 	return true;
 }
