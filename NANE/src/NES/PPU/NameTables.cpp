@@ -4,6 +4,9 @@
 
 const int NameTables::rawLen;
 
+const int NameTables::nametablesWidth;
+const int NameTables::nametablesHeight;
+
 NameTables::NameTables()
  : MemoryRepeaterArray(0x2000, 0x3EFF, this->raw, this->rawLen)
 {

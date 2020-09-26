@@ -408,8 +408,6 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::PLP:
         {
-            // TODO revisit this. should be ignoring bit 4 and bit 5 according to:
-            // https://wiki.nesdev.com/w/index.php/Status_flags#The_B_flag
             byte breakBitLow = (this->Pop() & 0xEF) | 0x20;
             this->GetRegs().name.P = breakBitLow;
            
@@ -467,9 +465,6 @@ int Cpu::Step(bool verbose)
         }
         case Instructions::Instr::RTI:
         {
-            // TODO: should be ignore bits 4 and 5 according to:
-            // https://wiki.nesdev.com/w/index.php/Status_flags#The_B_flag
-
             this->GetRegs().name.P = this->Pop() | 0x20;
             this->GetRegs().name.PCL = this->Pop();
             this->GetRegs().name.PCH = this->Pop();

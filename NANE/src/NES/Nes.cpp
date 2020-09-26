@@ -38,6 +38,12 @@ bool Nes::PowerCycle()
     {
         return false;
     }
+
+    bool ppuRet = this->ppu.PowerCycle();
+    if(ppuRet == false)
+    {
+        return false;
+    }
     
     return true;
 }

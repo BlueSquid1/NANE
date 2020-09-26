@@ -47,7 +47,7 @@ void PpuRegisters::Write(dword address, byte value)
                 this->vRegs.bckgndDrawing.scrollY.val = value;
             }
             //flip the vram address latch
-            this->vRegs.ppuScrollLatch = !this->vRegs.ppuAddressLatch;
+            this->vRegs.ppuScrollLatch = !this->vRegs.ppuScrollLatch;
             break;
         }
         case PpuRegisters::PPUADDR_ADDR:

@@ -107,7 +107,6 @@ bool GameEngine::UserInput()
 
 					std::string absolutePath = RomLoader::CombinePath(old_file_path, file_selected);
 
-					//TODO handle filesystem navigation
 					if(RomLoader::IsDir(absolutePath))
 					{
 						// folder

@@ -79,8 +79,8 @@ class PpuRegisters : public MemoryRepeaterArray
     {
         struct
         {
-            byte fineX : 3;
-            byte courseX : 5;
+            byte fine : 3;
+            byte course : 5;
         };
         byte val;
     };

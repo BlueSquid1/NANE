@@ -25,16 +25,21 @@ Point Ppu::calcNextPosition(int curCycle, int curLine)
 
 Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
 {
+    Point nextFetchPixel;
+    nextFetchPixel.x = -1;
+    nextFetchPixel.y = -1;
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING_CYCLE && curCycle <= LAST_NEXT_SCANLINE_FETCHING_CYCLE) )
     {
         //fetch from next scanline
         int nextYPixel = (curLine - START_VISIBLE_SCANLINE) + 1;
         int nextXPixel = (curCycle - START_NEXT_SCANLINE_FETCHING_CYCLE);
 
-        Point nextFetchPixel;
+        //handle scrolling
+        nextYPixel = nextYPixel + this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
+        nextXPixel = nextXPixel + this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
+
         nextFetchPixel.y = nextYPixel;
         nextFetchPixel.x = nextXPixel;
-        return nextFetchPixel;
     }
     else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_FETCH_CYCLE) )
     {
@@ -42,17 +47,17 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
         int nextYPixel = curLine - START_VISIBLE_SCANLINE;
         int nextXPixel = (curCycle - START_VISIBLE_CYCLE) + (2 * PatternTables::TILE_HEIGHT);
 
-        Point nextFetchPixel;
+        //handle scrolling
+        nextYPixel = nextYPixel + this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
+        nextXPixel = nextXPixel + this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
+
         nextFetchPixel.y = nextYPixel;
         nextFetchPixel.x = nextXPixel;
-        return nextFetchPixel;
     }
 
-    //fetching not needed at current scanline/cycle
-    Point invalidFetchPixel;
-    invalidFetchPixel.x = -1;
-    invalidFetchPixel.y = -1;
-    return invalidFetchPixel;
+    nextFetchPixel.x %= NameTables::nametablesWidth;
+    nextFetchPixel.y %= NameTables::nametablesHeight;
+    return nextFetchPixel;
 }
 
 std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetchTile, int curCycle, int curLine)
@@ -91,12 +96,11 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetc
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
 
             Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
-            if(nextFetchPixel.y < 0 )
+            if(nextFetchPixel.y < 0)
             {
                 // shouldn't be doing a background fetch on this cycle
                 throw std::invalid_argument("invalid background fetch");
             }
-            //TODO scrolling
             byte tileOffset = nextFetchPixel.y % PatternTables::TILE_HEIGHT;
             byte revBitPlane = bitTile.lsbPlane[tileOffset];
             this->GetRegs().vRegs.backgroundFetchTileLsb = BitUtil::FlipByte(revBitPlane);
@@ -203,8 +207,9 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
 Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegisters::VirtualRegisters::BackgroundDrawRegisters& bDrawingRegs)
 {
     //get pattern value
-    byte bufferOffset = (curCycle - START_VISIBLE_CYCLE) % 8;
-    bufferOffset = bufferOffset + bDrawingRegs.scrollX.fineX;
+    dword xPos = curCycle - START_VISIBLE_CYCLE;
+    byte bufferOffset = (xPos) % 8;
+    bufferOffset += this->GetRegs().vRegs.bckgndDrawing.scrollX.fine;
     bit lsbPattern = BitUtil::GetBits(bDrawingRegs.lsbPatternPlane.val, bufferOffset);
     bit msPattern = BitUtil::GetBits(bDrawingRegs.msbPatternPlane.val, bufferOffset);
     byte patternValue = (msPattern << 1) | lsbPattern;

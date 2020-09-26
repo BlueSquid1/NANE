@@ -73,6 +73,9 @@ class NameTables : public MemoryRepeaterArray
     LocalTablePos LocalFromGlobalPos(dword globalY, dword globalX);
 
     public:
+    static const int nametablesWidth = 512; //pixels
+    static const int nametablesHeight = 480; //pixels
+
     NameTables();
 
     byte Read(dword address) override;
