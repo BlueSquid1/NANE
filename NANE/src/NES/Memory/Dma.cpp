@@ -83,8 +83,6 @@ void Dma::Write(dword address, byte value)
         case PpuRegisters::PPUCTRL_ADDR:
         {
             this->ppuMemory.GetRegisters().Write(address, value);
-            //this->ppuMemory.GetRegisters().bgr.tramPpuAddress.nametableX = this->ppuMemory.GetRegisters().name.baseNametableX;
-            //this->ppuMemory.GetRegisters().bgr.tramPpuAddress.nametableY = this->ppuMemory.GetRegisters().name.baseNametableY;
             return;
             break;
         }

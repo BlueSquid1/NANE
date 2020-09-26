@@ -103,7 +103,7 @@ class Ppu
      * @param curCycle the current cycle.
      * @param curLine the current scanline.
      */
-    std::unique_ptr<Ppu::BackgroundFetchInfo> backgroundFetch(const Point& fetchTile, int curCycle, int curLine);
+    std::unique_ptr<Ppu::BackgroundFetchInfo> backgroundFetch(int curCycle, int curLine);
 
     /**
      * @brief Handles populating the forground buffer.

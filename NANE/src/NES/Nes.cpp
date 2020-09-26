@@ -70,7 +70,7 @@ bool Nes::processes(bool verbose, bool singleStep)
         }
         else
         {
-            //cpu skips 1 cpu cycle (= 3 ppu cycles)
+            //CPU skips 1 cpu cycle (= 3 ppu cycles)
             ppuSteps = 3;
         }
 

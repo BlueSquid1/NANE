@@ -31,40 +31,33 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
     if( (curLine >= PRE_SCANLINE && curLine < LAST_VISIBLE_SCANLINE)  && (curCycle >= START_NEXT_SCANLINE_FETCHING_CYCLE && curCycle <= LAST_NEXT_SCANLINE_FETCHING_CYCLE) )
     {
         //fetch from next scanline
-        int nextYPixel = (curLine - START_VISIBLE_SCANLINE) + 1;
-        int nextXPixel = (curCycle - START_NEXT_SCANLINE_FETCHING_CYCLE);
-
-        //handle scrolling
-        nextYPixel = nextYPixel + this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
-        nextXPixel = nextXPixel + this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
-
-        nextFetchPixel.y = nextYPixel;
-        nextFetchPixel.x = nextXPixel;
+        nextFetchPixel.x = (curCycle - START_NEXT_SCANLINE_FETCHING_CYCLE);
+        nextFetchPixel.y = (curLine - START_VISIBLE_SCANLINE) + 1;
     }
     else if( (curLine >= START_VISIBLE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && (curCycle >= START_VISIBLE_CYCLE && curCycle <= LAST_VISIBLE_FETCH_CYCLE) )
     {
         //fetch from current scanline
-        int nextYPixel = curLine - START_VISIBLE_SCANLINE;
-        int nextXPixel = (curCycle - START_VISIBLE_CYCLE) + (2 * PatternTables::TILE_HEIGHT);
-
-        //handle scrolling
-        nextYPixel = nextYPixel + this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
-        nextXPixel = nextXPixel + this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
-
-        nextFetchPixel.y = nextYPixel;
-        nextFetchPixel.x = nextXPixel;
+        nextFetchPixel.x = (curCycle - START_VISIBLE_CYCLE) + (2 * PatternTables::TILE_HEIGHT);
+        nextFetchPixel.y = curLine - START_VISIBLE_SCANLINE;
     }
 
+    //handle scrolling
+    nextFetchPixel.x += this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
+    nextFetchPixel.y += this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
+
+    //handle wrapping at ends
     nextFetchPixel.x %= NameTables::nametablesWidth;
     nextFetchPixel.y %= NameTables::nametablesHeight;
+
     return nextFetchPixel;
 }
 
-std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetchTile, int curCycle, int curLine)
+std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int curLine)
 {
-    if(fetchTile.x < 0 || fetchTile.y < 0)
+    Point fetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+    if(fetchPixel.x < 0 || fetchPixel.y < 0)
     {
-        //no valid fetch tile
+        //no valid fetch pixel
         return nullptr;
     }
 
@@ -74,6 +67,7 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetc
     {
         case 1: //get pattern index
         {
+            Point fetchTile = this->dma.GetPpuMemory().GetNameTables().CalcBgrFetchTile(fetchPixel);
             this->GetRegs().vRegs.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
 
             // return updated shift registers
@@ -86,6 +80,9 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetc
         }
         case 3: //get next pallette
         {
+            // calculate where the nametable was fetched
+            Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 2, curLine);
+            Point fetchTile = this->dma.GetPpuMemory().GetNameTables().CalcBgrFetchTile(nextFetchPixel);
             this->GetRegs().vRegs.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile.y, fetchTile.x);
             break;
         }
@@ -95,7 +92,7 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetc
             int tableNum = this->GetRegs().name.backgroundPatternTable;
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
 
-            Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+            Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 4, curLine);
             if(nextFetchPixel.y < 0)
             {
                 // shouldn't be doing a background fetch on this cycle
@@ -112,7 +109,7 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(const Point& fetc
             int tableNum = this->GetRegs().name.backgroundPatternTable;
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
 
-            Point nextFetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
+            Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 6, curLine);
             if(nextFetchPixel.y < 0 )
             {
                 // shouldn't be doing a background fetch on this cycle
@@ -372,9 +369,7 @@ void Ppu::Step()
 
     //fetch background
     PpuRegisters::VirtualRegisters::BackgroundDrawRegisters& bDrawingRegs = this->GetRegs().vRegs.bckgndDrawing;
-    const Point& fetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
-    const Point& fetchTile = this->dma.GetPpuMemory().GetNameTables().CalcBgrFetchTile(fetchPixel);
-    std::unique_ptr<Ppu::BackgroundFetchInfo> fetchInfo = this->backgroundFetch(fetchTile, curCycle, curLine);
+    std::unique_ptr<Ppu::BackgroundFetchInfo> fetchInfo = this->backgroundFetch(curCycle, curLine);
     if(fetchInfo != nullptr)
     {
         // new background fetch data - update shift registers

@@ -23,7 +23,6 @@ class PpuRegisters : public MemoryRepeaterArray
         PPUSCROLL_ADDR = 0x2005,
         PPUADDR_ADDR   = 0x2006,
         PPUDATA_ADDR   = 0x2007,
-        OAMDMA_ADDR    = 0x4014
     };
 
     struct RegStruct

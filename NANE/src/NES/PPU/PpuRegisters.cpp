@@ -64,15 +64,6 @@ void PpuRegisters::Write(dword address, byte value)
             this->vRegs.ppuAddressLatch = !this->vRegs.ppuAddressLatch;
             break;
         }
-        case PpuRegisters::OAMDMA_ADDR:
-        {
-            //TODO
-        }
-        case PpuRegisters::OAMDATA_ADDR:
-        {
-            //TODO
-            break;
-        }
         default:
         {
             MemoryRepeaterArray::Write(address, value);
