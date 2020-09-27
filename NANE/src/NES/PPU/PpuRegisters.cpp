@@ -50,6 +50,14 @@ void PpuRegisters::Write(dword address, byte value)
             this->vRegs.ppuScrollLatch = !this->vRegs.ppuScrollLatch;
             break;
         }
+        case PpuRegisters::PPUCTRL_ADDR:
+        {
+            dword msbScrollX = BitUtil::GetBits(value, 0);
+            dword msbScrollY = BitUtil::GetBits(value, 1);
+            this->vRegs.bckgndDrawing.scrollX.val |= (msbScrollX << 8);
+            this->vRegs.bckgndDrawing.scrollY.val |= (msbScrollY << 8);
+            break;
+        }
         case PpuRegisters::PPUADDR_ADDR:
         {
             if(this->vRegs.ppuAddressLatch == false)
@@ -62,14 +70,15 @@ void PpuRegisters::Write(dword address, byte value)
             }
             //flip the vram address latch
             this->vRegs.ppuAddressLatch = !this->vRegs.ppuAddressLatch;
+            return;
             break;
         }
         default:
         {
-            MemoryRepeaterArray::Write(address, value);
             break;
         }
     }
+    MemoryRepeaterArray::Write(address, value);
 }
 
 byte PpuRegisters::Seek(dword address) const

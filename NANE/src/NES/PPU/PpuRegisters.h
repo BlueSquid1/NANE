@@ -32,7 +32,8 @@ class PpuRegisters : public MemoryRepeaterArray
             byte PPUCTRL;
             struct
             {
-                byte baseNameTable : 2;
+                bit ScrollXMsb : 1; //Msb for x scrolling
+                bit ScrollYMsb : 1; //Msb for y scrolling
                 bit vramDirrection : 1; //VRAM address increment per CPU read/write of PPUDATA (0: add 1, going across; 1: add 32, going down)
                 bit sprite8x8PatternTable : 1; //Sprite pattern table address for 8x8 sprites (0: $0000; 1: $1000; ignored in 8x16 mode)
                 bit backgroundPatternTable : 1; //Background pattern table address (0: $0000; 1: $1000)
@@ -78,10 +79,10 @@ class PpuRegisters : public MemoryRepeaterArray
     {
         struct
         {
-            byte fine : 3;
-            byte course : 5;
+            dword fine : 3;
+            dword course : 6;
         };
-        byte val;
+        dword val;
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU

@@ -83,7 +83,8 @@ TEST_CASE("PPUCTRL, PPUMASK and PPUSTATUS union tests") {
     
     //PPUCTRL
     registers.name.PPUCTRL = 167; //1010 0111
-    REQUIRE(registers.name.baseNameTable == 3);
+    REQUIRE(registers.name.ScrollXMsb == 1);
+    REQUIRE(registers.name.ScrollYMsb == 1);
     REQUIRE(registers.name.vramDirrection == 1);
     REQUIRE(registers.name.sprite8x8PatternTable == 0);
     REQUIRE(registers.name.backgroundPatternTable == 0);
@@ -91,7 +92,8 @@ TEST_CASE("PPUCTRL, PPUMASK and PPUSTATUS union tests") {
     REQUIRE(registers.name.ppuMaster == 0);
     REQUIRE(registers.name.generateNmi == 1);
 
-    registers.name.baseNameTable = 1;
+    registers.name.ScrollXMsb = 1;
+    registers.name.ScrollYMsb = 0;
     registers.name.sprite8x8PatternTable = 1;
     REQUIRE(registers.name.PPUCTRL == 173);
 

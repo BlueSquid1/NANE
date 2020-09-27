@@ -80,12 +80,6 @@ void Dma::Write(dword address, byte value)
     //handle special cases
     switch(address)
     {
-        case PpuRegisters::PPUCTRL_ADDR:
-        {
-            this->ppuMemory.GetRegisters().Write(address, value);
-            return;
-            break;
-        }
         case PpuRegisters::PPUDATA_ADDR:
         {
             //write value to VRAM address
