@@ -10,8 +10,8 @@ PpuRegisters::PpuRegisters()
 
     this->vRegs.vramPpuAddress.val = 0;
     this->vRegs.ppuAddressLatch = false;
-    this->vRegs.bckgndDrawing.scrollX.val = 0;
-    this->vRegs.bckgndDrawing.scrollY.val = 0;
+    this->vRegs.bckgndDrawing.scrollX.val.val = 0;
+    this->vRegs.bckgndDrawing.scrollY.val.val = 0;
     this->vRegs.ppuScrollLatch = false;
     this->vRegs.ppuDataReadBuffer = 0;
 }
@@ -40,11 +40,13 @@ void PpuRegisters::Write(dword address, byte value)
         {
             if(this->vRegs.ppuScrollLatch == false)
             {
-                this->vRegs.bckgndDrawing.scrollX.val = value;
+                //TODO - check why this shouldn't be .lower
+                this->vRegs.bckgndDrawing.scrollX.val.val = value;
             }
             else
             {
-                this->vRegs.bckgndDrawing.scrollY.val = value;
+                //TODO - check why this shouldn't be .lower
+                this->vRegs.bckgndDrawing.scrollY.val.val = value;
             }
             //flip the vram address latch
             this->vRegs.ppuScrollLatch = !this->vRegs.ppuScrollLatch;
@@ -52,10 +54,8 @@ void PpuRegisters::Write(dword address, byte value)
         }
         case PpuRegisters::PPUCTRL_ADDR:
         {
-            dword msbScrollX = BitUtil::GetBits(value, 0);
-            dword msbScrollY = BitUtil::GetBits(value, 1);
-            this->vRegs.bckgndDrawing.scrollX.val |= (msbScrollX << 8);
-            this->vRegs.bckgndDrawing.scrollY.val |= (msbScrollY << 8);
+            this->vRegs.bckgndDrawing.scrollX.msb = BitUtil::GetBits(value, 0);
+            this->vRegs.bckgndDrawing.scrollY.msb = BitUtil::GetBits(value, 1);
             break;
         }
         case PpuRegisters::PPUADDR_ADDR:

@@ -42,8 +42,8 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
     }
 
     //handle scrolling
-    nextFetchPixel.x += this->GetRegs().vRegs.bckgndDrawing.scrollX.val;
-    nextFetchPixel.y += this->GetRegs().vRegs.bckgndDrawing.scrollY.val;
+    nextFetchPixel.x += this->GetRegs().vRegs.bckgndDrawing.scrollX.val.val;
+    nextFetchPixel.y += this->GetRegs().vRegs.bckgndDrawing.scrollY.val.val;
 
     //handle wrapping at ends
     nextFetchPixel.x %= NameTables::nametablesWidth;
@@ -320,8 +320,8 @@ bool Ppu::PowerCycle()
     //internal registers
     this->GetRegs().vRegs.vramPpuAddress.val = 0;
     this->GetRegs().vRegs.ppuAddressLatch = false;
-    this->GetRegs().vRegs.bckgndDrawing.scrollX.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.scrollY.val = 0;    
+    this->GetRegs().vRegs.bckgndDrawing.scrollX.val.val = 0;
+    this->GetRegs().vRegs.bckgndDrawing.scrollY.val.val = 0;    
     this->GetRegs().vRegs.ppuScrollLatch = false;
     this->GetRegs().vRegs.ppuDataReadBuffer = 0;
     this->GetRegs().vRegs.bckgndDrawing.lsbPatternPlane.val = 0;

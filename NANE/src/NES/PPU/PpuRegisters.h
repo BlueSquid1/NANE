@@ -79,10 +79,11 @@ class PpuRegisters : public MemoryRepeaterArray
     {
         struct
         {
-            dword fine : 3;
-            dword course : 6;
+            byte fine : 3;
+            byte course : 5;
+            bit msb : 1;
         };
-        dword val;
+        dword_p val;
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
