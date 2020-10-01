@@ -34,8 +34,6 @@ class Dma : public IMemoryRW
     dword dmaAddressOffset = 0;
     byte dmaBuffer = 0;
 
-    void IncrementPpuAddress();
-
     public:
     Dma();
     

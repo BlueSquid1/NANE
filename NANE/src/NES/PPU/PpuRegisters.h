@@ -72,38 +72,52 @@ class PpuRegisters : public MemoryRepeaterArray
         byte OAMDATA;
         byte PPUSCROLL; //0x2005 fine scroll position (two writes: X scroll, Y scroll)
         byte PPUADDR; //0x2006 VRAM address (two writes: upper, lower)
-        byte PPUDATA; //0x2007
+        byte PPUDATA; //0x2007 VRAM data
     };
 
-    union scrollRegister
+    // structure representing a hybrid between a scroll register and vram address register.
+    // refer to: https://wiki.nesdev.com/w/index.php/PPU_scrolling#PPU_internal_registers
+    union LoopyRegister
     {
+        // scroll register type
         struct
         {
-            byte fine : 3;
-            byte course : 5;
-            bit msb : 1;
+            byte scrollXCourse : 5;
+            byte scrollYCourse : 5;
+            bit scrollXMsb : 1;
+            bit scrollYMsb : 1;
+            byte scrollYFine : 3; 
+            bit unused : 1;
         };
-        dword_p val;
+
+        // ppu address type
+        dword_p address;
     };
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
     struct VirtualRegisters
     {
-        //holds current VRAM address written into PPUADDR (0x2006)
-        dword_p vramPpuAddress;
-        bool ppuAddressLatch; //false == write to lower curVramAddr, true == write to upper curVramAddr
-
         // buffer used for:
         // https://wiki.nesdev.com/w/index.php/PPU_registers#The_PPUDATA_read_buffer_.28post-fetch.29
         byte ppuDataReadBuffer;
 
-        bool ppuScrollLatch; // false == write to scrollX, true = write to scrollY
-
         struct BackgroundDrawRegisters
         {
-            // scrollX and scrollY are both stored at 0x2005
-            scrollRegister scrollX;
-            scrollRegister scrollY;
+            // PPUADDR (0x2006) and PPUSCROLL (0x2005) share an internal register.
+            LoopyRegister activeLoopyReg;
+            LoopyRegister nextLoopyReg;
+            byte scrollXFine : 3;
+            /*
+            loopy latched used for both PPUADDR and PPUSCROLL.
+            when used for PPUADDR:
+            false = write to high byte
+            true = write to low byte
+
+            when used for PPUSCROLL:
+            false = write as Scroll X values
+            true = write as Scroll Y values
+            */
+            bit loopyLatch;
 
             //registers used for background fetching/rendering
             dword_p lsbPatternPlane;
@@ -137,6 +151,13 @@ class PpuRegisters : public MemoryRepeaterArray
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
+
+    void TransferScrollX();
+    void TransferScrollY();
+    dword GetActiveScrollX() const;
+    dword GetActiveScrollY() const;
+    dword GetVRamAddress() const;
+    void IncrementVRamAddress();
  };
 
 #endif

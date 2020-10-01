@@ -148,6 +148,22 @@ void PpuMemoryMap::IncTotalPpuCycles()
     ++this->totalPpuCycles;
 }
 
+dword PpuMemoryMap::GetVRamAddress(bool forWriting) const
+{
+    // check if reading from vram address during rendering
+    if(forWriting == false)
+    {
+        if(this->scanlineNum >= -1 && this->scanlineNum <= 239)
+        {
+            if(this->scanCycleNum >= 1 && this->scanCycleNum <= 256)
+            {
+                std::cerr << "haven't implement games that use vram address during rendering" << std::endl;
+            }
+        }
+    }
+    return this->GetRegisters().GetVRamAddress();
+}
+
 void PpuMemoryMap::SetTotalPpuCycles(long long& cycles)
 {
     this->totalPpuCycles = cycles;

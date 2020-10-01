@@ -34,6 +34,7 @@ class PpuMemoryMap : public IMemoryRW
     byte Seek(dword address) const override;
     int GenerateTotalCycles();
     void IncTotalPpuCycles();
+    dword GetVRamAddress(bool forWriting) const;
 
     //getters and setters
     ColourPalettes& GetPalettes();

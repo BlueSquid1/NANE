@@ -4,17 +4,6 @@
 #include <exception> //std::out_of_range
 #include "NES/PPU/PatternTables.h"
 
-void Dma::IncrementPpuAddress()
-{
-    //increment vram pointer
-    dword incrementAmount = 1;
-    if(this->ppuMemory.GetRegisters().name.vramDirrection == 1)
-    {
-        incrementAmount = 32;
-    }
-    this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val += incrementAmount;
-}
-
 
 Dma::Dma()
 : IMemoryRW(0x0000, 0xFFFF),
@@ -32,7 +21,7 @@ byte Dma::Read(dword address)
         {
             //read value to VRAM address
             byte returnVal = this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer;
-            dword vramAddress = this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val;
+            dword vramAddress = this->ppuMemory.GetVRamAddress(false);
             this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer = this->PpuRead(vramAddress);
 
             if(vramAddress >= 0x3F00)
@@ -40,7 +29,7 @@ byte Dma::Read(dword address)
                 //buffer is not delayed when accessing from 0x3F00 and above
                 returnVal = this->ppuMemory.GetRegisters().vRegs.ppuDataReadBuffer;
             }
-            this->IncrementPpuAddress();
+            this->ppuMemory.GetRegisters().IncrementVRamAddress();
             return returnVal;
             break;
         }
@@ -83,9 +72,9 @@ void Dma::Write(dword address, byte value)
         case PpuRegisters::PPUDATA_ADDR:
         {
             //write value to VRAM address
-            dword vramAddress = this->ppuMemory.GetRegisters().vRegs.vramPpuAddress.val;
+            dword vramAddress = this->ppuMemory.GetVRamAddress(true);
             this->PpuWrite(vramAddress, value);
-            this->IncrementPpuAddress();
+            this->ppuMemory.GetRegisters().IncrementVRamAddress();
             return;
             break;
         }

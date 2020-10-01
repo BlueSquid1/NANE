@@ -42,8 +42,8 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
     }
 
     //handle scrolling
-    nextFetchPixel.x += this->GetRegs().vRegs.bckgndDrawing.scrollX.val.val;
-    nextFetchPixel.y += this->GetRegs().vRegs.bckgndDrawing.scrollY.val.val;
+    nextFetchPixel.x += this->GetRegs().GetActiveScrollX();
+    nextFetchPixel.y += this->GetRegs().GetActiveScrollY();
 
     //handle wrapping at ends
     nextFetchPixel.x %= NameTables::nametablesWidth;
@@ -54,6 +54,23 @@ Point Ppu::CalcNextFetchPixel(int curCycle, int curLine)
 
 std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int curLine)
 {
+    //update scroll registers
+    if((curLine >= PRE_SCANLINE && curLine <= LAST_VISIBLE_SCANLINE) && curCycle == TRANSFER_SCOLLX_CYCLE)
+    {
+        if(this->GetRegs().name.showSprites || this->GetRegs().name.showBackground)
+        {
+            this->GetRegs().TransferScrollX();
+        }
+    }
+
+    if(curLine == PRE_SCANLINE && curCycle >= TRANSFER_SCROLLY_START_CYCLE && curCycle <= TRANSFER_SCROLLY_END_CYCLE)
+    {
+        if(this->GetRegs().name.showSprites || this->GetRegs().name.showBackground)
+        {
+            this->GetRegs().TransferScrollY();
+        }
+    }
+
     Point fetchPixel = this->CalcNextFetchPixel(curCycle, curLine);
     if(fetchPixel.x < 0 || fetchPixel.y < 0)
     {
@@ -115,7 +132,6 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
                 // shouldn't be doing a background fetch on this cycle
                 throw std::invalid_argument("invalid background fetch");
             }
-            //TODO scrolling
             byte tileOffset = nextFetchPixel.y % PatternTables::TILE_HEIGHT;
             byte revBitPlane = bitTile.msbPlane[tileOffset];
             this->GetRegs().vRegs.backgroundFetchTileMsb = BitUtil::FlipByte(revBitPlane);
@@ -206,7 +222,7 @@ Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegiste
     //get pattern value
     dword xPos = curCycle - START_VISIBLE_CYCLE;
     byte bufferOffset = (xPos) % 8;
-    bufferOffset += this->GetRegs().vRegs.bckgndDrawing.scrollX.fine;
+    bufferOffset += (this->GetRegs().GetActiveScrollX() % 8);
     bit lsbPattern = BitUtil::GetBits(bDrawingRegs.lsbPatternPlane.val, bufferOffset);
     bit msPattern = BitUtil::GetBits(bDrawingRegs.msbPatternPlane.val, bufferOffset);
     byte patternValue = (msPattern << 1) | lsbPattern;
@@ -318,11 +334,10 @@ bool Ppu::PowerCycle()
     this->GetRegs().name.PPUDATA = 0;
     
     //internal registers
-    this->GetRegs().vRegs.vramPpuAddress.val = 0;
-    this->GetRegs().vRegs.ppuAddressLatch = false;
-    this->GetRegs().vRegs.bckgndDrawing.scrollX.val.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.scrollY.val.val = 0;    
-    this->GetRegs().vRegs.ppuScrollLatch = false;
+    this->GetRegs().vRegs.bckgndDrawing.activeLoopyReg.address.val = 0;
+    this->GetRegs().vRegs.bckgndDrawing.nextLoopyReg.address.val = 0;
+    this->GetRegs().vRegs.bckgndDrawing.scrollXFine = 0;
+    this->GetRegs().vRegs.bckgndDrawing.loopyLatch = false;
     this->GetRegs().vRegs.ppuDataReadBuffer = 0;
     this->GetRegs().vRegs.bckgndDrawing.lsbPatternPlane.val = 0;
     this->GetRegs().vRegs.bckgndDrawing.msbPatternPlane.val = 0;
@@ -355,12 +370,14 @@ void Ppu::Step()
         this->GetRegs().name.verticalBlank = false;
         this->GetRegs().name.spriteOverflow = false;
         this->GetRegs().name.spriteZeroHit = false;
+
         ++this->frameCountNum;
     }
     else if( curLine == VBLANK_SCANLINE && curCycle == START_VISIBLE_CYCLE )
     {
         //end of frame, set VBlank flag
         this->GetRegs().name.verticalBlank = true;
+
         if(this->GetRegs().name.generateNmi == true)
         {
             this->dma.SetNmi(true);

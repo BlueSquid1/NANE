@@ -31,7 +31,7 @@ byte NesController::Read(dword /*address*/)
 {
     if(this->bufferIndex >= 8)
     {
-        return true;
+        return 1;
     }
     int keyPress = this->readBuffer.at(this->bufferIndex);
     ++this->bufferIndex;

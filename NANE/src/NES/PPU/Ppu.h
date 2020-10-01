@@ -51,7 +51,10 @@ class Ppu
     const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
     const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
     const int LAST_VISIBLE_CYCLE = 256; //cycles
+    const int TRANSFER_SCOLLX_CYCLE = 257; //cycles
     const int START_SPRITE_TILE_FETCH_CYCLE = 261; //cycles
+    const int TRANSFER_SCROLLY_START_CYCLE = 304; //cycles
+    const int TRANSFER_SCROLLY_END_CYCLE = 304; //cycles
     const int START_NEXT_SCANLINE_FETCHING_CYCLE = 321; //cycles
     const int LAST_NEXT_SCANLINE_FETCHING_CYCLE = 336; //cycles
     const int LAST_CYCLE = 340; //cycles
