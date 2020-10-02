@@ -30,7 +30,7 @@ class Nes
 
     bool PowerCycle();
 
-    bool processes(bool verbose, bool singleStep = false);
+    bool processFrame(bool verbose);
 
     const Matrix<rawColour>& GetFrameDisplay();
     const long long int& GetFrameCount() const;
@@ -40,9 +40,11 @@ class Nes
     //dissassmbly methods
     const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();
     const std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes();
-    const std::string GenerateCpuScreen();
+    const std::string GenerateCpuScreen(int instructionsBefore = 10, int instructionsAfter = 10);
     void IncrementDefaultColourPalette();
     const std::string GenerateFirstNameTable();
     const std::unique_ptr<Matrix<rawColour>> GenerateControllerState(int controller = 0);
+    bool Step(bool verbose);
+    Dma& GetDma();
 };
 #endif

@@ -2,6 +2,7 @@
 
 #include "Cartridge/CartridgeLoader.h"
 #include <sstream> //std::stringstream
+#include <iostream>
 
 Nes::Nes()
 : dma(), cpu(dma), ppu(dma)
@@ -48,7 +49,7 @@ bool Nes::PowerCycle()
     return true;
 }
 
-bool Nes::processes(bool verbose, bool singleStep)
+bool Nes::processFrame(bool verbose)
 {
     if(!this->IsCartridgeLoaded())
     {
@@ -59,46 +60,10 @@ bool Nes::processes(bool verbose, bool singleStep)
     long long int frameCount = this->GetFrameCount();
     while( this->GetFrameCount() == frameCount )
     {
-        //run cpu
-        int ppuSteps = 0;
-        if(!this->dma.IsDmaActive())
+        bool stepState = this->Step(verbose);
+        if(stepState == false)
         {
-            int cpuCycles = this->cpu.Step(verbose);
-
-            //1 CPU step for 3 PPU steps
-            ppuSteps = cpuCycles * 3;
-        }
-        else
-        {
-            //CPU skips 1 cpu cycle (= 3 ppu cycles)
-            ppuSteps = 3;
-        }
-
-        for(int i = 0; i < ppuSteps; ++i)
-        {
-            this->ppu.Step();
-
-            //handle non-maskable interrupts
-            if(this->dma.GetNmi())
-            {
-                int interruptCycles = this->cpu.HandleNmiEvent(verbose);
-
-                //interupts take time. run PPU during this time
-                ppuSteps += interruptCycles * 3;
-                this->dma.SetNmi(false);
-            }
-
-            // handle DMA transfers
-            if(this->dma.IsDmaActive())
-            {
-                this->dma.ProcessDma();
-            }
-        }
-
-        // if in single step mode then only run 1 assembly instruction at a time
-        if(singleStep)
-        {
-            return true;
+            return false;
         }
     }
     return true;
@@ -142,9 +107,9 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
     return this->ppu.GenerateColourPalettes();
 }
 
-const std::string Nes::GenerateCpuScreen()
+const std::string Nes::GenerateCpuScreen(int instructionsBefore, int instructionsAfter)
 {
-    return this->cpu.GenerateCpuScreen();
+    return this->cpu.GenerateCpuScreen(instructionsBefore, instructionsAfter);
 }
 
 void Nes::IncrementDefaultColourPalette()
@@ -225,4 +190,48 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int contr
     }
 
     return controllerState;
+}
+
+bool Nes::Step(bool verbose)
+{
+    int ppuSteps = 0;
+    if(!this->dma.IsDmaActive())
+    {
+        int cpuCycles = this->cpu.Step(verbose);
+
+        //1 CPU step for 3 PPU steps
+        ppuSteps = cpuCycles * 3;
+    }
+    else
+    {
+        //CPU skips 1 cpu cycle (= 3 ppu cycles)
+        ppuSteps = 3;
+    }
+
+    for(int i = 0; i < ppuSteps; ++i)
+    {
+        this->ppu.Step();
+
+        //handle non-maskable interrupts
+        if(this->dma.GetNmi())
+        {
+            int interruptCycles = this->cpu.HandleNmiEvent(verbose);
+
+            //interupts take time. run PPU during this time
+            ppuSteps += interruptCycles * 3;
+            this->dma.SetNmi(false);
+        }
+
+        // handle DMA transfers
+        if(this->dma.IsDmaActive())
+        {
+            this->dma.ProcessDma();
+        }
+    }
+    return true;
+}
+
+Dma& Nes::GetDma()
+{
+    return this->dma;
 }

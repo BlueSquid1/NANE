@@ -1,4 +1,5 @@
-#include <iostream> //cout string
+#include <iostream> //cout
+#include <string>
 #include "GameEngine/GameEngine.h"
 
 /**
@@ -27,6 +28,22 @@ int main(int argc, char *argv[])
         {
             std::cerr << "failed to load media" << std::endl;
             return 1;
+        }
+    }
+    else if(argc == 4)
+    {
+        std::string romPath = argv[1];
+        std::cout << "loading rom: " << romPath << std::endl;
+        if(gameEngine.LoadMedia(romPath) == false)
+        {
+            std::cerr << "failed to load media" << std::endl;
+            return 1;
+        }
+
+        if(argv[2] == std::string("-d"))
+        {
+            int lineNum = std::stoi(argv[3], nullptr, 16);
+            gameEngine.SetDebugPoint(lineNum);
         }
     }
 

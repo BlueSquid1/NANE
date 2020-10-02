@@ -6,7 +6,7 @@
 #include "NES/Nes.h"
 #include "Utils/FpsTimer.h"
 #include "Input/KeyMapper.h"
-#include "Storage/RomLoader.h"
+#include "Storage/FileSystem.h"
 
 #include <iostream> //std::string
 #include <memory> //std::unique_ptr
@@ -22,7 +22,7 @@ class GameEngine
     Nes nesEmulator;
     FpsTimer fpsTimer;
     KeyMapper keyMapper;
-    RomLoader romLoader;
+    FileSystem romLoader;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
@@ -31,6 +31,7 @@ class GameEngine
     bool assemblyStep = false;
     bool run = false;
     bool verbose = false;
+    int debugPoint = -1;
 
     public:
     /**
@@ -76,8 +77,8 @@ class GameEngine
     void Close();
 
     //getter and setters
-    
     bool GetShouldExit();
+    void SetDebugPoint(int debugLine);
 };
 
 #endif

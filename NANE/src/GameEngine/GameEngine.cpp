@@ -1,9 +1,9 @@
 #include "GameEngine.h"
 
-#include "Graphics/CustomEventMgr.h"
-
 #include <SDL.h> //SDL_PollEvent()
 #include <vector>
+
+#include "Graphics/CustomEventMgr.h"
 
 GameEngine::GameEngine()
 {
@@ -105,12 +105,12 @@ bool GameEngine::UserInput()
 					std::string file_selected = fileNavigator->GetSelectedFile();
 					std::string old_file_path = this->romLoader.GetCurrentFilesystemPath();
 
-					std::string absolutePath = RomLoader::CombinePath(old_file_path, file_selected);
+					std::string absolutePath = FileSystem::CombinePath(old_file_path, file_selected);
 
-					if(RomLoader::IsDir(absolutePath))
+					if(FileSystem::IsDir(absolutePath))
 					{
 						// folder
-						std::string new_file_path = RomLoader::CombinePath(old_file_path, file_selected);
+						std::string new_file_path = FileSystem::CombinePath(old_file_path, file_selected);
 						this->romLoader.SetCurrentFilesystemPath(new_file_path);
 						std::vector<std::string> filesInPath = this->romLoader.ListFilesInPath(new_file_path);
 						fileNavigator->SetFileSystemData(new_file_path, filesInPath);
@@ -125,8 +125,13 @@ bool GameEngine::UserInput()
 					}
 					break;
 				}
-				case CustomEvents::SimpleView:
+				case CustomEvents::DumpProgramRom:
 				{
+					int allInstructions = 100000000;
+					std::string instructions = this->nesEmulator.GenerateCpuScreen(allInstructions, allInstructions);
+
+					// write to file
+					this->romLoader.WriteToFile("dumped_rom.txt", instructions);
 					break;
 				}
 				default:
@@ -188,7 +193,27 @@ bool GameEngine::Processing()
 	{
 		if(this->nesEmulator.IsCartridgeLoaded())
 		{
-			this->nesEmulator.processes(this->verbose, this->assemblyStep);
+			if(this->assemblyStep == true)
+			{
+				this->nesEmulator.Step(this->verbose);
+			}
+			else if (this->debugPoint >= 0)
+			{
+				const long long oldFrameCount = this->nesEmulator.GetFrameCount();
+				while((oldFrameCount == this->nesEmulator.GetFrameCount()) && this->run)
+				{
+					this->nesEmulator.Step(this->verbose);
+					int pc = this->nesEmulator.GetDma().GetCpuMemory().GetRegisters().name.PC;
+					if(pc == this->debugPoint)
+					{
+						this->run = false;
+					}
+				}
+			}
+			else
+			{
+				this->nesEmulator.processFrame(this->verbose);
+			}
 			this->frameStep = false;
 			this->assemblyStep = false;
 		}
@@ -227,4 +252,9 @@ bool GameEngine::GetShouldExit()
 	}
 	#endif
 	return this->shouldExit;
+}
+
+void GameEngine::SetDebugPoint(int debugLine)
+{
+	this->debugPoint = debugLine;
 }

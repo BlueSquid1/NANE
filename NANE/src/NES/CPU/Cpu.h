@@ -45,7 +45,7 @@ class Cpu
      * @param instructionsBefore how many instructions to print before current instructions
      * @param instructionsAfter how many instructions to print after current instructions
      */
-    std::string GenerateCpuScreen(int instructionsBefore = 10, int instructionsAfter = 10);
+    std::string GenerateCpuScreen(int instructionsBefore, int instructionsAfter);
     
     //getters and setters
     void SetTotalClockCycles(int totalCycles);

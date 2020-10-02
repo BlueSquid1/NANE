@@ -21,7 +21,8 @@ enum class CustomEvents : Uint32
     ScaleFactor3,
     ScaleFactor4,
     ScaleFactor5,
-    FileSelected //when a file is selected during OpenRom window
+    FileSelected, // when a file is selected during OpenRom window
+    DumpProgramRom
 };
 
 class CustomEventMgr

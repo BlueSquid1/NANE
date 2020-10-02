@@ -1,12 +1,13 @@
-#include "RomLoader.h"
+#include "FileSystem.h"
 
 #include <iostream> //std::cerr
+#include <fstream>
 
 #include <dirent.h> //posix library - readdir()
 #include <sys/stat.h> //posix library - stat()
 #include <SDL_filesystem.h> //SDL_GetBasePath()
 
-std::string RomLoader::GetDefaultPath()
+std::string FileSystem::GetDefaultPath()
 {
     char * sdlDefaultPath = SDL_GetBasePath();
     std::string defaultPath(sdlDefaultPath);
@@ -31,24 +32,24 @@ std::string RomLoader::GetDefaultPath()
     return defaultPath;
 }
 
-std::string RomLoader::CombinePath(const std::string& path, const std::string& file)
+std::string FileSystem::CombinePath(const std::string& path, const std::string& file)
 {
     return path + "/" + file;
 }
 
-bool RomLoader::IsDir( const std::string& filePath)
+bool FileSystem::IsDir( const std::string& filePath)
 {
     struct stat fileStat;
     stat(filePath.c_str(), &fileStat);
     return S_ISDIR(fileStat.st_mode);
 }
 
-RomLoader::RomLoader()
+FileSystem::FileSystem()
 {
     this->currentFilesystemPath = this->GetDefaultPath();
 }
 
-std::vector<std::string> RomLoader::ListFilesInPath(const std::string& fileSystemPath ) const
+std::vector<std::string> FileSystem::ListFilesInPath(const std::string& fileSystemPath ) const
 {
     DIR * dp = opendir( fileSystemPath.c_str() );
     if(dp == nullptr)
@@ -71,12 +72,22 @@ std::vector<std::string> RomLoader::ListFilesInPath(const std::string& fileSyste
     return fileList;
 }
 
-std::string RomLoader::GetCurrentFilesystemPath() const
+bool FileSystem::WriteToFile(const std::string& fileName, const std::string& data) const
+{
+    std::string fullPath = FileSystem::CombinePath(this->GetCurrentFilesystemPath(), fileName);
+    std::ofstream file;
+    file.open(fullPath);
+    file << data;
+    file.close();
+    return true;
+}
+
+std::string FileSystem::GetCurrentFilesystemPath() const
 {
     return this->currentFilesystemPath;
 }
 
-void RomLoader::SetCurrentFilesystemPath(const std::string& path)
+void FileSystem::SetCurrentFilesystemPath(const std::string& path)
 {
     this->currentFilesystemPath = path;
 }

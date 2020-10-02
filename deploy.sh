@@ -1,12 +1,14 @@
 #!/bin/sh
 
-while getopts ":b:t:p:r:" opt; do
+while getopts ":b:t:p:r:d:" opt; do
   case $opt in
     b) BuiltType="$OPTARG" #optional, Release or Debug (defaults to Release)
     ;;
     t) DeployTarget="$OPTARG" #optional, values can be "switch" or "desktop"
     ;;
     r) RomPath="$OPTARG" #optional, path to .nes rom
+    ;;
+    d) DebugLine="$OPTARG" #optional, line number in hex to break on
     ;;
     p) SwitchIpAddress="$OPTARG" #optional, value of the form "xxx.xxx.xxx.xxx" for example: "192.168.1.100"
     ;;
@@ -25,6 +27,7 @@ echo "BuiltType=$BuiltType"
 echo "DeployTarget=$DeployTarget" 
 echo "SwitchIpAddress=$SwitchIpAddress"
 echo "RomPath=$RomPath"
+echo "DebugLine=$DebugLine"
 
 #BuiltType=$1 #optional, release or debug (defaults to release)
 #DeployTarget=$2 #optional, values can be "switch" or "desktop"
@@ -82,7 +85,12 @@ fi
 
 if [[ $DeployTarget == "desktop" ]]; then
     echo "launching NANE for the desktop"
-    ./$NES_DESKTOP_PATH/build/$BuiltType/$NES_DESKTOP_BINARY $RomPath
+    if [[ -z "$DebugLine" ]]; then
+        ./$NES_DESKTOP_PATH/build/$BuiltType/$NES_DESKTOP_BINARY $RomPath
+    else
+        ./$NES_DESKTOP_PATH/build/$BuiltType/$NES_DESKTOP_BINARY $RomPath -d $DebugLine
+    fi
+    
     exit 0
 
 elif [[ $DeployTarget == "switch" ]]; then

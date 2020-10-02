@@ -57,6 +57,8 @@ MenuBar::MenuBar(SDL_Renderer* gRenderer)
     disassembleMenu.AddButton(PushButton(gRenderer, "Increment Default Colour Palette", &IncrementDefaultColourPaletteEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     Uint32 stepAssemblyEvent = (Uint32)CustomEvents::StepAssembly;
     disassembleMenu.AddButton(PushButton(gRenderer, "Step To Next CPU Instruction (m)", &stepAssemblyEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
+    Uint32 dumpProgramRomEvent = (Uint32)CustomEvents::DumpProgramRom;
+    disassembleMenu.AddButton(PushButton(gRenderer, "Dump Program Rom", &dumpProgramRomEvent, submenuForground, submenuInactiveBackground, submenuActiveBackground));
     this->AppendSubMenu(disassembleMenu);
 }
 
