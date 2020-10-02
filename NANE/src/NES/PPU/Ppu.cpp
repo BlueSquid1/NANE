@@ -154,7 +154,7 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
         OamPrimary& primaryOam = this->dma.GetPpuMemory().GetPrimaryOam();
         OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
 
-        if(curCycle == START_VISIBLE_CYCLE && nextScanline) // clear previous secondary OAM
+        if(curCycle == START_VISIBLE_CYCLE) // clear previous secondary OAM
         {
             secondaryOam.ClearFetchData();
         }
@@ -165,12 +165,15 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
                 const OamPrimary::Sprite& primarySprite = primaryOam.GetSprite(i);
 
                 // check if sprite is on next scanline
-                int spriteHeight = PatternTables::TILE_HEIGHT;
+                byte spriteHeight = PatternTables::TILE_HEIGHT;
                 if(this->GetRegs().name.spriteSize)
                 {
                     spriteHeight = 2 * PatternTables::TILE_HEIGHT;
                 }
-                if(nextScanline >= primarySprite.posY && nextScanline < primarySprite.posY + spriteHeight)
+
+                int spriteStart = primarySprite.posY;
+                int spriteEnd = primarySprite.posY + spriteHeight;
+                if( (nextScanline >= spriteStart) && (nextScanline < spriteEnd) )
                 {
                     //sprite appears on next scanline
                     secondaryOam.AppendFetchedSprite(primarySprite, i);
@@ -180,8 +183,7 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
             // set overflow register
             this->GetRegs().name.spriteOverflow = (secondaryOam.GetSpriteFetchNum() > 8);
         }
-
-        if(curCycle == START_SPRITE_TILE_FETCH_CYCLE) // update active sprite buffers
+        else if(curCycle == START_SPRITE_TILE_FETCH_CYCLE) // update active sprite buffers
         {
             //clear sprite buffer by setting new size
             secondaryOam.ClearActiveBuffer();
