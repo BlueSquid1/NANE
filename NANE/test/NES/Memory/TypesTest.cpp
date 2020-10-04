@@ -33,9 +33,11 @@ TEST_CASE("dword_p and qword_p setting") {
 TEST_CASE("dword_p and qword_p bit shifting") {
     dword_p dValue;
     qword_p qValue;
+    dValue.val = 0;
+    qValue.val = 0;
     dValue.upper = 0x1;
     dValue.val >>= 1;
-    qValue.second.val = 0x1;
+    qValue.second.lower = 0x1;
     qValue.val >>= 1;
     REQUIRE(dValue.lower == 0x80);
     REQUIRE(qValue.first.upper == 0x80);

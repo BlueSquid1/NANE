@@ -10,7 +10,10 @@ PpuRegisters::PpuRegisters()
     this->vRegs.bckgndDrawing.loopyLatch = false;
     this->vRegs.bckgndDrawing.activeLoopyReg.address.val = 0;
     this->vRegs.bckgndDrawing.nextLoopyReg.address.val = 0;
-    this->vRegs.bckgndDrawing.scrollXFine = 0;
+    this->vRegs.bckgndDrawing.lsbPatternPlane.val = 0;
+    this->vRegs.bckgndDrawing.msbPatternPlane.val = 0;
+    this->vRegs.bckgndDrawing.lsbPalletePlane.val = 0;
+    this->vRegs.bckgndDrawing.msbPalletePlane.val = 0;
     this->vRegs.ppuDataReadBuffer = 0;
 }
 
