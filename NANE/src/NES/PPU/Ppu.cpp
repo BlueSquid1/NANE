@@ -426,7 +426,9 @@ void Ppu::Step()
     this->dma.GetPpuMemory().SetScanLineNum(nextPoint.y);
     this->dma.GetPpuMemory().SetScanCycleNum(nextPoint.x);
 
-    this->dma.GetPpuMemory().IncTotalPpuCycles();
+    // increment PPU cycles
+    long long nextPpuCycle = this->dma.GetPpuMemory().GetTotalPpuCycles() + 1;
+    this->dma.GetPpuMemory().SetTotalPpuCycles(nextPpuCycle);
 }
 
 const Matrix<rawColour>& Ppu::GetFrameDisplay()

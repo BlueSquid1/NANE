@@ -143,11 +143,6 @@ long long& PpuMemoryMap::GetTotalPpuCycles()
     return this->totalPpuCycles;
 }
 
-void PpuMemoryMap::IncTotalPpuCycles()
-{
-    ++this->totalPpuCycles;
-}
-
 dword PpuMemoryMap::GetVRamAddress(bool forWriting) const
 {
     // check if reading from vram address during rendering

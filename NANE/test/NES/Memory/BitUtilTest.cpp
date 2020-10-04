@@ -134,15 +134,6 @@ TEST_CASE("GetDWord") {
 }
 
 /**
- * tests dword_p bit shifting
- */
-TEST_CASE("dword_p bit shifting") {
-    dword_p temp;
-    temp.upper = 0x1;
-    temp.val <<= 1;
-}
-
-/**
  * tests bit flipping
  */
 TEST_CASE("FlipByte") {

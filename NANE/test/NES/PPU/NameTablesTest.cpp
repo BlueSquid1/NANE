@@ -27,7 +27,7 @@ TEST_CASE("nameTables cleared by default") {
 }
 
 /**
- * test to make sure NameTables mirroring works as expected
+ * test to make sure NameTable vertical mirroring works as expected
  */
 TEST_CASE("NameTables Vertical mirroring") {
     NameTables verticalNameTables;
@@ -44,7 +44,7 @@ TEST_CASE("NameTables Vertical mirroring") {
 }
 
 /**
- * test to make sure NameTables mirroring works as expected
+ * test to make sure NameTable horizontal mirroring works as expected
  */
 TEST_CASE("NameTables horizontal mirroring") {
     std::unique_ptr<ICartridge> nesRom = std::unique_ptr<CartridgeMapping0>( new CartridgeMapping0());
@@ -65,21 +65,6 @@ TEST_CASE("NameTables horizontal mirroring") {
 
     horizontalNameTables.Write(0x2FFF, 111);
     REQUIRE(horizontalNameTables.Read(0x2BFF) == 111);
-}
-
-/**
- * test to make sure NameTables mirroring works as expected
- */
-TEST_CASE("NameTables memory repeating test") 
-{
-    NameTables verticalNameTables;
-    verticalNameTables.SetMirrorType(INes::vertical);
-    
-    verticalNameTables.Write(0x3000, 129);
-    REQUIRE(verticalNameTables.Read(0x2000) == 129);
-
-    verticalNameTables.Write(0x3FFF, 73);
-    REQUIRE(verticalNameTables.Read(0x2FFF) == 73);
 }
 
 TEST_CASE("Test getting palette colours")

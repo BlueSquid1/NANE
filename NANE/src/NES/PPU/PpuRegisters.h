@@ -142,9 +142,11 @@ class PpuRegisters : public MemoryRepeaterArray
         byte raw[rawLen];
     };
 
+    /**
+     * @brief internal PPU registers
+     */
     VirtualRegisters vRegs;
 
-    public:
     //constructor
     PpuRegisters();
 

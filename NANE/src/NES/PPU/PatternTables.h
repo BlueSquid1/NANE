@@ -42,10 +42,11 @@ class PatternTables
     };
 
     private:
-    //the user friendly interface
-    class PatternTable
+    /**
+     * @brief pattern table structure
+     */
+    struct PatternTable
     {
-        public:
         Matrix<Matrix<byte>> tiles;
 
         PatternTable()

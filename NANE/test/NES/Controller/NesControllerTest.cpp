@@ -23,12 +23,30 @@ TEST_CASE("user inputs") {
         REQUIRE(joy.Read(0x4016) == true);
     }
 
-    NesController::NesInputs button = NesController::NesInputs::A;
-    joy.SetKey(button, true);
-    button = NesController::NesInputs::SELECT;
-    joy.SetKey(button, true);
+    NesController::NesInputs aButton = NesController::NesInputs::A;
+    joy.SetKey(aButton, true);
+    NesController::NesInputs selectButton = NesController::NesInputs::SELECT;
+    joy.SetKey(selectButton, true);
     joy.Write(0x4016, 0);
+    // read from controller
     REQUIRE(joy.Read(0x4016) == true);
+    REQUIRE(joy.Read(0x4016) == false);
+    REQUIRE(joy.Read(0x4016) == true);
+    REQUIRE(joy.Read(0x4016) == false);
+    REQUIRE(joy.Read(0x4016) == false);
+    REQUIRE(joy.Read(0x4016) == false);
+    REQUIRE(joy.Read(0x4016) == false);
+    REQUIRE(joy.Read(0x4016) == false);
+
+    //after controller further reads return true
+    REQUIRE(joy.Read(0x4016) == true);
+    REQUIRE(joy.Read(0x4016) == true);
+
+    //release the A key and checkout output
+    joy.SetKey(aButton, false);
+    joy.Write(0x4016, 0);
+    // read from controller
+    REQUIRE(joy.Read(0x4016) == false);
     REQUIRE(joy.Read(0x4016) == false);
     REQUIRE(joy.Read(0x4016) == true);
     REQUIRE(joy.Read(0x4016) == false);

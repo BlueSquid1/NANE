@@ -49,9 +49,6 @@ class OamPrimary : public MemoryRepeaterArray
     public:
     OamPrimary();
 
-    //dissamble methods:
-    std::string GenerateSpritesProperties() const;
-
     //getter/setters
     const OamPrimary::Sprite& GetSprite(int spriteNum) const;
 };

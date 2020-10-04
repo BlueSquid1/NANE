@@ -37,7 +37,7 @@ TEST_CASE("registers cleared by default") {
 }
 
 /**
- * test to make sure registers are cleared after constructor
+ * test read and write to registers
  */
 TEST_CASE("PPU registers write to and read from raw") {
     PpuRegisters registers;

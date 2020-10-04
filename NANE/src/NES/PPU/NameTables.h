@@ -92,10 +92,11 @@ class NameTables : public MemoryRepeaterArray
      */
     Point CalcBgrFetchTile(const Point& fetchPixel);
 
-    //dissassemble commands
-    std::unique_ptr<Matrix<patternIndex>> GenerateFirstNameTable();
     //getters/setters
     void SetMirrorType( INes::MirrorType mirroringType );
+
+    //dissassemble commands
+    std::unique_ptr<Matrix<patternIndex>> GenerateFirstNameTable();
 };
 
 #endif

@@ -32,8 +32,6 @@ class PpuMemoryMap : public IMemoryRW
     virtual byte Read(dword address) override;
     virtual void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
-    int GenerateTotalCycles();
-    void IncTotalPpuCycles();
     dword GetVRamAddress(bool forWriting) const;
 
     //getters and setters

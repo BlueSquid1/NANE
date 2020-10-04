@@ -46,7 +46,7 @@ class Ppu
     const int VBLANK_SCANLINE = 241;
     const int LAST_SCANLINE = 260; //scanlines
 
-    const int START_CYCLE = 0;
+    const int START_CYCLE = 0; //cycles
     const int START_VISIBLE_CYCLE = 1; //cycles
     const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
     const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
