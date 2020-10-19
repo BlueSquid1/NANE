@@ -107,12 +107,11 @@ TEST_CASE("DMA: Can read and write without loading a cartridge") {
     REQUIRE(dma.GetApuRegisters().name.SND_CHN == 61);
 
     //Controller inputs
-    REQUIRE(dma.Read(0x4016) == true);
-    REQUIRE(dma.Read(0x4017) == true);
+    REQUIRE(dma.Read(0x4016) == 65);
+    REQUIRE(dma.Read(0x4017) == 65);
     dma.Write(0x4016, 0);
-    dma.Write(0x4017, 0);
-    REQUIRE(dma.Read(0x4016) == false);
-    REQUIRE(dma.Read(0x4017) == false);
+    REQUIRE(dma.Read(0x4016) == 64);
+    REQUIRE(dma.Read(0x4017) == 64);
 }
 
 
