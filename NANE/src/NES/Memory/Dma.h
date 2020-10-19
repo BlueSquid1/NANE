@@ -5,7 +5,7 @@
 #include "NES/PPU/PpuMemoryMap.h"
 #include "NES/APU/ApuRegisters.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
-#include "NES/Controller/NesController.h"
+#include "NES/Controller/ControllerManager.h"
 
 #include <memory> //std::unique_ptr
 
@@ -23,8 +23,7 @@ class Dma : public IMemoryRW
     CpuMemoryMap cpuMemory;
     PpuMemoryMap ppuMemory;
     ApuRegisters apuRegisters;
-    NesController controllerPlayer1;
-    NesController controllerPlayer2;
+    ControllerManager ControllerMgr;
     std::unique_ptr<ICartridge> cartridge = NULL;
     bool nmiActive = false;
 
@@ -59,9 +58,8 @@ class Dma : public IMemoryRW
     CpuMemoryMap& GetCpuMemory();
     PpuMemoryMap& GetPpuMemory();
     ApuRegisters& GetApuRegisters();
+    ControllerManager& GetControllerManager();
     std::unique_ptr<ICartridge>& GetCartridge();
-    NesController& GetControllerPlayer1();
-    NesController& GetControllerPlayer2();
     bool GetNmi();
     void SetNmi(bool isActive);
     bool GetDmaActive() const;

@@ -81,19 +81,7 @@ const long long int& Nes::GetFrameCount() const
 
 bool Nes::PressButton(NesController::NesInputs input, bool isPressed, int controller)
 {
-    if(controller == 0)
-    {
-        this->dma.GetControllerPlayer1().SetKey(input, isPressed);
-    }
-    else if(controller == 1)
-    {
-        this->dma.GetControllerPlayer2().SetKey(input, isPressed);
-    }
-    else
-    {
-        std::cerr << "invalid controller: " << controller << std::endl;
-        return false;
-    }
+    this->dma.GetControllerManager().SetKey(input, isPressed, controller);
     return true;
 }
 
@@ -140,20 +128,8 @@ const std::string Nes::GenerateFirstNameTable()
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int controller )
 {
-    const std::vector<bool> * keyPresses = NULL;
-    if(controller == 0)
-    {
-        keyPresses = &this->dma.GetControllerPlayer1().GetKeyPressed();
-    }
-    else if(controller == 1)
-    {
-        keyPresses = &this->dma.GetControllerPlayer2().GetKeyPressed();
-    }
-    if(keyPresses == NULL)
-    {
-        std::cerr << "invalid controller: " << controller << std::endl;
-        return NULL;
-    }
+    const std::vector<bool> keyPresses = this->dma.GetControllerManager().GetKeyPressed(controller);
+
     /*
     make pixel array like this:
     -----------------
@@ -179,7 +155,7 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int contr
     {
         int yPos = borderWidth;
         int xPos = i * (buttonSize + borderWidth) + borderWidth;
-        if(keyPresses->at(i) == true)
+        if(keyPresses.at(i) == true)
         {
             controllerState->SetRegion(yPos, xPos, buttonSize, buttonSize, pressColour);
         }

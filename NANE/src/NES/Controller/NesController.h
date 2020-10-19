@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <NES/Memory/IMemoryRW.h>
+#include "NES/Memory/IMemoryRW.h"
 
 class NesController : public IMemoryRW
 {
@@ -25,6 +25,12 @@ class NesController : public IMemoryRW
     std::vector<bool> keyPressed;
     int bufferIndex = 8;
     std::vector<bool> readBuffer;
+
+    /*
+    when strobing is true then will read controller button states
+    when strobing is false the controller will always return it's default values.
+    */
+    bool isStrobing = false;
 
     public:
     NesController(dword cpuAddress);
