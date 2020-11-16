@@ -44,7 +44,7 @@ dword NameTables::Redirect(dword address) const
     return redirrectedAddress;
 }
 
-NameTables::LocalTablePos NameTables::LocalFromGlobalPos(dword globalY, dword globalX)
+NameTables::LocalTablePos NameTables::LocalFromGlobalPos(dword globalY, dword globalX) const
 {
     NameTables::LocalTablePos localPos;
     if((globalY >= 0 && globalY < 30) && (globalX >= 0 && globalX < 32))
@@ -122,7 +122,7 @@ patternIndex NameTables::GetPatternIndex(dword globalY, dword globalX)
     return pattern;
 }
 
-paletteIndex NameTables::GetPaletteIndex(dword globalY, dword globalX)
+paletteIndex NameTables::GetPaletteIndex(dword globalY, dword globalX) const
 {
     NameTables::LocalTablePos pos = this->LocalFromGlobalPos(globalY, globalX);
     byte paletteY = pos.localY >> 2;
@@ -150,7 +150,7 @@ paletteIndex NameTables::GetPaletteIndex(dword globalY, dword globalX)
     return palette;
 }
 
-Point NameTables::CalcBgrFetchTile(const Point& fetchPixel)
+Point NameTables::CalcBgrFetchTile(const Point& fetchPixel) const
 {
     Point fetchTile;
     if(fetchPixel.x < 0)

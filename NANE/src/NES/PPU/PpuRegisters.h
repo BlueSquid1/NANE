@@ -25,6 +25,7 @@ class PpuRegisters : public MemoryRepeaterArray
         PPUDATA_ADDR   = 0x2007,
     };
 
+    #pragma pack(push, 1)
     struct RegStruct
     {
         union
@@ -132,6 +133,7 @@ class PpuRegisters : public MemoryRepeaterArray
         byte backgroundFetchTileLsb;
         byte backgroundFetchTileMsb;
     };
+    #pragma pack(pop)
 
     static const int rawLen = 8;
 

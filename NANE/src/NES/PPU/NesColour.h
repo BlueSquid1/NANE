@@ -8,6 +8,7 @@ typedef byte colourIndex;
 union rawColour
 {
     qword raw;
+    #pragma pack(push, 1)
     struct
     {
         byte alpha;
@@ -15,6 +16,7 @@ union rawColour
         byte green;
         byte red;
     }channels;
+    #pragma pack(pop)
 };
 
 class NesColour

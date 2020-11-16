@@ -10,6 +10,7 @@
 class CpuRegisters
 {
     public:
+    #pragma pack(push, 1)
     struct RegStruct
     {
         union
@@ -41,6 +42,7 @@ class CpuRegisters
         byte X; /**< Index Register X */
         byte Y; /**< Index Register Y */
     };
+    #pragma pack(pop)
 
     static const int rawLen = 7; //7 bytes worth of registers
     //anonymous union

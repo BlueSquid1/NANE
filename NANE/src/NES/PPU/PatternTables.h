@@ -23,11 +23,13 @@ class PatternTables
     /**
      * these structs are used to dynamically case the chr rom to a BitPatternTables without having to write a decoder (pretty cool right?).
      */
+    #pragma pack(push, 1)
     struct BitTile
     {
         byte lsbPlane[TILE_HEIGHT];
         byte msbPlane[TILE_HEIGHT];
     };
+    #pragma pack(pop)
     struct BitPatternTable
     {
         union

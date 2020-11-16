@@ -17,6 +17,7 @@
 
 typedef byte paletteIndex;
 
+#pragma pack(push, 1)
 struct Point
 {
     int x;
@@ -48,6 +49,7 @@ struct NameTableStruct
 {
     NameTable table[4];
 };
+#pragma pack(pop)
 
 class NameTables : public MemoryRepeaterArray
 {
@@ -70,7 +72,7 @@ class NameTables : public MemoryRepeaterArray
     INes::MirrorType mirroringType = INes::not_set;
 
     dword Redirect(dword address) const;
-    LocalTablePos LocalFromGlobalPos(dword globalY, dword globalX);
+    LocalTablePos LocalFromGlobalPos(dword globalY, dword globalX) const;
 
     public:
     static const int nametablesWidth = 512; //pixels
@@ -82,15 +84,28 @@ class NameTables : public MemoryRepeaterArray
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
 
+    /**
+     * @brief Retrieves the pattern index for a given virtual pixel location.
+     * @param globalY the y coordinate.
+     * @param globalX the x cooridnate.
+     * @return the corresponding pattern index lookup for the pattern table.
+     */
     patternIndex GetPatternIndex(dword globalY, dword globalX);
-    paletteIndex GetPaletteIndex(dword globalY, dword globalX);
 
     /**
-     * @brief Calculates the next tile to be fetched from the given pixel.
+     * @brief Retrieves the colour index for a given virtual pixel location.
+     * @param globalY the y coordinate.
+     * @param globalX the x cooridnate.
+     * @return the corresponding colour index.
+     */
+    paletteIndex GetPaletteIndex(dword globalY, dword globalX) const;
+
+    /**
+     * @brief Calculates the next background tile to be fetched from the given pixel.
      * @param fetchPixel the pixel being fetched.
      * @return the corresponding tile.
      */
-    Point CalcBgrFetchTile(const Point& fetchPixel);
+    Point CalcBgrFetchTile(const Point& fetchPixel) const;
 
     //getters/setters
     void SetMirrorType( INes::MirrorType mirroringType );

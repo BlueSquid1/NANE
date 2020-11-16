@@ -13,6 +13,7 @@
 class ApuRegisters: public MemoryRepeaterArray
 {
     public:
+    #pragma pack(push, 1)
     struct RegStruct
     {
         struct Pulse
@@ -48,6 +49,7 @@ class ApuRegisters: public MemoryRepeaterArray
         byte OAMDMA;
         byte SND_CHN;
     };
+    #pragma pack(pop)
 
     //anonymous union
     union

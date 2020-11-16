@@ -13,6 +13,7 @@
  * https://wiki.nesdev.com/w/index.php/PPU_palettes
  */
 
+#pragma pack(push, 1)
 struct paletteStruct
 {
     colourIndex backgroundPalettes[4][4];
@@ -22,6 +23,7 @@ struct paletteStruct
     */
     colourIndex spritePalettes[4][4];
 };
+#pragma pack(pop)
 
 class ColourPalettes : public MemoryRepeaterArray
 {

@@ -166,7 +166,7 @@ void Dma::ProcessDma()
             if(targetAddress >= 256)
             {
                 //reached the end of DMA
-                this->SetDmaActive(false);
+                this->dmaActive = false;
             }
         }
     }
@@ -310,11 +310,6 @@ bool Dma::GetDmaActive() const
     return this->dmaActive;
 }
 
-void Dma::SetDmaActive(bool value)
-{
-    this->dmaActive = value;
-}
-
 bool Dma::GetDmaGoodCycle() const
 {
     return this->dmaGoodCycle;
@@ -328,11 +323,6 @@ void Dma::SetDmaGoodCycle(bool value)
 dword Dma::GetDmaBaseAddress()
 {
     return this->dmaBaseAddress;
-}
-    
-void  Dma::SetDmaBaseAddress(dword address)
-{
-    this->dmaBaseAddress = address;
 }
 
 dword Dma::GetDmaAddressOffset()

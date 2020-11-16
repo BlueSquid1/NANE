@@ -10,6 +10,7 @@ typedef byte oamIndex;
 class OamPrimary : public MemoryRepeaterArray
 {
     public:
+    #pragma pack(push, 1)
     struct Sprite
     {
         byte posY;
@@ -38,6 +39,7 @@ class OamPrimary : public MemoryRepeaterArray
         //sprite at 64 has lowest priority
         Sprite sprites[TotalNumOfSprites];
     };
+    #pragma pack(pop)
 
     //anonymous union
     union

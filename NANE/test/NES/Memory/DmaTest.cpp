@@ -100,6 +100,10 @@ TEST_CASE("DMA: Can read and write without loading a cartridge") {
     REQUIRE(dma.Read(0x2008) == 122);
     REQUIRE(dma.GetPpuMemory().GetRegisters().name.PPUCTRL == 122);
 
+    dma.Write(0x2001, 46);
+    REQUIRE(dma.Read(0x2009) == 46);
+    REQUIRE(dma.GetPpuMemory().GetRegisters().name.PPUMASK == 46);
+
     //APU Registers
     dma.Write(0x4000, 39);
     REQUIRE(dma.GetApuRegisters().name.SQ1.VOL == 39);
@@ -133,4 +137,86 @@ TEST_CASE("DMA: Can read and write with loaded cartridge - CPU") {
     //end of PRG ROM
     REQUIRE(dma.Read(0xBFFF) == 0xc5);
     REQUIRE(dma.Read(0xFFFF) == 0xc5);
+}
+
+TEST_CASE("DMA: test PPUDATA_ADDR(0x2007) internal buffering") {
+    Dma dma;
+    //set vram dirrection to 0 (horrizontal)
+    dma.GetPpuMemory().GetRegisters().name.vramDirrection = 0;
+    //also set mirroring mode to supress warning messages
+    dma.GetPpuMemory().GetNameTables().SetMirrorType(INes::MirrorType::horizontal);
+
+    //start writing to vram address 0x3EFE
+    dma.Write(0x2006, 0x3E);
+    dma.Write(0x2006, 0xFE);
+
+    dma.Write(0x2007, 43);
+    dma.Write(0x2007, 254);
+
+    //now read what was written
+    dma.Write(0x2006, 0x3E);
+    dma.Write(0x2006, 0xFE);
+
+    //first value is an internal buffer value and can be discarded
+    dma.Read(0x2007);
+    REQUIRE(dma.Read(0x2007) == 43);
+
+    //need to lower the vram address as addresses above 0x3EFF will overwrite the internal buffer
+    dma.Write(0x2006, 0x3E);
+    dma.Write(0x2006, 0x00);
+    REQUIRE(dma.Read(0x2007) == 254);
+}
+
+TEST_CASE("DMA: test PPUDATA_ADDR(0x2007) overwrite buffering") {
+    Dma dma;
+    //set vram dirrection to 0 (horrizontal)
+    dma.GetPpuMemory().GetRegisters().name.vramDirrection = 0;
+    //also set mirroring mode to supress warning messages
+    dma.GetPpuMemory().GetNameTables().SetMirrorType(INes::MirrorType::horizontal);
+
+    //start writing to vram address 0x3F00
+    dma.Write(0x2006, 0x3F);
+    dma.Write(0x2006, 0x00);
+
+    dma.Write(0x2007, 89);
+    dma.Write(0x2007, 239);
+
+    //now read what was written
+    dma.Write(0x2006, 0x3F);
+    dma.Write(0x2006, 0x00);
+
+    REQUIRE(dma.Read(0x2007) == 89);
+    REQUIRE(dma.Read(0x2007) == 239);
+
+    //if reading from a internal buffer area it should return the last read value again
+    dma.Write(0x2006, 0x3E);
+    dma.Write(0x2006, 0x00);
+    REQUIRE(dma.Read(0x2007) == 239);
+}
+
+TEST_CASE("DMA: test starting DMA transfer") {
+    Dma dma;
+
+    dma.Write(0x0, 23);
+    dma.Write(0x1, 158);
+
+    dma.Write(0xFE, 217);
+    dma.Write(0xFF, 94);
+
+    REQUIRE(dma.GetDmaActive() == false);
+    dma.Write(0x4014, 0);
+
+    REQUIRE(dma.GetDmaActive() == true);
+    while(dma.GetDmaActive() == true)
+    {
+        dma.ProcessDma();
+
+        long long nextPpuCycle = dma.GetPpuMemory().GetTotalPpuCycles() + 1;
+        dma.GetPpuMemory().SetTotalPpuCycles(nextPpuCycle);
+    }
+
+    REQUIRE(dma.GetPpuMemory().GetPrimaryOam().Read(0x0) == 23 );
+    REQUIRE(dma.GetPpuMemory().GetPrimaryOam().Read(0x1) == 158 );
+    REQUIRE(dma.GetPpuMemory().GetPrimaryOam().Read(0xFE) == 217 );
+    REQUIRE(dma.GetPpuMemory().GetPrimaryOam().Read(0xFF) == 94 );
 }

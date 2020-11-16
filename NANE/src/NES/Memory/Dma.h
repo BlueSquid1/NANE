@@ -63,11 +63,9 @@ class Dma : public IMemoryRW
     bool GetNmi();
     void SetNmi(bool isActive);
     bool GetDmaActive() const;
-    void SetDmaActive(bool value);
     bool GetDmaGoodCycle() const;
     void SetDmaGoodCycle(bool value);
     dword GetDmaBaseAddress();
-    void SetDmaBaseAddress(dword address);
     dword GetDmaAddressOffset();
     void SetDmaAddressOffset(dword address);
     byte GetDmaBuffer();
