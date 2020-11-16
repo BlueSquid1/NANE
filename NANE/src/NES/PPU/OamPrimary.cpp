@@ -9,6 +9,8 @@ const int OamPrimary::TotalNumOfSprites;
 OamPrimary::OamPrimary()
 : MemoryRepeaterArray(0x0, 0x100, this->raw, this->rawLen)
 {
+    // clear to 0xFF to be in line with secondary OAM clearing to 0xFF as stated here:
+    // https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation#Details
     memset(this->raw, 0xFF, sizeof(this->name));
 }
 
