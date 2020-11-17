@@ -8,6 +8,7 @@ OamSecondary::OamSecondary()
 : OamPrimary()
 {
     this->ClearFetchData();
+    this->ClearActiveBuffer();
 }
 
 void OamSecondary::AppendFetchedSprite(const OamPrimary::Sprite& sprite, int primaryOamIndex)
@@ -47,6 +48,7 @@ OamSecondary::ScanlineTile OamSecondary::CalcSpriteBuffer(int scanline, const Oa
         else
         {
             activeSpriteTile = &spriteTiles.secondTile;
+            tileLine = tileLine % PatternTables::TILE_HEIGHT;
         }
     }
 

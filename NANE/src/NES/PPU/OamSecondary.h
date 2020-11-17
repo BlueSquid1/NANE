@@ -11,7 +11,7 @@
 
 class OamSecondary : public OamPrimary
 {
-    private:
+    public:
     /**
      * @brief Structure to track the primary OAM index.
      */
@@ -20,7 +20,6 @@ class OamSecondary : public OamPrimary
         int primaryOamIndex;
     };
 
-    public:
     /**
      * @brief Holds the data from a row in a scanline.
      */
