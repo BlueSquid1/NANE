@@ -14,6 +14,11 @@ PpuRegisters::PpuRegisters()
     this->vRegs.bckgndDrawing.msbPatternPlane.val = 0;
     this->vRegs.bckgndDrawing.lsbPalletePlane.val = 0;
     this->vRegs.bckgndDrawing.msbPalletePlane.val = 0;
+    this->vRegs.nextNametableIndex = 0;
+    this->vRegs.nextAttributeIndex = 0;
+    this->vRegs.backgroundFetchTileLsb = 0;
+    this->vRegs.backgroundFetchTileMsb = 0;
+
     this->vRegs.ppuDataReadBuffer = 0;
 }
 

@@ -27,7 +27,18 @@ TEST_CASE("registers cleared by default") {
 
     //test the internal registers
     REQUIRE(registers.vRegs.ppuDataReadBuffer == 0);
-    
+    REQUIRE(registers.vRegs.bckgndDrawing.activeLoopyReg.address.val == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.nextLoopyReg.address.val == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.scrollXFine == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.loopyLatch == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.lsbPatternPlane.val == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.msbPatternPlane.val == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.lsbPalletePlane.val == 0);
+    REQUIRE(registers.vRegs.bckgndDrawing.msbPalletePlane.val == 0);
+    REQUIRE(registers.vRegs.nextNametableIndex == 0);
+    REQUIRE(registers.vRegs.nextAttributeIndex == 0);
+    REQUIRE(registers.vRegs.backgroundFetchTileLsb == 0);
+    REQUIRE(registers.vRegs.backgroundFetchTileMsb == 0);    
 
     REQUIRE(registers.rawLen > 0);
     for(int i = 0; i < registers.rawLen; ++i)
