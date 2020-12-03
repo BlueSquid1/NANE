@@ -29,7 +29,6 @@ class PatternTables
         byte lsbPlane[TILE_HEIGHT];
         byte msbPlane[TILE_HEIGHT];
     };
-    #pragma pack(pop)
     struct BitPatternTable
     {
         union
@@ -42,6 +41,7 @@ class PatternTables
     {
         BitPatternTable tables[NUM_OF_TABLES];
     };
+    #pragma pack(pop)
 
     private:
     /**
@@ -56,6 +56,10 @@ class PatternTables
         {
         }
     };
+
+    /**
+     * @brief Buffer for pattern table.
+     */
     std::vector<PatternTable> patternTableData;
 
     public:

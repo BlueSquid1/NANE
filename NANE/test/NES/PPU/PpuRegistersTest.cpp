@@ -7,7 +7,7 @@
 /**
  * test if PpuRegisters is a Plain-Old Data otherwise compiler might not place struct in the same order defined in the struct
  */
-TEST_CASE("make sure PpuRegisters is Plain-Old Data otherwise") {
+TEST_CASE("make sure PpuRegisters is Plain-Old Data") {
     REQUIRE(std::is_pod<PpuRegisters::RegStruct>::value == true);
 }
 
