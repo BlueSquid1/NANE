@@ -1,12 +1,8 @@
 #include <catch2/catch.hpp>
-#include <type_traits> //std::is_pod<>
 
 #include "NES/PPU/Ppu.h"
 #include "NES/Memory/Dma.h"
 
-/**
- * 
- */
 TEST_CASE("test powerup state") 
 {
     Dma dma;
@@ -33,4 +29,29 @@ TEST_CASE("test powerup state")
     REQUIRE(ppu.GetTotalFrameCount() == 0);
     REQUIRE(dma.GetPpuMemory().GetTotalPpuCycles() == 0);
     REQUIRE(dma.GetDmaBuffer() == 0);
+}
+
+TEST_CASE("PPU populate the frame buffer correctly")
+{
+    Dma dma;
+    Ppu ppu(dma);
+    REQUIRE(ppu.PowerCycle() == true);
+
+    // create patterntable
+    
+    // configure ppu settings
+    PpuRegisters ppuRegs = dma.GetPpuMemory().GetRegisters();
+    ppuRegs.name.showBackgroundLeftmost = true;
+    ppuRegs.name.showSpritesLeftmost = true;
+    ppuRegs.name.showBackground = true;
+    ppuRegs.name.showSprites = true;
+
+    // generate frame
+    while(ppu.GetTotalFrameCount() == 0)
+    {
+        ppu.Step();
+    }
+    Matrix<rawColour> display = ppu.GetFrameDisplay();
+
+    // compare output
 }

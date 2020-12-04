@@ -221,6 +221,15 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
 
 Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegisters::VirtualRegisters::BackgroundDrawRegisters& bDrawingRegs)
 {
+    if( curCycle < END_OF_LEFT_MOST_TILE_CYCLE && this->GetRegs().name.showBackgroundLeftmost == false)
+    {
+        //leftmost tile is disable. Draw background colour
+        Ppu::BackgroundPixelInfo backgroundPixel;
+        backgroundPixel.pixelColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(0, 0);
+        backgroundPixel.isTransparent = true;
+        return backgroundPixel;
+    }
+
     //get pattern value
     dword xPos = curCycle - START_VISIBLE_CYCLE;
     byte bufferOffset = (xPos) % 8;
@@ -243,6 +252,14 @@ Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegiste
 
 Ppu::ForegroundPixelInfo Ppu::CalcForgroundPixel(int curCycle)
 {
+    if( curCycle < END_OF_LEFT_MOST_TILE_CYCLE && this->GetRegs().name.showSpritesLeftmost == false)
+    {
+        // no sprite in first tile. just say the pixel has a transparent foreground
+        ForegroundPixelInfo forgroundPixel;
+        forgroundPixel.isTransparent = true;
+        forgroundPixel.primaryOamIndex = -1;
+        return forgroundPixel;
+    }
     OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
     int pixelX = curCycle - START_VISIBLE_CYCLE;
     const OamSecondary::IndexPattern& forgroundSprite = secondaryOam.CalcForgroundPixel(pixelX);
@@ -292,7 +309,7 @@ rawColour Ppu::CalcFinalPixel(const Ppu::BackgroundPixelInfo& bPixel, const Ppu:
         {
             //following logic detailed here:
             // https://wiki.nesdev.com/w/index.php/PPU_OAM#Sprite_zero_hits
-            if(curCycle > 7 || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showBackgroundLeftmost))
+            if(curCycle > END_OF_LEFT_MOST_TILE_CYCLE || (this->GetRegs().name.showBackgroundLeftmost && this->GetRegs().name.showSpritesLeftmost))
             {
                 if(curCycle != 255)
                 {

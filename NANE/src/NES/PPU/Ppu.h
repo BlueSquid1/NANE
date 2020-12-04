@@ -48,6 +48,7 @@ class Ppu
 
     const int START_CYCLE = 0; //cycles
     const int START_VISIBLE_CYCLE = 1; //cycles
+    const int END_OF_LEFT_MOST_TILE_CYCLE = 8; //cycles
     const int START_SPRITE_EVALUATION_CYCLE = 65; //cycles
     const int LAST_VISIBLE_FETCH_CYCLE = 256 - 8; //cycles
     const int LAST_VISIBLE_CYCLE = 256; //cycles
