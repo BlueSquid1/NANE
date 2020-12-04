@@ -326,29 +326,12 @@ Ppu::Ppu(Dma& dma)
 
 bool Ppu::PowerCycle()
 {
-    //reset registers
-    this->GetRegs().name.PPUCTRL = 0;
-    this->GetRegs().name.PPUMASK = 0;
-    this->GetRegs().name.PPUSTATUS = 0;
-    this->GetRegs().name.OAMADDR = 0;
-    this->GetRegs().name.PPUSCROLL = 0;
-    this->GetRegs().name.PPUADDR = 0;
-    this->GetRegs().name.PPUDATA = 0;
-    
-    //internal registers
-    this->GetRegs().vRegs.bckgndDrawing.activeLoopyReg.address.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.nextLoopyReg.address.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.scrollXFine = 0;
-    this->GetRegs().vRegs.bckgndDrawing.loopyLatch = false;
-    this->GetRegs().vRegs.ppuDataReadBuffer = 0;
-    this->GetRegs().vRegs.bckgndDrawing.lsbPatternPlane.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.msbPatternPlane.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.lsbPalletePlane.val = 0;
-    this->GetRegs().vRegs.bckgndDrawing.msbPalletePlane.val = 0;
-    this->GetRegs().vRegs.nextNametableIndex = 0;
-    this->GetRegs().vRegs.nextAttributeIndex = 0;
-    this->GetRegs().vRegs.backgroundFetchTileLsb = 0;
-    this->GetRegs().vRegs.backgroundFetchTileMsb = 0;
+    bool regPowerCycle = this->GetRegs().PowerCycle();
+
+    if(regPowerCycle == false)
+    {
+        return false;
+    }
 
     this->dma.GetPpuMemory().SetScanLineNum(PRE_SCANLINE);
     this->dma.GetPpuMemory().SetScanCycleNum(START_CYCLE);

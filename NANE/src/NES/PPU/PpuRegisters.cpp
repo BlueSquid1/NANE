@@ -5,6 +5,11 @@ const int PpuRegisters::rawLen;
 PpuRegisters::PpuRegisters()
 : MemoryRepeaterArray(0x2000, 0x3FFF, this->raw, this->rawLen)
 {
+    this->PowerCycle();
+}
+
+bool PpuRegisters::PowerCycle()
+{
     memset(this->raw, 0, sizeof(this->name));
 
     this->vRegs.bckgndDrawing.loopyLatch = false;
@@ -18,8 +23,8 @@ PpuRegisters::PpuRegisters()
     this->vRegs.nextAttributeIndex = 0;
     this->vRegs.backgroundFetchTileLsb = 0;
     this->vRegs.backgroundFetchTileMsb = 0;
-
     this->vRegs.ppuDataReadBuffer = 0;
+    return true;
 }
 
 byte PpuRegisters::Read(dword address)

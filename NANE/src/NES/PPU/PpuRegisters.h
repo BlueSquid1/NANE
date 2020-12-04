@@ -152,6 +152,8 @@ class PpuRegisters : public MemoryRepeaterArray
     //constructor
     PpuRegisters();
 
+    bool PowerCycle();
+
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;

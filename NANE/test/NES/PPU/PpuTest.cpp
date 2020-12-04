@@ -11,6 +11,7 @@ TEST_CASE("test powerup state")
 {
     Dma dma;
     Ppu ppu(dma);
+    REQUIRE(ppu.PowerCycle() == true);
     Matrix<rawColour> display = ppu.GetFrameDisplay();
     REQUIRE(display.GetHeight() == 240);
     REQUIRE(display.GetWidth() == 256);
@@ -27,8 +28,9 @@ TEST_CASE("test powerup state")
             REQUIRE(display.Get(y,x).raw == black.raw);
         }
     }
-
-    REQUIRE(ppu.PowerCycle() == true);
     REQUIRE(dma.GetPpuMemory().GetScanCycleNum() == 0);
     REQUIRE(dma.GetPpuMemory().GetScanLineNum() == -1);
+    REQUIRE(ppu.GetTotalFrameCount() == 0);
+    REQUIRE(dma.GetPpuMemory().GetTotalPpuCycles() == 0);
+    REQUIRE(dma.GetDmaBuffer() == 0);
 }
