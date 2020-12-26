@@ -15,7 +15,7 @@ class TextureWindow : public IWindow
     public:
     TextureWindow(SDL_Renderer* gRenderer, const int textureWidth, const int textureHeight);
     ~TextureWindow() override;
-    void Display(const Matrix<rawColour>& chRomData);
+    void Display(const Matrix<rawColour>& pixelData);
 };
 
 #endif

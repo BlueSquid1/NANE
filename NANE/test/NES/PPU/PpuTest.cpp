@@ -1,7 +1,35 @@
 #include <catch2/catch.hpp>
+#include <math.h>
+#include <string>
 
 #include "NES/PPU/Ppu.h"
 #include "NES/Memory/Dma.h"
+#include "NES/Cartridge/CartridgeLoader.h"
+#include "NES/Memory/Matrix.h"
+#include "NES/PPU/NesColour.h"
+
+#include "GameEngine/Graphics/WindowsManager.h"
+
+void RenderDisplay(Matrix<rawColour> display)
+{
+    for(int row = 0; row < display.GetHeight(); ++row)
+    {
+        for(int col = 0; col < display.GetWidth(); ++col)
+        {
+            //TODO
+            if(display.Get(row, col).channels.blue != 0)
+            {
+                std::cout << ".";
+            }
+            else
+            {
+                std::cout << "*";
+            }
+        }
+        std::cout << "\n";
+    }
+}
+
 
 TEST_CASE("test powerup state") 
 {
@@ -35,11 +63,70 @@ TEST_CASE("PPU populate the frame buffer correctly")
 {
     Dma dma;
     Ppu ppu(dma);
+
+    // use the testrom pattern table
+    const std::string nestestPath = "NANE/test/resources/nestest.nes";
+    CartridgeLoader cartridgeLoader;
+    std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
+    REQUIRE(cartridge);
+    dma.SetCartridge(std::move(cartridge));
+
+    //initalize PPU
     REQUIRE(ppu.PowerCycle() == true);
 
-    // create patterntable
-    
+    //set nametable
+    std::string referenceNameTable =
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"
+    "01234567890123456789012345678912"
+    "abcdefghijklmnopqrstuvwxyzabcdef"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF";
+
+    for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+    {
+        dma.GetPpuMemory().Write(i + 0x2000, referenceNameTable[i]);
+    }
+
+    //set colour palette
+    std::vector<colourIndex> refColourPallete = 
+    {
+        32, //background red=0xFF green=0xFE blue=0xFF alpha=0xFF
+        0, 
+        0, 
+        13 //forground red=0x00 green=0x00 blue=0x00 alpha=0xFF
+    };
+    for(int i = 0; i < refColourPallete.size(); ++i)
+    {
+        dma.GetPpuMemory().Write(0x3F00 + i, refColourPallete[i]);
+    }
+
     // configure ppu settings
+    ppu.SetDisassemblePalette(0);
     PpuRegisters ppuRegs = dma.GetPpuMemory().GetRegisters();
     ppuRegs.name.showBackgroundLeftmost = true;
     ppuRegs.name.showSpritesLeftmost = true;
@@ -47,11 +134,38 @@ TEST_CASE("PPU populate the frame buffer correctly")
     ppuRegs.name.showSprites = true;
 
     // generate frame
-    while(ppu.GetTotalFrameCount() == 0)
+    while(ppu.GetTotalFrameCount() <= 1 )
     {
         ppu.Step();
     }
     Matrix<rawColour> display = ppu.GetFrameDisplay();
 
     // compare output
+    std::unique_ptr<PatternTables> patternTables = dma.GeneratePatternTablesFromRom();
+    REQUIRE(display.GetWidth() == 256);
+    REQUIRE(display.GetHeight() == 240);
+
+    for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+    {
+        int baseX = i % 32;
+        int baseY = floor(i / 32.0);
+        
+        int encodingValue = referenceNameTable.at(i);
+        int encodingX = encodingValue % 16;
+        int encodingY = floor(encodingValue / 16.0);
+        Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
+        //RenderDisplay(display);
+
+        for(int row = 0; row < refTile.GetHeight(); ++row)
+        {
+            for(int col = 0; col < refTile.GetWidth(); ++col)
+            {
+                patternIndex refPattern = refTile.Get(row, col);
+                rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
+                
+                rawColour actualColour = display.Get(baseY * 8 + row, baseX * 8 + col);
+                REQUIRE(refColour.raw == actualColour.raw);
+            }
+        }
+    }
 }
