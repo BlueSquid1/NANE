@@ -68,7 +68,7 @@ std::shared_ptr<std::vector<byte>> INes::GetPrgRomData()
 
 void INes::SetPrgRomData(std::shared_ptr<std::vector<byte>> prgRomData)
 {
-    this->prgRomData = std::move(prgRomData);
+    this->prgRomData = prgRomData;
 }
 
 std::shared_ptr<std::vector<byte>> INes::GetChrRomData()
@@ -78,5 +78,5 @@ std::shared_ptr<std::vector<byte>> INes::GetChrRomData()
 
 void INes::SetChrRomData(std::shared_ptr<std::vector<byte>> chrRomData)
 {
-    this->chrRomData = std::move(chrRomData);
+    this->chrRomData = chrRomData;
 }

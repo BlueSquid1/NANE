@@ -10,7 +10,7 @@ TEST_CASE("parse nestest.nes rom") {
   const std::string nestestPath = "NANE/test/resources/nestest.nes";
 
   CartridgeLoader inesParser;
-  std::unique_ptr<INes> ines = inesParser.ParseINes(nestestPath);
+  std::shared_ptr<INes> ines = inesParser.ParseINes(nestestPath);
   REQUIRE(ines.get() != NULL);
   REQUIRE(ines->GetPrgRomLen() == 1 * 16384);
   REQUIRE(ines->GetChrRomLen() == 1 * 8192);

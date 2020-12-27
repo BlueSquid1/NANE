@@ -4,8 +4,8 @@
 CpuMemoryMap::CpuMemoryMap()
     : IMemoryRW(0x0000, 0x1FFF)
 {
-    std::unique_ptr<std::vector<byte>> ramVec = std::unique_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
-    this->cpuRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x0000, 0x1FFF, std::move(ramVec)) );
+    std::shared_ptr<std::vector<byte>> ramVec = std::shared_ptr<std::vector<byte>>( new std::vector<byte>(2048) );
+    this->cpuRam = std::unique_ptr<MemoryRepeaterVec>( new MemoryRepeaterVec(0x0000, 0x1FFF, ramVec) );
 }
 
 byte CpuMemoryMap::Read(dword address)

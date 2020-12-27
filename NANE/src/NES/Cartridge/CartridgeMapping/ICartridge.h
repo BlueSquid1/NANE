@@ -25,7 +25,7 @@ class ICartridge : public IMemoryRW
     //virtual deconstructor
     virtual ~ICartridge();
 
-    virtual bool LoadINes(std::unique_ptr<INes> INesRom) = 0;
+    virtual bool LoadINes(std::shared_ptr<INes> INesRom) = 0;
 
     bool Contains(dword address) const final;
     byte Read(dword address) override;

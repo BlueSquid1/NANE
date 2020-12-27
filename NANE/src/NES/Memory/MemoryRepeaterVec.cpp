@@ -3,7 +3,7 @@
 MemoryRepeaterVec::MemoryRepeaterVec(dword startAddress, dword endAddress, std::shared_ptr<std::vector<byte>> data)
     : IMemoryRepeater(startAddress, endAddress, data->size())
 {
-    this->data = std::move(data);
+    this->data = data;
 }
 
 byte MemoryRepeaterVec::Read(dword address)

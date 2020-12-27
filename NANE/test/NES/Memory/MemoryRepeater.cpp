@@ -4,8 +4,8 @@
 #include "NES/Memory/MemoryRepeaterVec.h"
 
 TEST_CASE("LowerOffset checks") {
-    std::unique_ptr<std::vector<byte>> data(new std::vector<byte>(50));
-    MemoryRepeaterVec repeater(0, 99, std::move(data));
+    std::shared_ptr<std::vector<byte>> data(new std::vector<byte>(50));
+    MemoryRepeaterVec repeater(0, 99, data);
     REQUIRE(repeater.LowerOffset(0) == 0 );
     REQUIRE(repeater.LowerOffset(49) == 49 );
     REQUIRE(repeater.LowerOffset(50) == 0 );
@@ -21,8 +21,8 @@ TEST_CASE("LowerOffset checks without vector") {
 }
 
 TEST_CASE("Read and Write tests") {
-    std::unique_ptr<std::vector<byte>> data(new std::vector<byte>(50));
-    MemoryRepeaterVec repeater(0, 99, std::move(data));
+    std::shared_ptr<std::vector<byte>> data(new std::vector<byte>(50));
+    MemoryRepeaterVec repeater(0, 99, data);
     repeater.Write(0, 24);
     REQUIRE(repeater.Read(0) == 24);
     REQUIRE(repeater.Read(50) == 24);

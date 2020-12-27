@@ -17,8 +17,6 @@ std::vector<colourIndex> refColourPallete =
     13 //forground red=0x00 green=0x00 blue=0x00 alpha=0xFF
 };
 
-Dma dma;
-
 std::string referenceNameTable =
     "01234567890123456789012345678912"
     "abcdefghijklmnopqrstuvwxyzabcdef"
@@ -61,7 +59,7 @@ Ppu SetupPpu()
     CartridgeLoader cartridgeLoader;
     std::shared_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
     REQUIRE(cartridge);
-    dma->SetCartridge(std::move(cartridge));
+    dma->SetCartridge(cartridge);
 
     //initalize PPU
     REQUIRE(ppu.PowerCycle() == true);
@@ -153,6 +151,54 @@ TEST_CASE("PPU render background test")
     std::unique_ptr<PatternTables> patternTables = dma->GeneratePatternTablesFromRom();
     REQUIRE(display.GetWidth() == 256);
     REQUIRE(display.GetHeight() == 240);
+
+    for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+    {
+        int baseX = (i % 32) * 8;
+        int baseY = (floor(i / 32.0)) * 8;
+        
+        int encodingValue = referenceNameTable.at(i);
+        int encodingX = encodingValue % 16;
+        int encodingY = floor(encodingValue / 16.0);
+        Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
+
+        for(int row = 0; row < refTile.GetHeight(); ++row)
+        {
+            for(int col = 0; col < refTile.GetWidth(); ++col)
+            {
+                patternIndex refPattern = refTile.Get(row, col);
+                rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
+                
+                int displayPixelX = baseX + col;
+                int displayPixelY = baseY + row;
+
+                rawColour actualColour = display.Get(displayPixelY, displayPixelX);
+                INFO("Pixel (x: " << displayPixelX << ", y: " << displayPixelY << ") is wrong");
+                REQUIRE(refColour.raw == actualColour.raw);
+            }
+        }
+    }
+}
+
+TEST_CASE("PPU render scrolling background test")
+{
+    Ppu ppu = SetupPpu();
+    std::shared_ptr<Dma> dma = ppu.GetDma();
+    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.activeLoopyReg.scrollXCourse = 1;
+    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.scrollXFine = 3;
+
+    // generate frame
+    while(ppu.GetTotalFrameCount() <= 1 )
+    {
+        ppu.Step();
+    }
+    Matrix<rawColour> display = ppu.GetFrameDisplay();
+
+    // compare output
+    std::unique_ptr<PatternTables> patternTables = dma->GeneratePatternTablesFromRom();
+    REQUIRE(display.GetWidth() == 256);
+    REQUIRE(display.GetHeight() == 240);
+    RenderDisplay(display);
 
     for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
     {

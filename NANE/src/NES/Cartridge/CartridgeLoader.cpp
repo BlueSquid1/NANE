@@ -1,6 +1,6 @@
 #include "CartridgeLoader.h"
 
-bool CartridgeLoader::UpdateHead( std::unique_ptr<INes> & rom, std::ifstream * fileStream )
+bool CartridgeLoader::UpdateHead( std::shared_ptr<INes> rom, std::ifstream * fileStream )
 {
     const int headerSize = 16;
     std::vector<byte> header(headerSize);
@@ -63,7 +63,7 @@ bool CartridgeLoader::UpdateHead( std::unique_ptr<INes> & rom, std::ifstream * f
     return true;
 }
 
-bool CartridgeLoader::UpdateTrainer( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
+bool CartridgeLoader::UpdateTrainer( std::shared_ptr<INes> rom, std::ifstream * fileStream)
 {
     if(rom->GetTrainerPresent() == true)
     {
@@ -75,7 +75,7 @@ bool CartridgeLoader::UpdateTrainer( std::unique_ptr<INes> & rom, std::ifstream 
     return true;
 }
 
-bool CartridgeLoader::UpdatePrgRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
+bool CartridgeLoader::UpdatePrgRomData( std::shared_ptr<INes> rom, std::ifstream * fileStream)
 {
     unsigned int prgRomSize = rom->GetPrgRomLen();
     std::shared_ptr<std::vector<byte>> prgRom(new std::vector<byte>(prgRomSize));
@@ -84,7 +84,7 @@ bool CartridgeLoader::UpdatePrgRomData( std::unique_ptr<INes> & rom, std::ifstre
     return true;
 }
 
-bool CartridgeLoader::UpdateChrRomData( std::unique_ptr<INes> & rom, std::ifstream * fileStream)
+bool CartridgeLoader::UpdateChrRomData( std::shared_ptr<INes> rom, std::ifstream * fileStream)
 {
     unsigned int chrRomSize = rom->GetChrRomLen();
     std::shared_ptr<std::vector<byte>> chrRom(new std::vector<byte>(chrRomSize));
@@ -95,7 +95,7 @@ bool CartridgeLoader::UpdateChrRomData( std::unique_ptr<INes> & rom, std::ifstre
 
 
 
-std::unique_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
+std::shared_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
 {
     std::ifstream fileStream( romFilePath, std::ios::in | std::ios::binary );
     if( fileStream.is_open() == false )
@@ -105,7 +105,7 @@ std::unique_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
     }
 
     //parse ROM file
-    std::unique_ptr<INes> rom = std::unique_ptr<INes>(new INes());
+    std::shared_ptr<INes> rom = std::shared_ptr<INes>(new INes());
 
     //read header
     bool headRet = this->UpdateHead( rom, &fileStream );
@@ -140,7 +140,7 @@ std::unique_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
 
 std::shared_ptr<ICartridge> CartridgeLoader::LoadCartridge(const std::string & romFilePath)
 {
-    std::unique_ptr<INes> iNesRom = this->ParseINes(romFilePath);
+    std::shared_ptr<INes> iNesRom = this->ParseINes(romFilePath);
     if(iNesRom == NULL)
     {
         return NULL;
@@ -158,7 +158,7 @@ std::shared_ptr<ICartridge> CartridgeLoader::LoadCartridge(const std::string & r
             break;
     }
 
-    bool loadRet = returnCartridge->LoadINes(std::move(iNesRom));
+    bool loadRet = returnCartridge->LoadINes(iNesRom);
     if(loadRet == false)
     {
         std::cerr << "failed to load INES into mapping: " << returnCartridge->GetMapNumber() << std::endl;

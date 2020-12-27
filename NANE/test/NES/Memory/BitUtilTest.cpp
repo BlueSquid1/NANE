@@ -127,8 +127,8 @@ TEST_CASE("GetBits") {
  * tests getDWord
  */
 TEST_CASE("GetDWord") {
-    std::unique_ptr<std::vector<byte>> vec( new std::vector<byte>{0x36, 0x78, 0x01} );
-    MemoryRepeaterVec memoryRepeater( 0x0000, 0x1FFF, std::move(vec) );
+    std::shared_ptr<std::vector<byte>> vec( new std::vector<byte>{0x36, 0x78, 0x01} );
+    MemoryRepeaterVec memoryRepeater( 0x0000, 0x1FFF, vec );
     REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x0 ) == 0x7836);
     REQUIRE(BitUtil::GetDWord( &memoryRepeater, 0x1 ) == 0x0178);
 }
