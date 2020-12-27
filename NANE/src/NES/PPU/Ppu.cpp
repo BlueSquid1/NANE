@@ -92,6 +92,12 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
             updatedShiftRegisters->lsbFetchPattern = this->GetRegs().vRegs.backgroundFetchTileLsb;
             updatedShiftRegisters->msbFetchPattern = this->GetRegs().vRegs.backgroundFetchTileMsb;
             updatedShiftRegisters->paletteColour = this->GetRegs().vRegs.nextAttributeIndex;
+            
+            //TODO
+            if(curCycle > 230)
+            {
+                int i = 0;
+            }
             return updatedShiftRegisters;
             break;
         }

@@ -59,7 +59,7 @@ TEST_CASE("test powerup state")
     REQUIRE(dma.GetDmaBuffer() == 0);
 }
 
-TEST_CASE("PPU populate the frame buffer correctly")
+TEST_CASE("PPU render background test")
 {
     Dma dma;
     Ppu ppu(dma);
@@ -144,7 +144,6 @@ TEST_CASE("PPU populate the frame buffer correctly")
     std::unique_ptr<PatternTables> patternTables = dma.GeneratePatternTablesFromRom();
     REQUIRE(display.GetWidth() == 256);
     REQUIRE(display.GetHeight() == 240);
-    RenderDisplay(display);
 
     for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
     {
