@@ -63,6 +63,13 @@ void Dma::Write(dword address, byte value)
     //handle special cases
     switch(address)
     {
+        case PpuRegisters::OAMDATA_ADDR:
+        {
+            this->ppuMemory.GetPrimaryOam().Write(this->ppuMemory.GetRegisters().name.OAMADDR, value);
+            ++this->ppuMemory.GetRegisters().name.OAMADDR;
+            return;
+            break;
+        }
         case PpuRegisters::PPUDATA_ADDR:
         {
             //write value to VRAM address

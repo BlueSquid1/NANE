@@ -120,14 +120,14 @@ TEST_CASE("PPU populate the frame buffer correctly")
         0, 
         13 //forground red=0x00 green=0x00 blue=0x00 alpha=0xFF
     };
-    for(int i = 0; i < refColourPallete.size(); ++i)
+    for(unsigned int i = 0; i < refColourPallete.size(); ++i)
     {
         dma.GetPpuMemory().Write(0x3F00 + i, refColourPallete[i]);
     }
 
     // configure ppu settings
     ppu.SetDisassemblePalette(0);
-    PpuRegisters ppuRegs = dma.GetPpuMemory().GetRegisters();
+    PpuRegisters& ppuRegs = dma.GetPpuMemory().GetRegisters();
     ppuRegs.name.showBackgroundLeftmost = true;
     ppuRegs.name.showSpritesLeftmost = true;
     ppuRegs.name.showBackground = true;
@@ -144,17 +144,17 @@ TEST_CASE("PPU populate the frame buffer correctly")
     std::unique_ptr<PatternTables> patternTables = dma.GeneratePatternTablesFromRom();
     REQUIRE(display.GetWidth() == 256);
     REQUIRE(display.GetHeight() == 240);
+    RenderDisplay(display);
 
     for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
     {
-        int baseX = i % 32;
-        int baseY = floor(i / 32.0);
+        int baseX = (i % 32) * 8;
+        int baseY = (floor(i / 32.0)) * 8;
         
         int encodingValue = referenceNameTable.at(i);
         int encodingX = encodingValue % 16;
         int encodingY = floor(encodingValue / 16.0);
         Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
-        //RenderDisplay(display);
 
         for(int row = 0; row < refTile.GetHeight(); ++row)
         {
@@ -163,7 +163,11 @@ TEST_CASE("PPU populate the frame buffer correctly")
                 patternIndex refPattern = refTile.Get(row, col);
                 rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
                 
-                rawColour actualColour = display.Get(baseY * 8 + row, baseX * 8 + col);
+                int displayPixelX = baseX + col;
+                int displayPixelY = baseY + row;
+
+                rawColour actualColour = display.Get(displayPixelY, displayPixelX);
+                INFO("Pixel (x: " << displayPixelX << ", y: " << displayPixelY << ") is wrong");
                 REQUIRE(refColour.raw == actualColour.raw);
             }
         }

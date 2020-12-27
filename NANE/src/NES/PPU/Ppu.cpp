@@ -121,7 +121,7 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
             break;
         }
 
-        case 7:
+        case 7: //get upper pattern byte
         {
             int tableNum = this->GetRegs().name.backgroundPatternTable;
             PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
