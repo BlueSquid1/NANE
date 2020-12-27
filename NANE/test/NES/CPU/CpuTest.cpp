@@ -22,20 +22,20 @@ TEST_CASE("Run NesTest") {
     std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
     std::cout.rdbuf(outSS.rdbuf()); //redirect std::cout to outSS
 
-    Dma dma;
+    std::shared_ptr<Dma> dma = std::make_shared<Dma>();
     Cpu cpu(dma);
     dword nesTestEntry = 0xC000;
     REQUIRE(cpu.PowerCycle(&nesTestEntry) == true);
 
-    CpuRegisters& registers = dma.GetCpuMemory().GetRegisters();
+    CpuRegisters& registers = dma->GetCpuMemory().GetRegisters();
     registers.name.Y = 0;
     registers.name.P = 0x24;
     registers.name.S = 0xFD;
 
     CartridgeLoader cartridgeLoader;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
-    std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
-    dma.SetCartridge(std::move(cartridge));
+    std::shared_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(nestestPath);
+    dma->SetCartridge(cartridge);
 
     int cpuCycles = 5003;
     for(int i = 0; i < cpuCycles; ++i)

@@ -63,7 +63,7 @@ class Ppu
     /**
      * @brief Reference of NES memory bus.
      */
-    Dma& dma;
+    std::shared_ptr<Dma> dma;
 
     /**
      * @brief Matrix of output pixel colours.
@@ -147,7 +147,7 @@ class Ppu
 
     public:
     //constructor
-    Ppu(Dma& dma);
+    Ppu(std::shared_ptr<Dma> dma);
 
     /**
      * @brief Trigger a power reset for the PPU.
@@ -174,6 +174,7 @@ class Ppu
     byte GetDisassemblePalette() const;
     void SetDisassemblePalette(byte palette);
     const long long int& GetTotalFrameCount() const;
+    std::shared_ptr<Dma> GetDma();
 };
 
 #endif

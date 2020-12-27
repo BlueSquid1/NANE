@@ -5,21 +5,22 @@
 #include <iostream>
 
 Nes::Nes()
-: dma(), cpu(dma), ppu(dma)
 {
-
+    this->dma = std::make_shared<Dma>();
+    this->cpu = std::make_shared<Cpu>(dma);
+    this->ppu = std::make_shared<Ppu>(dma);
 }
 
 
 bool Nes::LoadCartridge(std::string pathToRom)
 {
     CartridgeLoader cartridgeLoader;
-    std::unique_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(pathToRom);
+    std::shared_ptr<ICartridge> cartridge = cartridgeLoader.LoadCartridge(pathToRom);
     if(cartridge == NULL)
     {
         return false;
     }
-    bool setCartDma = this->dma.SetCartridge(std::move(cartridge));
+    bool setCartDma = this->dma->SetCartridge(cartridge);
     if(setCartDma == false)
     {
         return false;
@@ -29,18 +30,18 @@ bool Nes::LoadCartridge(std::string pathToRom)
 
 bool Nes::IsCartridgeLoaded()
 {
-    return this->dma.GetCartridge() != nullptr;
+    return this->dma->GetCartridge() != nullptr;
 }
 
 bool Nes::PowerCycle()
 {
-    bool cputRet = this->cpu.PowerCycle();
+    bool cputRet = this->cpu->PowerCycle();
     if(cputRet == false)
     {
         return false;
     }
 
-    bool ppuRet = this->ppu.PowerCycle();
+    bool ppuRet = this->ppu->PowerCycle();
     if(ppuRet == false)
     {
         return false;
@@ -71,49 +72,49 @@ bool Nes::processFrame(bool verbose)
 
 const Matrix<rawColour>& Nes::GetFrameDisplay()
 {
-    return this->ppu.GetFrameDisplay();
+    return this->ppu->GetFrameDisplay();
 }
 
 const long long int& Nes::GetFrameCount() const
 {
-    return this->ppu.GetTotalFrameCount();
+    return this->ppu->GetTotalFrameCount();
 }
 
 bool Nes::PressButton(NesController::NesInputs input, bool isPressed, int controller)
 {
-    this->dma.GetControllerManager().SetKey(input, isPressed, controller);
+    this->dma->GetControllerManager().SetKey(input, isPressed, controller);
     return true;
 }
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
 {
-    return this->ppu.GeneratePatternTables();
+    return this->ppu->GeneratePatternTables();
 }
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GenerateColourPalettes()
 {
-    return this->ppu.GenerateColourPalettes();
+    return this->ppu->GenerateColourPalettes();
 }
 
 const std::string Nes::GenerateCpuScreen(int instructionsBefore, int instructionsAfter)
 {
-    return this->cpu.GenerateCpuScreen(instructionsBefore, instructionsAfter);
+    return this->cpu->GenerateCpuScreen(instructionsBefore, instructionsAfter);
 }
 
 void Nes::IncrementDefaultColourPalette()
 {
-    byte palette = this->ppu.GetDisassemblePalette();
+    byte palette = this->ppu->GetDisassemblePalette();
     ++palette;
     if(palette >= 8)
     {
         palette = 0;
     }
-    this->ppu.SetDisassemblePalette(palette);
+    this->ppu->SetDisassemblePalette(palette);
 }
 
 const std::string Nes::GenerateFirstNameTable()
 {
-    std::unique_ptr<Matrix<patternIndex>> nameTable = this->dma.GetPpuMemory().GetNameTables().GenerateFirstNameTable();
+    std::unique_ptr<Matrix<patternIndex>> nameTable = this->dma->GetPpuMemory().GetNameTables().GenerateFirstNameTable();
     std::stringstream ss;
     for(int y = 0; y < nameTable->GetHeight(); ++y)
     {
@@ -128,7 +129,7 @@ const std::string Nes::GenerateFirstNameTable()
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int controller )
 {
-    const std::vector<bool> keyPresses = this->dma.GetControllerManager().GetKeyPressed(controller);
+    const std::vector<bool> keyPresses = this->dma->GetControllerManager().GetKeyPressed(controller);
 
     /*
     make pixel array like this:
@@ -171,9 +172,9 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int contr
 bool Nes::Step(bool verbose)
 {
     int ppuSteps = 0;
-    if(!this->dma.IsDmaActive())
+    if(!this->dma->IsDmaActive())
     {
-        int cpuCycles = this->cpu.Step(verbose);
+        int cpuCycles = this->cpu->Step(verbose);
 
         //1 CPU step for 3 PPU steps
         ppuSteps = cpuCycles * 3;
@@ -186,28 +187,28 @@ bool Nes::Step(bool verbose)
 
     for(int i = 0; i < ppuSteps; ++i)
     {
-        this->ppu.Step();
+        this->ppu->Step();
 
         //handle non-maskable interrupts
-        if(this->dma.GetNmi())
+        if(this->dma->GetNmi())
         {
-            int interruptCycles = this->cpu.HandleNmiEvent(verbose);
+            int interruptCycles = this->cpu->HandleNmiEvent(verbose);
 
             //interupts take time. run PPU during this time
             ppuSteps += interruptCycles * 3;
-            this->dma.SetNmi(false);
+            this->dma->SetNmi(false);
         }
 
         // handle DMA transfers
-        if(this->dma.IsDmaActive())
+        if(this->dma->IsDmaActive())
         {
-            this->dma.ProcessDma();
+            this->dma->ProcessDma();
         }
     }
     return true;
 }
 
-Dma& Nes::GetDma()
+std::shared_ptr<Dma> Nes::GetDma()
 {
     return this->dma;
 }

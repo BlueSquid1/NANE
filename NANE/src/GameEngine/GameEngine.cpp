@@ -203,7 +203,7 @@ bool GameEngine::Processing()
 				while((oldFrameCount == this->nesEmulator.GetFrameCount()) && this->run)
 				{
 					this->nesEmulator.Step(this->verbose);
-					int pc = this->nesEmulator.GetDma().GetCpuMemory().GetRegisters().name.PC;
+					int pc = this->nesEmulator.GetDma()->GetCpuMemory().GetRegisters().name.PC;
 					if(pc == this->debugPoint)
 					{
 						this->run = false;

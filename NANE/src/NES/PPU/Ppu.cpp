@@ -84,8 +84,8 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
     {
         case 1: //get pattern index
         {
-            Point fetchTile = this->dma.GetPpuMemory().GetNameTables().CalcBgrFetchTile(fetchPixel);
-            this->GetRegs().vRegs.nextNametableIndex = this->dma.GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
+            Point fetchTile = this->dma->GetPpuMemory().GetNameTables().CalcBgrFetchTile(fetchPixel);
+            this->GetRegs().vRegs.nextNametableIndex = this->dma->GetPpuMemory().GetNameTables().GetPatternIndex(fetchTile.y, fetchTile.x);
 
             // return updated shift registers
             std::unique_ptr<Ppu::BackgroundFetchInfo> updatedShiftRegisters = std::make_unique<Ppu::BackgroundFetchInfo>();
@@ -105,15 +105,15 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
         {
             // calculate where the nametable was fetched
             Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 2, curLine);
-            Point fetchTile = this->dma.GetPpuMemory().GetNameTables().CalcBgrFetchTile(nextFetchPixel);
-            this->GetRegs().vRegs.nextAttributeIndex = this->dma.GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile.y, fetchTile.x);
+            Point fetchTile = this->dma->GetPpuMemory().GetNameTables().CalcBgrFetchTile(nextFetchPixel);
+            this->GetRegs().vRegs.nextAttributeIndex = this->dma->GetPpuMemory().GetNameTables().GetPaletteIndex(fetchTile.y, fetchTile.x);
             break;
         }
 
         case 5: //get lower pattern byte
         {
             int tableNum = this->GetRegs().name.backgroundPatternTable;
-            PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
+            PatternTables::BitTile& bitTile = this->dma->GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
 
             Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 4, curLine);
             if(nextFetchPixel.y < 0)
@@ -130,7 +130,7 @@ std::unique_ptr<Ppu::BackgroundFetchInfo> Ppu::backgroundFetch(int curCycle, int
         case 7: //get upper pattern byte
         {
             int tableNum = this->GetRegs().name.backgroundPatternTable;
-            PatternTables::BitTile& bitTile = this->dma.GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
+            PatternTables::BitTile& bitTile = this->dma->GetPatternTile(tableNum, this->GetRegs().vRegs.nextNametableIndex);
 
             Point nextFetchPixel = this->CalcNextFetchPixel(curCycle - 6, curLine);
             if(nextFetchPixel.y < 0 )
@@ -157,8 +157,8 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
     if(nextScanline <= LAST_VISIBLE_SCANLINE)
     {
         // moving sprites on next scanline to secondary OAM
-        OamPrimary& primaryOam = this->dma.GetPpuMemory().GetPrimaryOam();
-        OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
+        OamPrimary& primaryOam = this->dma->GetPpuMemory().GetPrimaryOam();
+        OamSecondary& secondaryOam = this->dma->GetPpuMemory().GetSecondaryOam();
 
         if(curCycle == START_VISIBLE_CYCLE) // clear previous secondary OAM
         {
@@ -204,7 +204,7 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
                     //sprites are 8 x 8
                     spriteTiles.numOfTiles = 1;
                     int tableNum = this->GetRegs().name.sprite8x8PatternTable;
-                    spriteTiles.firstTile = this->dma.GetPatternTile(tableNum, spriteIndex);
+                    spriteTiles.firstTile = this->dma->GetPatternTile(tableNum, spriteIndex);
                 }
                 else
                 {
@@ -212,8 +212,8 @@ void Ppu::SpriteFetch(int curCycle, int curLine)
                     spriteTiles.numOfTiles = 2;
                     int tableNum = BitUtil::GetBits(spriteIndex, 0);
                     patternIndex spritePattern = BitUtil::GetBits(spriteIndex, 1, 7);
-                    spriteTiles.firstTile = this->dma.GetPatternTile(tableNum, spritePattern);
-                    spriteTiles.secondTile = this->dma.GetPatternTile(tableNum, spritePattern + 1);
+                    spriteTiles.firstTile = this->dma->GetPatternTile(tableNum, spritePattern);
+                    spriteTiles.secondTile = this->dma->GetPatternTile(tableNum, spritePattern + 1);
                 }
                 OamSecondary::IndexSpriteBuffer indexedScanline;
                 indexedScanline.primaryOamIndex = indexedSprite.primaryOamIndex;
@@ -231,7 +231,7 @@ Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegiste
     {
         //leftmost tile is disable. Draw background colour
         Ppu::BackgroundPixelInfo backgroundPixel;
-        backgroundPixel.pixelColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(0, 0);
+        backgroundPixel.pixelColour = this->dma->GetPpuMemory().GetPalettes().PatternValueToColour(0, 0);
         backgroundPixel.isTransparent = true;
         return backgroundPixel;
     }
@@ -249,7 +249,7 @@ Ppu::BackgroundPixelInfo Ppu::CalcBackgroundPixel(int curCycle, const PpuRegiste
     bit msbPallete = BitUtil::GetBits(bDrawingRegs.msbPalletePlane.val, bufferOffset);
     byte attributeIndex = (msbPallete << 1) | lsbPallete;
 
-    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
+    rawColour nesColour = this->dma->GetPpuMemory().GetPalettes().PatternValueToColour(attributeIndex, patternValue);
     Ppu::BackgroundPixelInfo backgroundPixel;
     backgroundPixel.pixelColour = nesColour;
     backgroundPixel.isTransparent = (patternValue == 0);
@@ -266,7 +266,7 @@ Ppu::ForegroundPixelInfo Ppu::CalcForgroundPixel(int curCycle)
         forgroundPixel.primaryOamIndex = -1;
         return forgroundPixel;
     }
-    OamSecondary& secondaryOam = this->dma.GetPpuMemory().GetSecondaryOam();
+    OamSecondary& secondaryOam = this->dma->GetPpuMemory().GetSecondaryOam();
     int pixelX = curCycle - START_VISIBLE_CYCLE;
     const OamSecondary::IndexPattern& forgroundSprite = secondaryOam.CalcForgroundPixel(pixelX);
 
@@ -281,7 +281,7 @@ Ppu::ForegroundPixelInfo Ppu::CalcForgroundPixel(int curCycle)
 
     // lookup colour for pattern value (only can use the last 4 palletes)
     const OamPrimary::Sprite& selectedSprite = forgroundSprite.sprite;
-    rawColour nesColour = this->dma.GetPpuMemory().GetPalettes().PatternValueToColour(4 + selectedSprite.palette, forgroundSprite.pattern);
+    rawColour nesColour = this->dma->GetPpuMemory().GetPalettes().PatternValueToColour(4 + selectedSprite.palette, forgroundSprite.pattern);
 
 
     //return pixel
@@ -339,10 +339,10 @@ rawColour Ppu::CalcFinalPixel(const Ppu::BackgroundPixelInfo& bPixel, const Ppu:
 
 PpuRegisters& Ppu::GetRegs()
 {
-    return this->dma.GetPpuMemory().GetRegisters();
+    return this->dma->GetPpuMemory().GetRegisters();
 }
 
-Ppu::Ppu(Dma& dma)
+Ppu::Ppu(std::shared_ptr<Dma> dma)
 : dma(dma), framebuffer(256, 240, {0x000000FF})
 {
 }
@@ -356,20 +356,20 @@ bool Ppu::PowerCycle()
         return false;
     }
 
-    this->dma.GetPpuMemory().SetScanLineNum(PRE_SCANLINE);
-    this->dma.GetPpuMemory().SetScanCycleNum(START_CYCLE);
+    this->dma->GetPpuMemory().SetScanLineNum(PRE_SCANLINE);
+    this->dma->GetPpuMemory().SetScanCycleNum(START_CYCLE);
     this->frameCountNum = 0;
     long long cycles = 0;
-    this->dma.GetPpuMemory().SetTotalPpuCycles(cycles);
-    this->dma.SetDmaBuffer(0);
+    this->dma->GetPpuMemory().SetTotalPpuCycles(cycles);
+    this->dma->SetDmaBuffer(0);
 
     return true;
 }
 
 void Ppu::Step()
 {
-    int curLine = this->dma.GetPpuMemory().GetScanLineNum();
-    int curCycle = this->dma.GetPpuMemory().GetScanCycleNum();
+    int curLine = this->dma->GetPpuMemory().GetScanLineNum();
+    int curCycle = this->dma->GetPpuMemory().GetScanCycleNum();
 
     //special cases
     if(curLine == PRE_SCANLINE && curCycle == START_VISIBLE_CYCLE)
@@ -388,7 +388,7 @@ void Ppu::Step()
 
         if(this->GetRegs().name.generateNmi == true)
         {
-            this->dma.SetNmi(true);
+            this->dma->SetNmi(true);
         }
     }
 
@@ -429,12 +429,12 @@ void Ppu::Step()
 
     //move to next pixel
     const Point& nextPoint = this->calcNextPosition(curCycle, curLine);
-    this->dma.GetPpuMemory().SetScanLineNum(nextPoint.y);
-    this->dma.GetPpuMemory().SetScanCycleNum(nextPoint.x);
+    this->dma->GetPpuMemory().SetScanLineNum(nextPoint.y);
+    this->dma->GetPpuMemory().SetScanCycleNum(nextPoint.x);
 
     // increment PPU cycles
-    long long nextPpuCycle = this->dma.GetPpuMemory().GetTotalPpuCycles() + 1;
-    this->dma.GetPpuMemory().SetTotalPpuCycles(nextPpuCycle);
+    long long nextPpuCycle = this->dma->GetPpuMemory().GetTotalPpuCycles() + 1;
+    this->dma->GetPpuMemory().SetTotalPpuCycles(nextPpuCycle);
 }
 
 const Matrix<rawColour>& Ppu::GetFrameDisplay()
@@ -444,13 +444,13 @@ const Matrix<rawColour>& Ppu::GetFrameDisplay()
 
 std::unique_ptr<Matrix<rawColour>> Ppu::GeneratePatternTables()
 {
-    ColourPalettes& colourPalettes = this->dma.GetPpuMemory().GetPalettes();
-    return this->dma.GeneratePatternTablesFromRom()->GeneratePatternDisplay(colourPalettes, this->disassemblePalette);
+    ColourPalettes& colourPalettes = this->dma->GetPpuMemory().GetPalettes();
+    return this->dma->GeneratePatternTablesFromRom()->GeneratePatternDisplay(colourPalettes, this->disassemblePalette);
 }
 
 std::unique_ptr<Matrix<rawColour>> Ppu::GenerateColourPalettes()
 {
-    return this->dma.GetPpuMemory().GetPalettes().GenerateColourPalettes(this->disassemblePalette);
+    return this->dma->GetPpuMemory().GetPalettes().GenerateColourPalettes(this->disassemblePalette);
 }
 
 byte Ppu::GetDisassemblePalette() const
@@ -466,4 +466,9 @@ void Ppu::SetDisassemblePalette(byte palette)
 const long long int& Ppu::GetTotalFrameCount() const
 {
     return this->frameCountNum;
+}
+
+std::shared_ptr<Dma> Ppu::GetDma()
+{
+    return this->dma;
 }

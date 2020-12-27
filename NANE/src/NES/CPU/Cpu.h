@@ -1,6 +1,8 @@
 #ifndef CPU
 #define CPU
 
+#include <memory>
+
 #include "Instructions.h"
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/Dma.h"
@@ -17,7 +19,7 @@ class Cpu
         irqCommand
     };
 
-    Dma& dma;
+    std::shared_ptr<Dma> dma;
 
     int totalClockCycles = 0;
 
@@ -34,7 +36,7 @@ class Cpu
     byte SeekOrRead(dword address, bool seekOnly);
 
     public:
-    Cpu(Dma& dma);
+    Cpu(std::shared_ptr<Dma> dma);
     bool PowerCycle(dword * overridePcAddress = NULL);
     int Step(bool verbose);
     int HandleIrqEvent(bool verbose);

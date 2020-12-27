@@ -24,7 +24,7 @@ class Dma : public IMemoryRW
     PpuMemoryMap ppuMemory;
     ApuRegisters apuRegisters;
     ControllerManager ControllerMgr;
-    std::unique_ptr<ICartridge> cartridge = NULL;
+    std::shared_ptr<ICartridge> cartridge = NULL;
     bool nmiActive = false;
 
     bool dmaActive = false;
@@ -47,19 +47,19 @@ class Dma : public IMemoryRW
     byte PpuRead(dword address);
     void PpuWrite(dword address, byte value);
     
-    bool SetCartridge(std::unique_ptr<ICartridge> cartridge);
+    bool SetCartridge(std::shared_ptr<ICartridge> cartridge);
     PatternTables::BitTile& GetPatternTile(int tableNum, patternIndex patternNum);
 
     //for disassembly
     std::unique_ptr<PatternTables> GeneratePatternTablesFromRom();
 
     //getters/setters
-    const std::unique_ptr<ICartridge>& GetCartridge() const;
+    const std::shared_ptr<ICartridge>& GetCartridge() const;
     CpuMemoryMap& GetCpuMemory();
     PpuMemoryMap& GetPpuMemory();
     ApuRegisters& GetApuRegisters();
     ControllerManager& GetControllerManager();
-    std::unique_ptr<ICartridge>& GetCartridge();
+    std::shared_ptr<ICartridge>& GetCartridge();
     bool GetNmi();
     void SetNmi(bool isActive);
     bool GetDmaActive() const;

@@ -30,7 +30,7 @@ TEST_CASE("DMA: Can read and write with loaded cartridge - PPU")
     Dma dma;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
     CartridgeLoader cartLoader;
-    std::unique_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
+    std::shared_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
     dma.SetCartridge(std::move(ines));
     
     //first values in cartridge
@@ -46,7 +46,7 @@ TEST_CASE("DMA: test reading chr rom data") {
     Dma dma;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
     CartridgeLoader cartLoader;
-    std::unique_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
+    std::shared_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
     dma.SetCartridge(std::move(ines));
 
     std::unique_ptr<PatternTables> patternTables = dma.GeneratePatternTablesFromRom();
@@ -127,7 +127,7 @@ TEST_CASE("DMA: Can read and write with loaded cartridge - CPU") {
     Dma dma;
     const std::string nestestPath = "NANE/test/resources/nestest.nes";
     CartridgeLoader cartLoader;
-    std::unique_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
+    std::shared_ptr<ICartridge> ines = cartLoader.LoadCartridge(nestestPath);
     dma.SetCartridge(std::move(ines));
 
     //start of PRG ROM

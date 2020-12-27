@@ -138,7 +138,7 @@ std::unique_ptr<INes> CartridgeLoader::ParseINes(const std::string& romFilePath)
     return rom;
 }
 
-std::unique_ptr<ICartridge> CartridgeLoader::LoadCartridge(const std::string & romFilePath)
+std::shared_ptr<ICartridge> CartridgeLoader::LoadCartridge(const std::string & romFilePath)
 {
     std::unique_ptr<INes> iNesRom = this->ParseINes(romFilePath);
     if(iNesRom == NULL)

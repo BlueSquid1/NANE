@@ -14,9 +14,9 @@
 class Nes
 {
     private:
-    Dma dma;
-    Cpu cpu;
-    Ppu ppu;
+    std::shared_ptr<Dma> dma = std::make_shared<Dma>();
+    std::shared_ptr<Cpu> cpu;
+    std::shared_ptr<Ppu> ppu;
 
     public:
     Nes();
@@ -45,6 +45,6 @@ class Nes
     const std::string GenerateFirstNameTable();
     const std::unique_ptr<Matrix<rawColour>> GenerateControllerState(int controller = 0);
     bool Step(bool verbose);
-    Dma& GetDma();
+    std::shared_ptr<Dma> GetDma();
 };
 #endif

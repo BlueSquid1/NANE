@@ -253,15 +253,15 @@ ControllerManager& Dma::GetControllerManager()
 }
     
 
-bool Dma::SetCartridge(std::unique_ptr<ICartridge> cartridge)
+bool Dma::SetCartridge(std::shared_ptr<ICartridge> cartridge)
 {
-    this->cartridge = std::move(cartridge);
+    this->cartridge = cartridge;
     INes::MirrorType mirroringType = this->cartridge->GetMirroringType();
     this->ppuMemory.GetNameTables().SetMirrorType(mirroringType);
     return true;
 }
 
-const std::unique_ptr<ICartridge>& Dma::GetCartridge() const
+const std::shared_ptr<ICartridge>& Dma::GetCartridge() const
 {
     return this->cartridge;
 }
@@ -284,7 +284,7 @@ PatternTables::BitTile& Dma::GetPatternTile(int tableNum, patternIndex patternNu
     return patternTables.tables[tableNum].raw[patternNum];
 }
 
-std::unique_ptr<ICartridge>& Dma::GetCartridge()
+std::shared_ptr<ICartridge>& Dma::GetCartridge()
 {
     return this->cartridge;
 }

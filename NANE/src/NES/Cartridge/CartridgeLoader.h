@@ -35,7 +35,7 @@ class CartridgeLoader
     std::unique_ptr<INes> ParseINes(const std::string & romFilePath);
 
 
-    std::unique_ptr<ICartridge> LoadCartridge(const std::string & romFilePath);
+    std::shared_ptr<ICartridge> LoadCartridge(const std::string & romFilePath);
 };
 
 #endif
