@@ -49,7 +49,7 @@ std::string referenceNameTable =
     "abcdefghijklmnopqrstuvwxyzabcdef"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF";
 
-Ppu SetupPpu()
+Ppu SetupPpu(bool fillBackground)
 {
     std::shared_ptr<Dma> dma = std::make_shared<Dma>();
     Ppu ppu(dma);
@@ -65,15 +65,34 @@ Ppu SetupPpu()
     REQUIRE(ppu.PowerCycle() == true);
 
     //set nametable
-    for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+    if(fillBackground)
     {
-        dma->GetPpuMemory().Write(i + 0x2000, referenceNameTable[i]);
+        for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+        {
+            dma->GetPpuMemory().Write(i + 0x2000, referenceNameTable[i]);
+        }
+    }
+    else
+    {
+        for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+        {
+            dma->GetPpuMemory().Write(i + 0x2000, 0);
+        }
     }
 
-    //set colour palette
-    for(unsigned int i = 0; i < refColourPallete.size(); ++i)
+    //set colour palettes
+    for(int palleteNum = 0; palleteNum < 8; ++palleteNum)
     {
-        dma->GetPpuMemory().Write(0x3F00 + i, refColourPallete[i]);
+        for(unsigned int colourNum = 0; colourNum < refColourPallete.size(); ++colourNum)
+        {
+            dma->GetPpuMemory().Write(0x3F00 + (palleteNum * 4) + colourNum, refColourPallete[colourNum]);
+        }
+    }
+
+    //default to sprites being off the screen
+    for(int i = 0; i < OamPrimary::TotalNumOfSprites; ++i)
+    {
+        dma->GetPpuMemory().GetPrimaryOam().name.sprites[i].posY = 255;
     }
 
     // configure ppu settings
@@ -86,13 +105,26 @@ Ppu SetupPpu()
     return ppu;
 }
 
+std::unique_ptr<OamPrimary::Sprite> GetSpriteAtPos(std::shared_ptr<Dma> dma, int pixelY, int pixelX)
+{
+    for(const OamPrimary::Sprite& sprite : dma->GetPpuMemory().GetPrimaryOam().name.sprites)
+    {
+        int deltaX = pixelX - sprite.posX;
+        int deltaY = pixelY - sprite.posY;
+        if((deltaX >= 0 && deltaX < 8) && (deltaY >= 0 && deltaY < 8))
+        {
+            return std::make_unique<OamPrimary::Sprite>(sprite);
+        }
+    }
+    return nullptr;
+}
+
 void RenderDisplay(Matrix<rawColour> display)
 {
     for(int row = 0; row < display.GetHeight(); ++row)
     {
         for(int col = 0; col < display.GetWidth(); ++col)
         {
-            //TODO
             if(display.Get(row, col).channels.blue != 0)
             {
                 std::cout << ".";
@@ -137,7 +169,7 @@ TEST_CASE("test powerup state")
 
 TEST_CASE("PPU render background test")
 {
-    Ppu ppu = SetupPpu();
+    Ppu ppu = SetupPpu(true);
     std::shared_ptr<Dma> dma = ppu.GetDma();
 
     // generate frame
@@ -182,10 +214,13 @@ TEST_CASE("PPU render background test")
 
 TEST_CASE("PPU render scrolling background test")
 {
-    Ppu ppu = SetupPpu();
+    int courseScrollXOffset = 2;
+    int fineScrollXOffset = 3;
+    Ppu ppu = SetupPpu(true);
     std::shared_ptr<Dma> dma = ppu.GetDma();
-    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.activeLoopyReg.scrollXCourse = 1;
-    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.scrollXFine = 3;
+    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.nextLoopyReg.scrollXMsb = 0;
+    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.nextLoopyReg.scrollXCourse = courseScrollXOffset;
+    dma->GetPpuMemory().GetRegisters().vRegs.bckgndDrawing.scrollXFine = fineScrollXOffset;
 
     // generate frame
     while(ppu.GetTotalFrameCount() <= 1 )
@@ -198,31 +233,109 @@ TEST_CASE("PPU render scrolling background test")
     std::unique_ptr<PatternTables> patternTables = dma->GeneratePatternTablesFromRom();
     REQUIRE(display.GetWidth() == 256);
     REQUIRE(display.GetHeight() == 240);
-    RenderDisplay(display);
 
-    for(unsigned int i = 0; i < referenceNameTable.size(); ++i)
+    for(int row = 0; row < 30; ++row)
     {
-        int baseX = (i % 32) * 8;
-        int baseY = (floor(i / 32.0)) * 8;
-        
-        int encodingValue = referenceNameTable.at(i);
-        int encodingX = encodingValue % 16;
-        int encodingY = floor(encodingValue / 16.0);
-        Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
-
-        for(int row = 0; row < refTile.GetHeight(); ++row)
+        for(int col = 0; col < 32; ++col)
         {
-            for(int col = 0; col < refTile.GetWidth(); ++col)
+            int expectedValue = row * 32 + col + courseScrollXOffset;
+            if(expectedValue >= 32)
             {
-                patternIndex refPattern = refTile.Get(row, col);
-                rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
-                
-                int displayPixelX = baseX + col;
-                int displayPixelY = baseY + row;
+                continue;
+            }
 
-                rawColour actualColour = display.Get(displayPixelY, displayPixelX);
-                INFO("Pixel (x: " << displayPixelX << ", y: " << displayPixelY << ") is wrong");
-                REQUIRE(refColour.raw == actualColour.raw);
+            int baseX = col * 8;
+            int baseY = row * 8;
+
+            int encodingValue = referenceNameTable.at(expectedValue);
+            int encodingX = encodingValue % 16;
+            int encodingY = floor(encodingValue / 16.0);
+            Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
+
+            for(int row = 0; row < refTile.GetHeight(); ++row)
+            {
+                for(int col = 0; col < refTile.GetWidth(); ++col)
+                {
+                    patternIndex refPattern = refTile.Get(row, col);
+                    rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
+                    
+                    int displayPixelX = baseX + col - fineScrollXOffset;
+                    if(displayPixelX < 0)
+                    {
+                        continue;
+                    }
+                    int displayPixelY = baseY + row;
+
+                    rawColour actualColour = display.Get(displayPixelY, displayPixelX);
+                    INFO("Pixel (x: " << displayPixelX << ", y: " << displayPixelY << ") is wrong");
+                    REQUIRE(refColour.raw == actualColour.raw);
+                }
+            }
+        }
+    }
+}
+
+TEST_CASE("test rendering sprites") 
+{
+    Ppu ppu = SetupPpu(false);
+    std::shared_ptr<Dma> dma = ppu.GetDma();
+    OamPrimary::Sprite& firstSprite = dma->GetPpuMemory().GetPrimaryOam().name.sprites[0];
+    OamPrimary::Sprite& secondSprite = dma->GetPpuMemory().GetPrimaryOam().name.sprites[1];
+    firstSprite.posX = 100;
+    firstSprite.posY = 100;
+    firstSprite.index = 48;
+    firstSprite.palette = 0;
+    firstSprite.backgroundPriority = false;
+    firstSprite.flipHorizontally = false;
+    firstSprite.flipVertically = false;
+
+    secondSprite.posX = 90;
+    secondSprite.posY = 100;
+    secondSprite.index = 48;
+    secondSprite.palette = 0;
+    secondSprite.backgroundPriority = false;
+    secondSprite.flipHorizontally = false;
+    secondSprite.flipVertically = false;
+
+    // generate frame
+    while(ppu.GetTotalFrameCount() <= 1 )
+    {
+        ppu.Step();
+    }
+    Matrix<rawColour> display = ppu.GetFrameDisplay();
+
+    // compare output
+    std::unique_ptr<PatternTables> patternTables = dma->GeneratePatternTablesFromRom();
+    REQUIRE(display.GetWidth() == 256);
+    REQUIRE(display.GetHeight() == 240);
+
+    for(int pixelY = 0; pixelY < 240; ++pixelY)
+    {
+        for(int pixelX = 0; pixelX < 256; ++pixelX)
+        {
+            rawColour displayColour = display.Get(pixelY, pixelX);
+            std::unique_ptr<OamPrimary::Sprite> activeSprite = GetSpriteAtPos(dma, pixelY, pixelX);
+            INFO("Pixel (x: " << pixelX << ", y: " << pixelY << ") is wrong");
+            if(activeSprite)
+            {
+                int encodingValue = activeSprite->index;
+                int encodingX = encodingValue % 16;
+                int encodingY = floor(encodingValue / 16.0);
+                Matrix<patternIndex> refTile = patternTables->GetTile(0, encodingY, encodingX);
+
+                int deltaX = pixelX - activeSprite->posX;
+                int deltaY = pixelY - activeSprite->posY;
+                REQUIRE(deltaX < refTile.GetWidth());
+                REQUIRE(deltaY < refTile.GetHeight());
+                patternIndex refPattern = refTile.Get(deltaY, deltaX);
+                rawColour refColour = NesColour::GetRawColour(refColourPallete.at(refPattern));
+                REQUIRE(displayColour.raw == refColour.raw);
+            }
+            else
+            {
+                REQUIRE(displayColour.channels.blue != 0);
+                REQUIRE(displayColour.channels.red != 0);
+                REQUIRE(displayColour.channels.green != 0);
             }
         }
     }

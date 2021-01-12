@@ -19,6 +19,13 @@ TEST_CASE("PPU: Can read and write without loading a cartridge")
     REQUIRE(memoryMap.Contains(0x3FFF) == true);
     REQUIRE(memoryMap.Contains(0x4000) == false);
 
+    //Nametables
+    memoryMap.Write(0x2000, 37);
+    REQUIRE(memoryMap.Read(0x2000) == 37);
+
+    memoryMap.Write(0x3EFF, 219);
+    REQUIRE(memoryMap.Read(0x3EFF) == 219);
+
     //palette memory
     memoryMap.Write(0x3F00, 153);
     REQUIRE(memoryMap.Read(0x3F00) == 153);
