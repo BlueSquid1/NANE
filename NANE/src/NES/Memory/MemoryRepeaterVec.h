@@ -1,5 +1,4 @@
-#ifndef MEMORY_REPEATER_VEC
-#define MEMORY_REPEATER_VEC
+#pragma once
 
 #include "IMemoryRepeater.h"
 #include "NES/Memory/BitUtil.h"
@@ -22,5 +21,3 @@ class MemoryRepeaterVec : public IMemoryRepeater
     //getters and setters
     std::shared_ptr<std::vector<byte>> GetDataVec(); 
 };
-
-#endif

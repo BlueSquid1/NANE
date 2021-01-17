@@ -1,5 +1,4 @@
-#ifndef CPU
-#define CPU
+#pragma once
 
 #include <memory>
 
@@ -52,5 +51,3 @@ class Cpu
     //getters and setters
     void SetTotalClockCycles(int totalCycles);
 };
-
-#endif

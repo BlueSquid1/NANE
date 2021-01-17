@@ -1,5 +1,4 @@
-#ifndef I_MEMORY_R
-#define I_MEMORY_R
+#pragma once
 
 #include "Types.h"
 
@@ -26,5 +25,3 @@ class IMemoryR
     
     virtual byte Seek(dword address) const = 0;
 };
-
-#endif

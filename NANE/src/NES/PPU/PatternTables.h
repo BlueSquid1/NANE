@@ -1,5 +1,4 @@
-#ifndef PATTERN_TABLES
-#define PATTERN_TABLES
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -70,5 +69,3 @@ class PatternTables
     // dissassembly method(s)
     std::unique_ptr<Matrix<rawColour>> GeneratePatternDisplay(const ColourPalettes& colourPalettes, byte disassemblePalette);
 };
-
-#endif

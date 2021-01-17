@@ -1,5 +1,4 @@
-#ifndef OAM_SECONDARY
-#define OAM_SECONDARY
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -141,5 +140,3 @@ class OamSecondary : public OamPrimary
     int GetSpriteFetchNum() const;
     void AppendToActiveBuffer(const IndexSpriteBuffer& indexedScanline);
 };
-
-#endif

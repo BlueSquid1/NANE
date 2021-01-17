@@ -1,5 +1,4 @@
-#ifndef NETWORK_LOGGER_SERVER
-#define NETWORK_LOGGER_SERVER
+#pragma once
 
 #include <iostream> //std::string
 #include <strings.h> //bzero()
@@ -27,5 +26,3 @@ class Logger_server
 
     bool getConnected();
 };
-
-#endif

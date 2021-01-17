@@ -1,5 +1,4 @@
-#ifndef I_WINDOW
-#define I_WINDOW
+#pragma once
 
 #include <SDL.h>
 
@@ -19,5 +18,3 @@ class IWindow
 
     const SDL_Rect& GetDimensions() const;
 };
-
-#endif

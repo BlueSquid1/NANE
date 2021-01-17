@@ -40,7 +40,7 @@ bool WindowManager::Init(bool showFileMenu)
 		return false;
 	}
 
-    this->gWindow = SDL_CreateWindow("NES-NX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1, 1, SDL_WINDOW_HIDDEN);
+    this->gWindow = SDL_CreateWindow("NANE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1, 1, SDL_WINDOW_HIDDEN);
 	if (!this->gWindow)
 	{
 		std::cerr << "can't create window. SDL error: " << SDL_GetError() << std::endl;
@@ -53,6 +53,21 @@ bool WindowManager::Init(bool showFileMenu)
 		std::cerr << "Can't create renderer. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
+
+	//TODO
+	SDL_AudioSpec wantedAudio;
+	SDL_memset(&wantedAudio, 0, sizeof(wantedAudio));
+	// wantedAudio.freq = 44100;
+	// wantedAudio.format = AUDIO_F32;
+	// wantedAudio.channels = 2;
+	// wantedAudio.samples = 4096;
+	// wantedAudio.callback = audioPlaybackCallback;
+
+	SDL_AudioSpec obtainedAudio;
+
+	SDL_AudioDeviceID audioId = SDL_OpenAudioDevice(nullptr, 0, &wantedAudio, &obtainedAudio, 0);
+	bool pause_on = false;
+	SDL_PauseAudioDevice(audioId, pause_on);
 
 	//create windows
 	this->mainWindow = std::make_unique<TextureWindow>(this->gRenderer, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);

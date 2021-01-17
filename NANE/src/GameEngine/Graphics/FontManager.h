@@ -1,5 +1,4 @@
-#ifndef FONT_MANAGER
-#define FONT_MANAGER
+#pragma once
 
 #include <memory>
 #include <string>
@@ -36,6 +35,3 @@ class FontManager
 
     TTF_Font * LoadFont(FontType type = FontType::defaultFont);
 };
-
-
-#endif

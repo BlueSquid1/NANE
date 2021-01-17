@@ -1,5 +1,4 @@
-#ifndef PPU
-#define PPU
+#pragma once
 
 #include <memory> //std::unique_ptr
 
@@ -176,5 +175,3 @@ class Ppu
     const long long int& GetTotalFrameCount() const;
     std::shared_ptr<Dma> GetDma();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef IMEMORY_REPEATER
-#define IMEMORY_REPEATER
+#pragma once
 
 #include "IMemoryRW.h"
 #include "NES/Memory/BitUtil.h"
@@ -14,5 +13,3 @@ class IMemoryRepeater : public IMemoryRW
     IMemoryRepeater(dword startAddress, dword endAddress, dword dataLen);
     dword LowerOffset(dword origionalAddress) const;
 };
-
-#endif

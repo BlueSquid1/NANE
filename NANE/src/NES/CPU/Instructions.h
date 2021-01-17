@@ -1,5 +1,4 @@
-#ifndef INSTRUCTIONS
-#define INSTRUCTIONS
+#pragma once
 
 #include "NES/Memory/BitUtil.h"
 #include <string>
@@ -347,6 +346,3 @@ O( 0xFF                      ),
 };
 
 } // Instructions
-
-
-#endif

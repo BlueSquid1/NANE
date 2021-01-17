@@ -1,5 +1,4 @@
-#ifndef NES
-#define NES
+#pragma once
 
 #include "CPU/Cpu.h"
 #include "PPU/Ppu.h"
@@ -47,4 +46,3 @@ class Nes
     bool Step(bool verbose);
     std::shared_ptr<Dma> GetDma();
 };
-#endif

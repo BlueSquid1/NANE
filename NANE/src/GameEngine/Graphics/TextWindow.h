@@ -1,5 +1,4 @@
-#ifndef TEXT_WINDOW
-#define TEXT_WINDOW
+#pragma once
 
 #include <memory>
 #include <SDL.h>
@@ -28,5 +27,3 @@ class TextWindow : public IWindow
 
     void Display(const std::string& screenText, SDL_Color * overrideBackgroundColour = NULL);
 };
-
-#endif

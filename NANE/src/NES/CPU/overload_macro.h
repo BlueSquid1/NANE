@@ -1,5 +1,4 @@
-#ifndef OVERLOAD_MACRO
-#define OVERLOAD_MACRO
+#pragma once
 
 // Augmented from
 // https://stackoverflow.com/a/26408195
@@ -38,5 +37,3 @@
 // #define FOO2(a)     a
 // #define FOO2(a,b)   a + b
 // #define FOO3(a,b,c) a + b + c
-
-#endif

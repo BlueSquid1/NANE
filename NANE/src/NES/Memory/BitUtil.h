@@ -1,5 +1,4 @@
-#ifndef BINARY_UTIL
-#define BINARY_UTIL
+#pragma once
 
 #include <vector> //std::vector
 #include <exception> //exceptions
@@ -75,5 +74,3 @@ class BitUtil
      */
     static byte FlipByte(byte value);
 };
-
-#endif

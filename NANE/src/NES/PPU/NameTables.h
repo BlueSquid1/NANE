@@ -1,5 +1,4 @@
-#ifndef NAME_TABLES
-#define NAME_TABLES
+#pragma once
 
 #include "PatternTables.h"
 #include "NES/Memory/BitUtil.h"
@@ -113,5 +112,3 @@ class NameTables : public MemoryRepeaterArray
     //dissassemble commands
     std::unique_ptr<Matrix<patternIndex>> GenerateFirstNameTable();
 };
-
-#endif

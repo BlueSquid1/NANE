@@ -1,5 +1,4 @@
-#ifndef GRAPHICS_ENGINE
-#define GRAPHICS_ENGINE
+#pragma once
 
 #include <iostream>
 #include <SDL.h>
@@ -76,5 +75,3 @@ class WindowManager
     //getters/setters
     std::unique_ptr<FileNavigator>& GetFileNavigator();
 };
-
-#endif

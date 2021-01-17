@@ -1,5 +1,4 @@
-#ifndef CONTROLLER_MANAGER
-#define CONTROLLER_MANAGER
+#pragma once
 
 #include <vector>
 
@@ -21,5 +20,3 @@ class ControllerManager : public IMemoryRW
     byte Read(dword address) override;
     byte Seek(dword address) const override;
 };
-
-#endif

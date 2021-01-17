@@ -1,5 +1,4 @@
-#ifndef PPU_REGISTERS
-#define PPU_REGISTERS
+#pragma once
 
 #include "NameTables.h"
 #include "OamPrimary.h"
@@ -165,5 +164,3 @@ class PpuRegisters : public MemoryRepeaterArray
     dword GetVRamAddress() const;
     void IncrementVRamAddress();
  };
-
-#endif

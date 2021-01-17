@@ -1,5 +1,4 @@
-#ifndef TEXTURE_WINDOW
-#define TEXTURE_WINDOW
+#pragma once
 
 #include "IWindow.h"
 #include "NES/Memory/Matrix.h"
@@ -17,5 +16,3 @@ class TextureWindow : public IWindow
     ~TextureWindow() override;
     void Display(const Matrix<rawColour>& pixelData);
 };
-
-#endif

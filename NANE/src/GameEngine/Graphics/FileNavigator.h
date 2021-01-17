@@ -1,5 +1,4 @@
-#ifndef FILE_NAVIGATOR
-#define FILE_NAVIGATOR
+#pragma once
 
 #include <vector>
 #include <string>
@@ -32,5 +31,3 @@ class FileNavigator : public IWindow
 
     std::string GetSelectedFile();
 };
-
-#endif

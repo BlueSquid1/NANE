@@ -1,5 +1,4 @@
-#ifndef INES
-#define INES
+#pragma once
 
 #include <iostream>
 
@@ -71,5 +70,3 @@ class INes
     std::shared_ptr<std::vector<byte>> GetChrRomData();
     void SetChrRomData(std::shared_ptr<std::vector<byte>> chrRomData);
 };
-
-#endif

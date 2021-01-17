@@ -1,5 +1,4 @@
-#ifndef COLOUR_PALETTES
-#define COLOUR_PALETTES
+#pragma once
 
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
@@ -55,5 +54,3 @@ class ColourPalettes : public MemoryRepeaterArray
     // Disassemble methods
     std::unique_ptr<Matrix<rawColour>> GenerateColourPalettes(byte disassemblePalette);
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef CARTRIDGE_LOADER
-#define CARTRIDGE_LOADER
+#pragma once
 
 #include <iostream> //std::cout
 #include <memory> //unique_ptr
@@ -37,5 +36,3 @@ class CartridgeLoader
 
     std::shared_ptr<ICartridge> LoadCartridge(const std::string & romFilePath);
 };
-
-#endif

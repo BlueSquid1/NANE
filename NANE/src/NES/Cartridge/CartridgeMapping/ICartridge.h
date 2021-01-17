@@ -1,5 +1,4 @@
-#ifndef I_CARTRIDGE
-#define I_CARTRIDGE
+#pragma once
 
 #include <memory>
 
@@ -39,4 +38,3 @@ class ICartridge : public IMemoryRW
     INes::MirrorType GetMirroringType();
     void SetMirroringType(INes::MirrorType mirroringType);
 };
-#endif

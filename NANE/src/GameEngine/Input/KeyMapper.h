@@ -1,5 +1,4 @@
-#ifndef KEY_MAPPER
-#define KEY_MAPPER
+#pragma once
 
 #include <unordered_map>
 #include <SDL.h> //SDL_Event
@@ -23,5 +22,3 @@ class KeyMapper
     public:
     NesController::NesInputs ToNesInput(SDL_Keycode& inputKey);
 };
-
-#endif

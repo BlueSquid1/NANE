@@ -1,5 +1,4 @@
-#ifndef CPU_REGISTERS
-#define CPU_REGISTERS
+#pragma once
 
 #include "NES/Memory/BitUtil.h"
 
@@ -55,5 +54,3 @@ class CpuRegisters
     //constructor
     CpuRegisters();
  };
-
-#endif

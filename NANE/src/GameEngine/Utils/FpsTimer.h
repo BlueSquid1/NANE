@@ -1,5 +1,4 @@
-#ifndef FPS_TIMER
-#define FPS_TIMER
+#pragma once
 
 #include <stdint.h>
 
@@ -16,5 +15,3 @@ class FpsTimer
      */
     unsigned int CalcFps();
 };
-
-#endif

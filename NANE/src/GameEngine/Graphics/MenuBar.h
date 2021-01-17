@@ -1,5 +1,4 @@
-#ifndef MENU_BAR
-#define MENU_BAR
+#pragma once
 
 #include <vector>
 
@@ -26,5 +25,3 @@ class MenuBar : public IWindow
     
     void Display();
 };
-
-#endif

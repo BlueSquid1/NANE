@@ -1,5 +1,4 @@
-#ifndef NES_CONTROLLER
-#define NES_CONTROLLER
+#pragma once
 
 #include <vector>
 
@@ -43,5 +42,3 @@ class NesController : public IMemoryRW
     //getter/setters
     const std::vector<bool>& GetKeyPressed() const;
 };
-
-#endif

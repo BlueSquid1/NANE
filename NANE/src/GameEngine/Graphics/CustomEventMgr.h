@@ -1,5 +1,4 @@
-#ifndef CUSTOM_EVENT_MANAGER
-#define CUSTOM_EVENT_MANAGER
+#pragma once
 
 #include <memory>
 #include <SDL_events.h>
@@ -43,6 +42,3 @@ class CustomEventMgr
     //getters/setters
     Uint32 GetCustomEventType();
 };
-
-
-#endif

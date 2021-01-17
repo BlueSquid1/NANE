@@ -1,5 +1,4 @@
-#ifndef TYPES
-#define TYPES
+#pragma once
 
 #include <cstdint>
 
@@ -30,5 +29,3 @@ union qword_p
     };
     #pragma pack(pop)
 };
-
-#endif

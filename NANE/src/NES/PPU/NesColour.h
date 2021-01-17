@@ -1,5 +1,4 @@
-#ifndef NES_COLOUR
-#define NES_COLOUR
+#pragma once
 
 #include "NES/Memory/Types.h"
 
@@ -27,5 +26,3 @@ class NesColour
     public:
     static rawColour GetRawColour(colourIndex nesColourIndex = 63);
 };
-
-#endif

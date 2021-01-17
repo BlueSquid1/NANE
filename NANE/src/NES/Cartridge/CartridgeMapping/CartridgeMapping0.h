@@ -1,5 +1,4 @@
-#ifndef MAPPING_0
-#define MAPPING_0
+#pragma once
 
 #include <memory> //std::unique_ptr
 
@@ -14,5 +13,3 @@ class CartridgeMapping0 : public ICartridge
 
     bool LoadINes(std::shared_ptr<INes> INesRom) override;
 };
-
-#endif

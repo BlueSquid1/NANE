@@ -1,5 +1,4 @@
-#ifndef NETWORK_LOGGER
-#define NETWORK_LOGGER
+#pragma once
 
 #include <iostream> //std::string std::ostream
 #include <strings.h> //bzero()
@@ -47,5 +46,3 @@ class Logger
      */
     static void Close();
 };
-
-#endif

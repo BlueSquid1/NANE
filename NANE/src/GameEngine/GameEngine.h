@@ -1,5 +1,4 @@
-#ifndef GAME_ENGINE
-#define GAME_ENGINE
+#pragma once
 
 #include "Network/Logger.h"
 #include "Graphics/WindowsManager.h"
@@ -80,5 +79,3 @@ class GameEngine
     bool GetShouldExit();
     void SetDebugPoint(int debugLine);
 };
-
-#endif

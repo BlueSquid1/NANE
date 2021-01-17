@@ -1,5 +1,4 @@
-#ifndef OAM
-#define OAM
+#pragma once
 
 #include "NES/Memory/MemoryRepeaterArray.h"
 
@@ -54,5 +53,3 @@ class OamPrimary : public MemoryRepeaterArray
     //getter/setters
     const OamPrimary::Sprite& GetSprite(int spriteNum) const;
 };
-
-#endif

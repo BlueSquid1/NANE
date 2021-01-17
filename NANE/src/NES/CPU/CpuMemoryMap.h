@@ -1,5 +1,4 @@
-#ifndef CPU_MEMORY_MAP
-#define CPU_MEMORY_MAP
+#pragma once
 
 #include <memory> //std::unique_ptr
 
@@ -27,4 +26,3 @@ class CpuMemoryMap : public IMemoryRW
     //getters and setters
     CpuRegisters& GetRegisters();
 };
-#endif

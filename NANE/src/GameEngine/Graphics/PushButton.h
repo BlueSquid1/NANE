@@ -1,5 +1,4 @@
-#ifndef PUSH_BUTTON
-#define PUSH_BUTTON
+#pragma once
 
 #include <string>
 #include <memory>
@@ -35,5 +34,3 @@ class PushButton : public TextWindow
     bool GetIsHighlighted() const;
     std::string GetDisplayName() const;
 };
-
-#endif

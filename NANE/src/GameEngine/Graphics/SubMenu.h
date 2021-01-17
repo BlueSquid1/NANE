@@ -1,5 +1,4 @@
-#ifndef SUB_MENU
-#define SUB_MENU
+#pragma once
 
 #include <vector>
 #include <string>
@@ -24,5 +23,3 @@ class SubMenu : public PushButton
 
     void Display() override;
 };
-
-#endif

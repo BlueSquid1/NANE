@@ -1,5 +1,4 @@
-#ifndef FILE_SYSTEM
-#define FILE_SYSTEM
+#pragma once
 
 #include <string>
 #include <memory>
@@ -31,5 +30,3 @@ class FileSystem
     std::string GetCurrentFilesystemPath() const;
     void SetCurrentFilesystemPath(const std::string& path);
 };
-
-#endif

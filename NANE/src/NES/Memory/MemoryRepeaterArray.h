@@ -1,5 +1,4 @@
-#ifndef MEMORY_REPEATER_ARRAY
-#define MEMORY_REPEATER_ARRAY
+#pragma once
 
 #include "IMemoryRepeater.h"
 #include "NES/Memory/BitUtil.h"
@@ -19,5 +18,3 @@ class MemoryRepeaterArray : public IMemoryRepeater
     virtual void Write(dword address, byte value) override;
     virtual byte Seek(dword address) const override;
 };
-
-#endif

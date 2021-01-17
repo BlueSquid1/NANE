@@ -1,5 +1,4 @@
-#ifndef DMA
-#define DMA
+#pragma once
 
 #include "NES/CPU/CpuMemoryMap.h"
 #include "NES/PPU/PpuMemoryMap.h"
@@ -71,5 +70,3 @@ class Dma : public IMemoryRW
     byte GetDmaBuffer();
     void SetDmaBuffer(byte value);
 };
-
-#endif

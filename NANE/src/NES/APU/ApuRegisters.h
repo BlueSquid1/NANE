@@ -1,5 +1,4 @@
-#ifndef APU_REGISTERS
-#define APU_REGISTERS
+#pragma once
 
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
@@ -62,5 +61,3 @@ class ApuRegisters: public MemoryRepeaterArray
     //constructor
     ApuRegisters();
  };
-
-#endif

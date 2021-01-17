@@ -1,5 +1,4 @@
-#ifndef PPU_MEMORY_MAP
-#define PPU_MEMORY_MAP
+#pragma once
 
 #include "PpuRegisters.h"
 #include "ColourPalettes.h"
@@ -48,4 +47,3 @@ class PpuMemoryMap : public IMemoryRW
     long long& GetTotalPpuCycles();
     void SetTotalPpuCycles(long long& cycles);
 };
-#endif
