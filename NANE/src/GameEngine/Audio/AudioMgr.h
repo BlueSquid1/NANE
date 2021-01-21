@@ -4,7 +4,12 @@
 
 class AudioMgr
 {
-    public:
+private:
+    static int samplesPerSecond;
+    static float secondsPerSample;
+
+    static float timeElapsed;
+public:
     bool Init();
-    void audioPlaybackCallback( void* userdata, Uint8* stream, int len );
+    static void AudioPlaybackCallback( void* userdata, Uint8* stream, int len );
 };

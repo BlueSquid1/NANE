@@ -1,14 +1,15 @@
 #pragma once
 
+#include <iostream> //std::string
+#include <memory> //std::unique_ptr
+
 #include "Network/Logger.h"
 #include "Graphics/WindowsManager.h"
 #include "NES/Nes.h"
 #include "Utils/FpsTimer.h"
 #include "Input/KeyMapper.h"
 #include "Storage/FileSystem.h"
-
-#include <iostream> //std::string
-#include <memory> //std::unique_ptr
+#include "Audio/AudioMgr.h"
 
 /**
  * Responsible for controlling the logic flow from initialization to the game loop to closing the game.
@@ -22,6 +23,7 @@ class GameEngine
     FpsTimer fpsTimer;
     KeyMapper keyMapper;
     FileSystem romLoader;
+    AudioMgr audioMgr;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;

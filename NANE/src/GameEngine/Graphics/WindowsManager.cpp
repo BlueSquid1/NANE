@@ -28,7 +28,7 @@ bool WindowManager::Init(bool showFileMenu)
 	this->enableMenuBar = showFileMenu;
 	
 	std::cout << "initalizing SDL" << std::endl;
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0)
 	{
 		std::cerr << "can't start SDL. SDL error: " << SDL_GetError() << std::endl;
 		return false;
@@ -53,21 +53,6 @@ bool WindowManager::Init(bool showFileMenu)
 		std::cerr << "Can't create renderer. SDL error: " << SDL_GetError() << std::endl;
 		return false;
 	}
-
-	//TODO
-	SDL_AudioSpec wantedAudio;
-	SDL_memset(&wantedAudio, 0, sizeof(wantedAudio));
-	// wantedAudio.freq = 44100;
-	// wantedAudio.format = AUDIO_F32;
-	// wantedAudio.channels = 2;
-	// wantedAudio.samples = 4096;
-	// wantedAudio.callback = audioPlaybackCallback;
-
-	SDL_AudioSpec obtainedAudio;
-
-	SDL_AudioDeviceID audioId = SDL_OpenAudioDevice(nullptr, 0, &wantedAudio, &obtainedAudio, 0);
-	bool pause_on = false;
-	SDL_PauseAudioDevice(audioId, pause_on);
 
 	//create windows
 	this->mainWindow = std::make_unique<TextureWindow>(this->gRenderer, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);

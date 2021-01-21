@@ -36,6 +36,13 @@ bool GameEngine::Init(const std::string & serverIp)
 		return false;
 	}
 
+	bool isAudioInit = this->audioMgr.Init();
+	if(isAudioInit == false)
+	{
+		std::cerr << "failed to initalize audio manager: " <<  SDL_GetError() << std::endl;
+		return false;
+	}
+
 	return true;
 }
 
