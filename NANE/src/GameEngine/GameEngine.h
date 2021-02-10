@@ -19,11 +19,12 @@ class GameEngine
     private:
     //graphics module
     WindowManager windowsMgr;
-    Nes nesEmulator;
     FpsTimer fpsTimer;
     KeyMapper keyMapper;
     FileSystem romLoader;
     AudioMgr audioMgr;
+
+    Nes nesEmulator;
 
     //when set to true the game will close shortly afterwards
     bool shouldExit = false;
@@ -76,6 +77,8 @@ class GameEngine
      * Closes all game engine modules after the game loop.
      */
     void Close();
+
+    void MainLoop(float* stream, int len);
 
     //getter and setters
     bool GetShouldExit();

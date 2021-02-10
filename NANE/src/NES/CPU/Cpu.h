@@ -20,7 +20,7 @@ class Cpu
 
     std::shared_ptr<Dma> dma;
 
-    int totalClockCycles = 0;
+    long long totalClockCycles = 0;
 
     void UpdateRegsForOverflow(byte oldAValue, byte inputVal);
     void UpdateRegsForOverflowNeg(byte oldAValue, byte inputVal);

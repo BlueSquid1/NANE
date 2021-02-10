@@ -78,7 +78,8 @@
         "filesystem": "cpp",
         "version": "cpp",
         "any": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "queue": "cpp"
     },
     "cmake.configureOnOpen": true
 }

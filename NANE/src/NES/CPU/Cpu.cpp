@@ -46,6 +46,21 @@ bool Cpu::PowerCycle(dword * overridePcAddress)
 
 int Cpu::Step(bool verbose)
 {
+    //CPU doesn't run if DMA is occuring
+    if(this->dma->IsDmaActive())
+    {
+        // move to next cycle
+        return 1;
+    }
+
+    // Non-Maskable interupts take priority over normal execution
+    if(this->dma->GetNmi())
+    {
+        int interruptCycles = this->HandleNmiEvent(verbose);
+        this->dma->SetNmi(false);
+        return interruptCycles;
+    }
+
     //decode instruction
     std::unique_ptr<Instructions::Instruction> decodedInst = this->DecodeInstruction(this->GetRegs().name.PC, false, verbose);
     if(decodedInst == NULL)

@@ -4,11 +4,12 @@
 #include <sstream> //std::stringstream
 #include <iostream>
 
-Nes::Nes()
+Nes::Nes(int audioSamplesPerSecond)
 {
     this->dma = std::make_shared<Dma>();
     this->cpu = std::make_shared<Cpu>(dma);
     this->ppu = std::make_shared<Ppu>(dma);
+    this->apu = std::make_shared<Apu>(audioSamplesPerSecond);
 }
 
 
@@ -84,6 +85,11 @@ bool Nes::PressButton(NesController::NesInputs input, bool isPressed, int contro
 {
     this->dma->GetControllerManager().SetKey(input, isPressed, controller);
     return true;
+}
+
+std::shared_ptr<ThreadSafeQueue<float>> Nes::GetAudio()
+{
+    return this->apu->GetAudio();
 }
 
 const std::unique_ptr<Matrix<rawColour>> Nes::GeneratePatternTables()
@@ -171,33 +177,21 @@ const std::unique_ptr<Matrix<rawColour>> Nes::GenerateControllerState( int contr
 
 bool Nes::Step(bool verbose)
 {
-    int ppuSteps = 0;
-    if(!this->dma->IsDmaActive())
-    {
-        int cpuCycles = this->cpu->Step(verbose);
+    int cpuCycles = this->cpu->Step(verbose);
 
-        //1 CPU step for 3 PPU steps
-        ppuSteps = cpuCycles * 3;
-    }
-    else
+    // run APU for every CPU cycle
+    for(int i = 0; i < cpuCycles; ++i)
     {
-        //CPU skips 1 cpu cycle (= 3 ppu cycles)
-        ppuSteps = 3;
+        this->apu->Step();
     }
 
+    //1 CPU step for 3 PPU steps
+    int ppuSteps = cpuCycles * 3;
+
+    // run PPU 3 times for each CPU cycle
     for(int i = 0; i < ppuSteps; ++i)
     {
         this->ppu->Step();
-
-        //handle non-maskable interrupts
-        if(this->dma->GetNmi())
-        {
-            int interruptCycles = this->cpu->HandleNmiEvent(verbose);
-
-            //interupts take time. run PPU during this time
-            ppuSteps += interruptCycles * 3;
-            this->dma->SetNmi(false);
-        }
 
         // handle DMA transfers
         if(this->dma->IsDmaActive())

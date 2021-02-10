@@ -1,11 +1,15 @@
 #pragma once
 
+#include <memory> //std::unique_ptr
+#include <string> //std::string
+
+#include "Memory/ThreadSafeQueue.h"
+#include "Memory/Matrix.h"
+
 #include "CPU/Cpu.h"
 #include "PPU/Ppu.h"
 #include "Memory/Dma.h"
-
-#include <memory> //std::unique_ptr
-#include <string> //std::string
+#include "APU/Apu.h"
 
 /**
  * assembles a virtual NES
@@ -16,9 +20,10 @@ class Nes
     std::shared_ptr<Dma> dma = std::make_shared<Dma>();
     std::shared_ptr<Cpu> cpu;
     std::shared_ptr<Ppu> ppu;
+    std::shared_ptr<Apu> apu;
 
     public:
-    Nes();
+    Nes(int audioSamplesPerSecond);
 
     /**
      * @return false if failed to load .nes ROM
@@ -35,6 +40,8 @@ class Nes
     const long long int& GetFrameCount() const;
 
     bool PressButton(NesController::NesInputs input, bool isPressed, int controller = 0);
+
+    std::shared_ptr<ThreadSafeQueue<float>> GetAudio();
 
     //dissassmbly methods
     const std::unique_ptr<Matrix<rawColour>> GeneratePatternTables();

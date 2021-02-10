@@ -6,6 +6,7 @@
 #include "Graphics/CustomEventMgr.h"
 
 GameEngine::GameEngine()
+: nesEmulator(audioMgr.GetSamplesPerSecond())
 {
 
 }
@@ -54,6 +55,11 @@ bool GameEngine::LoadMedia( const std::string& romFilePath )
 	}
 
 	if(this->nesEmulator.PowerCycle() == false)
+	{
+		return false;
+	}
+
+	if(this->audioMgr.PlayAudio(this->nesEmulator.GetAudio()) == false)
 	{
 		return false;
 	}
