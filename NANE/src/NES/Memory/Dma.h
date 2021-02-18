@@ -2,7 +2,7 @@
 
 #include "NES/CPU/CpuMemoryMap.h"
 #include "NES/PPU/PpuMemoryMap.h"
-#include "NES/APU/ApuRegisters.h"
+#include "NES/APU/ApuMemoryMap.h"
 #include "NES/Cartridge/CartridgeMapping/ICartridge.h"
 #include "NES/Controller/ControllerManager.h"
 
@@ -21,7 +21,7 @@ class Dma : public IMemoryRW
     private:
     CpuMemoryMap cpuMemory;
     PpuMemoryMap ppuMemory;
-    ApuRegisters apuRegisters;
+    ApuMemoryMap apuMemory;
     ControllerManager ControllerMgr;
     std::shared_ptr<ICartridge> cartridge = NULL;
     bool nmiActive = false;
@@ -56,7 +56,7 @@ class Dma : public IMemoryRW
     const std::shared_ptr<ICartridge>& GetCartridge() const;
     CpuMemoryMap& GetCpuMemory();
     PpuMemoryMap& GetPpuMemory();
-    ApuRegisters& GetApuRegisters();
+    ApuMemoryMap& GetApuMemory();
     ControllerManager& GetControllerManager();
     std::shared_ptr<ICartridge>& GetCartridge();
     bool GetNmi();

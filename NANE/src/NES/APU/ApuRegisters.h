@@ -3,6 +3,8 @@
 #include "NES/Memory/BitUtil.h"
 #include "NES/Memory/MemoryRepeaterArray.h"
 
+#include "SquareWave.h"
+
 /**
  * APU registers. 
  * Plain-Old Data struct is used so can guarantee that fields of the struct will be laid out in memory in the order they are declared in union.
@@ -15,22 +17,20 @@ class ApuRegisters: public MemoryRepeaterArray
     #pragma pack(push, 1)
     struct RegStruct
     {
-        struct Pulse
+        struct SquareWaveStruct
         {
             byte VOL;
             byte SWEEP;
             byte LO;
             byte HI;
-        };
-        Pulse SQ1;
-        Pulse SQ2;
+        } SQ1, SQ2;
         struct
         {
             byte LINEAR;
             byte _;
             byte LO;
             byte HI;
-        }TRI;
+        } TRI;
         struct
         {
             byte VOL;
@@ -45,18 +45,29 @@ class ApuRegisters: public MemoryRepeaterArray
             byte START;
             byte LEN;
         }DMC;
-        byte OAMDMA;
-        byte SND_CHN;
+        byte _0; //0x4014
+        byte SND_CHN; //4015
+        byte _1; //0x4016
+        byte FRAME_COUNTER; //0x4017
     };
     #pragma pack(pop)
+
+    struct VirtualRegisters
+    {
+        SquareWave sq1;
+        SquareWave sq2;
+    };
+
+    static const int rawLen = 24; //24 bytes worth of registers
 
     //anonymous union
     union
     {
         RegStruct name;
-        byte raw[22];
+        byte raw[rawLen];
     };
-    static const int rawLen = 22;
+
+    VirtualRegisters vRegs;
 
     //constructor
     ApuRegisters();

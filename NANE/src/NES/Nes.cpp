@@ -7,9 +7,9 @@
 Nes::Nes(int audioSamplesPerSecond)
 {
     this->dma = std::make_shared<Dma>();
-    this->cpu = std::make_shared<Cpu>(dma);
-    this->ppu = std::make_shared<Ppu>(dma);
-    this->apu = std::make_shared<Apu>(audioSamplesPerSecond);
+    this->cpu = std::make_shared<Cpu>(this->dma);
+    this->ppu = std::make_shared<Ppu>(this->dma);
+    this->apu = std::make_shared<Apu>(audioSamplesPerSecond, this->dma);
 }
 
 

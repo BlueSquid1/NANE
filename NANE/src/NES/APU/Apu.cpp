@@ -2,32 +2,37 @@
 
 #include "Apu.h"
 
-//TODO
-#define PI 3.14159265
-
-Apu::Apu(int samplesPerSecond)
+Apu::Apu(int samplesPerSecond, std::shared_ptr<Dma> dma)
 {
-    this->samplesPerSecond = samplesPerSecond;
-    this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->samplesPerSecond);
+    this->dma = dma;
+    this->audioSamplesPerSecond = samplesPerSecond;
+    this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond);
+}
+
+ApuRegisters& Apu::GetRegs()
+{
+    return this->dma->GetApuMemory().GetApuRegisters();
 }
 
 void Apu::Step()
 {
-    //this method is called 1786800 per second
-    int cyclesPerSample = this->clockRate / this->samplesPerSecond;
-    if(this->totalClockCycles % cyclesPerSample == 0)
+    //step through channels
+    const long long& totalClockCycles = this->dma->GetApuMemory().GetTotalApuCycles();
+    if(totalClockCycles % 2 == 0)
     {
-        //for each sample
-        float frequency = 300; //Hz
+        //Pulse channels run at half the CPU clock speed
+        this->GetRegs().vRegs.sq1.Step();
+    }
 
-        float sample = 0.3 * sin(frequency * timeElapsed * 2 * PI);
-
-        double secondsPerSample = 1.0 / this->samplesPerSecond;
-        timeElapsed += secondsPerSample;
+    int cyclesPerSample = this->clockRateHz / this->audioSamplesPerSecond;
+    if(totalClockCycles % cyclesPerSample == 0)
+    {
+        // time to generate an output sample
+        float sample = this->GetRegs().vRegs.sq1.OutputSample();
 
         this->audioStream->Push(sample);
     }
-    ++totalClockCycles;
+    this->dma->GetApuMemory().SetTotalApuCycles(totalClockCycles + 1);
 }
 
 std::shared_ptr<ThreadSafeQueue<float>> Apu::GetAudio()

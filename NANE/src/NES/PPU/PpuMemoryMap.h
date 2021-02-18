@@ -17,8 +17,6 @@ class PpuMemoryMap : public IMemoryRW
     ColourPalettes palettesMem; //colours
     OamPrimary primaryOamMem; //all active sprites
     OamSecondary secondaryOamMem; //just active sprites on current scanline
-    
-    //std::vector<byte> secOam; //32 bytes (8 sprites to render on scanline)
 
     //these are here because this state is useful when restoring the PPU to a previous save
     int scanlineNum = -1; //the current scanline being rendered between -1 and 260
@@ -28,8 +26,8 @@ class PpuMemoryMap : public IMemoryRW
     public:
     //constructor
     PpuMemoryMap();
-    virtual byte Read(dword address) override;
-    virtual void Write(dword address, byte value) override;
+    byte Read(dword address) override;
+    void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
     dword GetVRamAddress(bool forWriting) const;
 
@@ -44,6 +42,6 @@ class PpuMemoryMap : public IMemoryRW
     int GetScanLineNum() const;
     void SetScanCycleNum(int scanCycleNum);
     int GetScanCycleNum() const;
-    long long& GetTotalPpuCycles();
-    void SetTotalPpuCycles(long long& cycles);
+    const long long& GetTotalPpuCycles() const;
+    void SetTotalPpuCycles(const long long& cycles);
 };

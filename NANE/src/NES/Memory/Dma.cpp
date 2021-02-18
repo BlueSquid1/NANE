@@ -40,9 +40,9 @@ byte Dma::Read(dword address)
     {
         return this->ppuMemory.GetRegisters().Read(address);
     }
-    else if(this->apuRegisters.Contains(address))
+    else if(this->apuMemory.Contains(address))
     {
-        return this->apuRegisters.Read(address);
+        return this->apuMemory.Read(address);
     }
     else if(this->cpuMemory.Contains(address))
     {
@@ -94,17 +94,17 @@ void Dma::Write(dword address, byte value)
         }
     }
 
-    if(this->ControllerMgr.Contains(address))
-    {
-        return this->ControllerMgr.Write(address, value);
-    }
-    else if(this->ppuMemory.GetRegisters().Contains(address))
+    if(this->ppuMemory.GetRegisters().Contains(address))
     {
         this->ppuMemory.GetRegisters().Write(address, value);
     }
-    else if(this->apuRegisters.Contains(address))
+    else if(this->apuMemory.Contains(address))
     {
-        this->apuRegisters.Write(address, value);
+        this->apuMemory.Write(address, value);
+    }
+    else if(this->ControllerMgr.Contains(address)) // must be after apu registers write
+    {
+        return this->ControllerMgr.Write(address, value);
     }
     else if(this->cpuMemory.Contains(address))
     {
@@ -130,9 +130,9 @@ byte Dma::Seek(dword address) const
     {
         return this->ppuMemory.GetRegisters().Seek(address);
     }
-    else if(this->apuRegisters.Contains(address))
+    else if(this->apuMemory.Contains(address))
     {
-        return this->apuRegisters.Seek(address);
+        return this->apuMemory.Seek(address);
     }
     else if(this->cpuMemory.Contains(address))
     {
@@ -242,9 +242,9 @@ PpuMemoryMap& Dma::GetPpuMemory()
     return this->ppuMemory;
 }
 
-ApuRegisters& Dma::GetApuRegisters()
+ApuMemoryMap& Dma::GetApuMemory()
 {
-    return this->apuRegisters;
+    return this->apuMemory;
 }
 
 ControllerManager& Dma::GetControllerManager()

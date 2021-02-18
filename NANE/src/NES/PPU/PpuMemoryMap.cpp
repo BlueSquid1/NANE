@@ -126,7 +126,7 @@ OamSecondary& PpuMemoryMap::GetSecondaryOam()
     return this->secondaryOamMem;
 }
 
-long long& PpuMemoryMap::GetTotalPpuCycles()
+const long long& PpuMemoryMap::GetTotalPpuCycles() const
 {
     return this->totalPpuCycles;
 }
@@ -147,7 +147,7 @@ dword PpuMemoryMap::GetVRamAddress(bool forWriting) const
     return this->GetRegisters().GetVRamAddress();
 }
 
-void PpuMemoryMap::SetTotalPpuCycles(long long& cycles)
+void PpuMemoryMap::SetTotalPpuCycles(const long long& cycles)
 {
     this->totalPpuCycles = cycles;
 }

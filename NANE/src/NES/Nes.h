@@ -17,7 +17,7 @@
 class Nes
 {
     private:
-    std::shared_ptr<Dma> dma = std::make_shared<Dma>();
+    std::shared_ptr<Dma> dma;
     std::shared_ptr<Cpu> cpu;
     std::shared_ptr<Ppu> ppu;
     std::shared_ptr<Apu> apu;
