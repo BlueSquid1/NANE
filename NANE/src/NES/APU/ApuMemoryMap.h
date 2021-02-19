@@ -4,11 +4,14 @@
 #include "NES/Memory/IMemoryRW.h"
 
 #include "ApuRegisters.h"
+#include "SquareWave.h"
 
 class ApuMemoryMap : public IMemoryRW
 {
     private:
     ApuRegisters apuRegMem;
+
+    SquareWave sq1;
 
 
     long long totalApuCycles = 0;
@@ -24,5 +27,6 @@ class ApuMemoryMap : public IMemoryRW
     //getters and setters
     const long long& GetTotalApuCycles() const;
     void SetTotalApuCycles(const long long& value);
-    ApuRegisters& GetApuRegisters();
+    ApuRegisters& GetRegisters();
+    SquareWave& GetSquareWave1();
 };

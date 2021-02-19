@@ -8,7 +8,6 @@ namespace
 ApuMemoryMap::ApuMemoryMap()
 : IMemoryRW(0x4000, 0x4017)
 {
-    
 }
 
 byte ApuMemoryMap::Read(dword address)
@@ -19,6 +18,28 @@ byte ApuMemoryMap::Read(dword address)
 void ApuMemoryMap::Write(dword address, byte value)
 {
     this->apuRegMem.Write(address, value);
+
+    switch(address)
+    {
+        case ApuRegisters::ApuAddresses::SQ1_VOL_ADDR:
+        {
+            this->sq1.SetDutyCycle(this->apuRegMem.name.SQ1.dutyNum);
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ1_LO_ADDR:
+        {
+            dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
+            this->sq1.SetPeriod(period);
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ1_HI_ADDR:
+        {
+            dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
+            this->sq1.SetPeriod(period);
+            this->sq1.SetDutyCycle(0);
+            break;
+        }
+    }
 }
 
 byte ApuMemoryMap::Seek(dword address) const
@@ -45,7 +66,12 @@ void ApuMemoryMap::SetTotalApuCycles(const long long& value)
     this->totalApuCycles = value;
 }
 
-ApuRegisters& ApuMemoryMap::GetApuRegisters()
+ApuRegisters& ApuMemoryMap::GetRegisters()
 {
     return this->apuRegMem;
+}
+
+SquareWave& ApuMemoryMap::GetSquareWave1()
+{
+    return this->sq1;
 }
