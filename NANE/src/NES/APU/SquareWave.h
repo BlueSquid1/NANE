@@ -8,6 +8,7 @@
 class SquareWave
 {
     private:
+    bool enabled = false;
     int harmonics = 20;
 
     float frequency = 0.0;
@@ -19,4 +20,5 @@ class SquareWave
     //getters/setters
     void SetFreqFromPeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
+    void SetEnabled(bool isEnabled);
 };

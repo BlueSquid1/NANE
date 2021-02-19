@@ -15,6 +15,11 @@ namespace
 
 float SquareWave::OutputSample(float elapsedTime)
 {
+    if(this->enabled == false)
+    {
+        return 0.0f;
+    }
+    
     double a = 0;
     double b = 0;
     double p = this->dutyCycle * 2.0 * M_PI;
@@ -44,4 +49,9 @@ void SquareWave::SetFreqFromPeriod(dword period)
 void SquareWave::SetDutyCycle(int dutyCycleNum)
 {
     this->dutyCycle = DUTY_CYCLE_TABLE.at(dutyCycleNum);
+}
+
+void SquareWave::SetEnabled(bool isEnabled)
+{
+    this->enabled = isEnabled;
 }

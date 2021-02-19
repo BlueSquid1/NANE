@@ -16,7 +16,8 @@ class ApuRegisters: public MemoryRepeaterArray
     {
         SQ1_VOL_ADDR = 0x4000,
         SQ1_LO_ADDR = 0x4002,
-        SQ1_HI_ADDR = 0x4003
+        SQ1_HI_ADDR = 0x4003,
+        SND_CHN_ADDR = 0x4015
     };
 
     #pragma pack(push, 1)
@@ -30,9 +31,9 @@ class ApuRegisters: public MemoryRepeaterArray
                 struct
                 {
                     byte dutyNum : 2;
-                bit lengthCounterHault : 1;
-                bit constantVolume : 1;
-                byte volume : 4;
+                    bit lengthCounterHault : 1;
+                    bit constantVolume : 1;
+                    byte volume : 4;
                 };
             };
             byte SWEEP;
@@ -61,7 +62,21 @@ class ApuRegisters: public MemoryRepeaterArray
             byte LEN;
         }DMC;
         byte _0; //0x4014
-        byte SND_CHN; //4015
+        union
+        {
+            byte SND_CHN; //0x4015
+            struct
+            {
+                bit pulse1 : 1;
+                bit pulse2 : 1;
+                bit triangle : 1;
+                bit noise : 1;
+                bit dmc : 1;
+                bit _ : 1;
+                bit frame_irq : 1;
+                bit dmc_irq : 1;
+            }enableStatus; //0x4015
+        };
         byte _1; //0x4016
         byte FRAME_COUNTER; //0x4017
     };

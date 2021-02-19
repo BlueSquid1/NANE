@@ -39,6 +39,11 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq1.SetDutyCycle(0);
             break;
         }
+        case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
+        {
+            this->sq1.SetEnabled(this->apuRegMem.name.enableStatus.pulse1);
+            break;
+        }
     }
 }
 
