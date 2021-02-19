@@ -30,4 +30,9 @@ class Apu
     void Step();
 
     std::shared_ptr<ThreadSafeQueue<float>> GetAudio();
+
+    /**
+     * Calculates the time in seconds from audio cycles 
+     */
+    float CalRealTimeSec();
 };

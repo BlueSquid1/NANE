@@ -29,13 +29,13 @@ void ApuMemoryMap::Write(dword address, byte value)
         case ApuRegisters::ApuAddresses::SQ1_LO_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
-            this->sq1.SetPeriod(period);
+            this->sq1.SetFreqFromPeriod(period);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_HI_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
-            this->sq1.SetPeriod(period);
+            this->sq1.SetFreqFromPeriod(period);
             this->sq1.SetDutyCycle(0);
             break;
         }

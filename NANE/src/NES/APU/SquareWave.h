@@ -5,25 +5,18 @@
 
 #include "NES/Memory/BitUtil.h"
 
-#include "ApuRegisters.h"
-
 class SquareWave
 {
     private:
-    double period = 0;
+    int harmonics = 20;
 
-    //internal counter for when to shift duty cycle
-    dword cycleCounter = 0;
-
-    byte curDutyCycle;
+    float frequency = 0.0;
+    float dutyCycle = 0.0;
 
     public:
-    SquareWave();
-
-    void Step();
-    float OutputSample();
+    float OutputSample(float elapsedTime);
 
     //getters/setters
-    void SetPeriod(dword period);
+    void SetFreqFromPeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
 };

@@ -1,45 +1,47 @@
+#include <math.h>
+
 #include "SquareWave.h"
 
 namespace
 {
-    std::vector<byte> DUTY_CYCLE_TABLE = 
+    std::vector<float> DUTY_CYCLE_TABLE = 
     {
-        0x40, // 0 1 0 0 0 0 0 0
-        0x60, // 0 1 1 0 0 0 0 0
-        0x78, // 0 1 1 1 1 0 0 0
-        0x9F  // 1 0 0 1 1 1 1 1
+        0.125,
+        0.250,
+        0.500,
+        0.750
     };
 }
 
-SquareWave::SquareWave()
+float SquareWave::OutputSample(float elapsedTime)
 {
-    this->curDutyCycle = DUTY_CYCLE_TABLE[0];
-}
+    double a = 0;
+    double b = 0;
+    double p = this->dutyCycle * 2.0 * M_PI;
 
-void SquareWave::Step()
-{
-    if(this->cycleCounter == 0)
+    auto approxsin = [](float t)
     {
-        //rotate right
-        curDutyCycle = (curDutyCycle >> 1) | ((curDutyCycle & 0x01) << 7);
+        float j = t * 0.15915;
+        j = j - (int)j;
+        return 20.785 * j * (j - 0.5) * (j - 1.0f);
+    };
 
-        this->cycleCounter = period;
+    for (double n = 1; n < harmonics; n++)
+    {
+        double c = n * frequency * 2.0 * M_PI * elapsedTime;
+        a += -approxsin(c) / n;
+        b += -approxsin(c - p * n) / n;
     }
 
-    this->cycleCounter--;
+    return (2.0 / M_PI) * (a - b);
 }
 
-float SquareWave::OutputSample()
+void SquareWave::SetFreqFromPeriod(dword period)
 {
-    return BitUtil::GetBits(curDutyCycle, 0);
-}
-
-void SquareWave::SetPeriod(dword period)
-{
-    this->period = period;
+    this->frequency = 1789773.0f / (16.0f * (float)(period + 1));
 }
 
 void SquareWave::SetDutyCycle(int dutyCycleNum)
 {
-    this->curDutyCycle = DUTY_CYCLE_TABLE.at(dutyCycleNum);
+    this->dutyCycle = DUTY_CYCLE_TABLE.at(dutyCycleNum);
 }
