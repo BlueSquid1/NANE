@@ -62,7 +62,7 @@ class ThreadSafeQueue
             if(overflowAmount > 0)
             {
                 std::cerr << "ThreadSafeQueue has overflowed. Discarding: " << overflowAmount << " records" << std::endl;
-                this->RemoveOldestRecords(overflowAmount);
+                this->RemoveOldestRecords(this->maxSize);
             }
         }
         this->queue.push(value);

@@ -6,7 +6,7 @@ Apu::Apu(int samplesPerSecond, std::shared_ptr<Dma> dma)
 {
     this->dma = dma;
     this->audioSamplesPerSecond = samplesPerSecond;
-    this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond);
+    this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond/ 5);
 }
 
 void Apu::Step()
@@ -16,14 +16,13 @@ void Apu::Step()
     if(totalClockCycles % 2 == 0)
     {
         //APU runs at half the CPU clock speed
-        //TODO
+        this->dma->GetApuMemory().GetSquareWave1().Clock();
     }
 
-    int cyclesPerSample = this->clockRateHz / this->audioSamplesPerSecond;
+    int cyclesPerSample = this->dma->GetApuMemory().GetCpuClockRateHz() / this->audioSamplesPerSecond;
     if(totalClockCycles % cyclesPerSample == 0)
     {
-        // time to generate an output sample
-        float sample = this->dma->GetApuMemory().GetSquareWave1().OutputSample(this->CalRealTimeSec());
+        float sample = this->dma->GetApuMemory().GetSquareWave1().OutputSample();
 
         this->audioStream->Push(sample);
     }
@@ -35,10 +34,4 @@ void Apu::Step()
 std::shared_ptr<ThreadSafeQueue<float>> Apu::GetAudio()
 {
     return this->audioStream;
-}
-
-float Apu::CalRealTimeSec()
-{
-    float secondsPerApuCycle = 1.0f/this->clockRateHz;
-    return secondsPerApuCycle * this->dma->GetApuMemory().GetTotalApuCycles();
 }

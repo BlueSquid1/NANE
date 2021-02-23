@@ -6,7 +6,8 @@ namespace
 }
 
 ApuMemoryMap::ApuMemoryMap()
-: IMemoryRW(0x4000, 0x4017)
+: IMemoryRW(0x4000, 0x4017),
+  sq1(cpuClockRateHz)
 {
 }
 
@@ -59,6 +60,11 @@ bool ApuMemoryMap::Contains(dword address) const
         return false;
     }
     return IMemoryRW::Contains(address);
+}
+
+int ApuMemoryMap::GetCpuClockRateHz()
+{
+    return this->cpuClockRateHz;
 }
 
 const long long& ApuMemoryMap::GetTotalApuCycles() const

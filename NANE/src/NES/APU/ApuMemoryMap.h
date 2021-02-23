@@ -9,10 +9,15 @@
 class ApuMemoryMap : public IMemoryRW
 {
     private:
+
+    //TODO 
+    //1786800
+    //1789773
+    const int cpuClockRateHz = 1786800;
+
     ApuRegisters apuRegMem;
 
     SquareWave sq1;
-
 
     long long totalApuCycles = 0;
 
@@ -25,6 +30,7 @@ class ApuMemoryMap : public IMemoryRW
     bool Contains(dword address) const override;
 
     //getters and setters
+    int GetCpuClockRateHz();
     const long long& GetTotalApuCycles() const;
     void SetTotalApuCycles(const long long& value);
     ApuRegisters& GetRegisters();

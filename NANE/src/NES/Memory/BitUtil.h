@@ -73,4 +73,6 @@ class BitUtil
      * @return the value flipped
      */
     static byte FlipByte(byte value);
+
+    static float approxsin(float t);
 };

@@ -10,11 +10,6 @@
 class Apu
 {
     private:
-    //TODO 
-    //1786800
-    //1789773
-    const int clockRateHz = 1786800; //how many times per second the Step() method is called
-
     //how many audio samples need to be produced per second for the game engine speaker
     int audioSamplesPerSecond;
 
@@ -34,5 +29,5 @@ class Apu
     /**
      * Calculates the time in seconds from audio cycles 
      */
-    float CalRealTimeSec();
+    double CalRealTimeSec();
 };

@@ -8,6 +8,10 @@
 class SquareWave
 {
     private:
+    double secondsPerApuCycle;
+
+    double elapsedTimeSec = 0.0;
+
     bool enabled = false;
     int harmonics = 20;
 
@@ -15,7 +19,9 @@ class SquareWave
     float dutyCycle = 0.0;
 
     public:
-    float OutputSample(float elapsedTime);
+    SquareWave(int cpuClockRateHz);
+    void Clock();
+    float OutputSample();
 
     //getters/setters
     void SetFreqFromPeriod(dword period);

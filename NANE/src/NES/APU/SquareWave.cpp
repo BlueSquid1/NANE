@@ -13,32 +13,60 @@ namespace
     };
 }
 
-float SquareWave::OutputSample(float elapsedTime)
+SquareWave::SquareWave(int cpuClockRateHz)
+{
+    this->secondsPerApuCycle = 2.0 / cpuClockRateHz;
+}
+
+void SquareWave::Clock()
+{
+    this->elapsedTimeSec += this->secondsPerApuCycle;
+}
+
+float SquareWave::OutputSample()
 {
     if(this->enabled == false)
     {
         return 0.0f;
     }
-    
-    double a = 0;
-    double b = 0;
-    double p = this->dutyCycle * 2.0 * M_PI;
 
-    auto approxsin = [](float t)
-    {
-        float j = t * 0.15915;
-        j = j - (int)j;
-        return 20.785 * j * (j - 0.5) * (j - 1.0f);
-    };
+    /**
+     * Implement Fourier series for a square wave:
+     * 
+     *                harmonics
+     *                 ------
+     *                  \
+     * a(elapsedTime) =  \   sin( elapsedTime * frequency * 2 * pi * n ) / n )
+     *                   /   
+     *                  /    
+     *                 ------
+     *                  n = 1
+     * 
+     *                harmonics
+     *                 ------
+     *                  \
+     * b(elapsedTime) =  \   sin( (elapsedTime * frequency - phase) * 2 * pi * n ) / n )
+     *                   /   
+     *                  /    
+     *                 ------
+     *                  n = 1
+     * 
+     * square wave(elapsedTime) = a - b;
+     * 
+     */
+    float a = 0;
+    float b = 0;
+    float phase = this->dutyCycle * 2.0 * M_PI;
 
-    for (double n = 1; n < harmonics; n++)
+    for (int n = 1; n < harmonics+1; n++)
     {
-        double c = n * frequency * 2.0 * M_PI * elapsedTime;
-        a += -approxsin(c) / n;
-        b += -approxsin(c - p * n) / n;
+        double c = n * frequency * 2.0 * M_PI * this->elapsedTimeSec;
+        a += -BitUtil::approxsin(c) / n;
+        b += -BitUtil::approxsin(c - (phase * n)) / n;
     }
 
-    return (2.0 / M_PI) * (a - b);
+    //scale output so it is never above 1 or below -1
+    return (2.0f / M_PI) * (a - b);
 }
 
 void SquareWave::SetFreqFromPeriod(dword period)

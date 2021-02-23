@@ -116,3 +116,10 @@ byte BitUtil::FlipByte(byte value)
 {
     return (bitReverseLookup[value & 0b1111] << 4) | bitReverseLookup[value >> 4];
 }
+
+float BitUtil::approxsin(float t)
+{
+    float j = t * 0.15915;
+    j = j - (int)j;
+    return 20.785 * j * (j - 0.5) * (j - 1.0f);
+}
