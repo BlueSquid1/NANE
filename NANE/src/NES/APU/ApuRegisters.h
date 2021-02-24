@@ -17,6 +17,9 @@ class ApuRegisters: public MemoryRepeaterArray
         SQ1_VOL_ADDR = 0x4000,
         SQ1_LO_ADDR = 0x4002,
         SQ1_HI_ADDR = 0x4003,
+        SQ2_VOL_ADDR = 0x4004,
+        SQ2_LO_ADDR = 0x4006,
+        SQ2_HI_ADDR = 0x4007,
         SND_CHN_ADDR = 0x4015
     };
 

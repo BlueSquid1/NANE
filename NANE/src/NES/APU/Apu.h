@@ -30,4 +30,6 @@ class Apu
      * Calculates the time in seconds from audio cycles 
      */
     double CalRealTimeSec();
+
+    float MixChannels(float sq1, float sq2);
 };

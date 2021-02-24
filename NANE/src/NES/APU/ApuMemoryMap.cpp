@@ -7,7 +7,8 @@ namespace
 
 ApuMemoryMap::ApuMemoryMap()
 : IMemoryRW(0x4000, 0x4017),
-  sq1(cpuClockRateHz)
+  sq1(cpuClockRateHz),
+  sq2(cpuClockRateHz)
 {
 }
 
@@ -40,9 +41,29 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq1.SetDutyCycle(0);
             break;
         }
+
+        case ApuRegisters::ApuAddresses::SQ2_VOL_ADDR:
+        {
+            this->sq2.SetDutyCycle(this->apuRegMem.name.SQ2.dutyNum);
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ2_LO_ADDR:
+        {
+            dword period = (this->apuRegMem.name.SQ2.HI & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
+            this->sq2.SetFreqFromPeriod(period);
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ2_HI_ADDR:
+        {
+            dword period = (this->apuRegMem.name.SQ2.HI & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
+            this->sq2.SetFreqFromPeriod(period);
+            this->sq2.SetDutyCycle(0);
+            break;
+        }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
         {
             this->sq1.SetEnabled(this->apuRegMem.name.enableStatus.pulse1);
+            this->sq2.SetEnabled(this->apuRegMem.name.enableStatus.pulse2);
             break;
         }
     }
@@ -85,4 +106,9 @@ ApuRegisters& ApuMemoryMap::GetRegisters()
 SquareWave& ApuMemoryMap::GetSquareWave1()
 {
     return this->sq1;
+}
+
+SquareWave& ApuMemoryMap::GetSquareWave2()
+{
+    return this->sq2;
 }

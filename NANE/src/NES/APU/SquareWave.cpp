@@ -51,7 +51,7 @@ float SquareWave::OutputSample()
      *                 ------
      *                  n = 1
      * 
-     * square wave(elapsedTime) = a - b;
+     * square wave(elapsedTime) = (4/pi) * (a - b);
      * 
      */
     float a = 0;
@@ -65,8 +65,8 @@ float SquareWave::OutputSample()
         b += -BitUtil::approxsin(c - (phase * n)) / n;
     }
 
-    //scale output so it is never above 1 or below -1
-    return (2.0f / M_PI) * (a - b);
+    //instead of multipling by 4 we will only multiple by 1 and the add 1 so the output is never above 1 or below 0
+    return (1.0f / M_PI) * (a - b) + 1;
 }
 
 void SquareWave::SetFreqFromPeriod(dword period)

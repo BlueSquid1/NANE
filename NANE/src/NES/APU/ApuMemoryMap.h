@@ -18,6 +18,7 @@ class ApuMemoryMap : public IMemoryRW
     ApuRegisters apuRegMem;
 
     SquareWave sq1;
+    SquareWave sq2;
 
     long long totalApuCycles = 0;
 
@@ -35,4 +36,5 @@ class ApuMemoryMap : public IMemoryRW
     void SetTotalApuCycles(const long long& value);
     ApuRegisters& GetRegisters();
     SquareWave& GetSquareWave1();
+    SquareWave& GetSquareWave2();
 };

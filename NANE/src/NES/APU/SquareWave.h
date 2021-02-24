@@ -21,6 +21,7 @@ class SquareWave
     public:
     SquareWave(int cpuClockRateHz);
     void Clock();
+    //number between 0.0 to 1.0
     float OutputSample();
 
     //getters/setters
