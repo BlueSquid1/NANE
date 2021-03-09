@@ -12,6 +12,20 @@ ApuMemoryMap::ApuMemoryMap()
 {
 }
 
+bool ApuMemoryMap::PowerCycle()
+{
+    bool regReturn = this->GetRegisters().PowerCycle();
+    if(regReturn == false)
+    {
+        return false;
+    }
+
+    this->sq1.SetEnabled(false);
+    this->sq2.SetEnabled(false);
+    //TODO
+    return true;
+}
+
 byte ApuMemoryMap::Read(dword address)
 {
     return this->apuRegMem.Read(address);
@@ -26,44 +40,59 @@ void ApuMemoryMap::Write(dword address, byte value)
         case ApuRegisters::ApuAddresses::SQ1_VOL_ADDR:
         {
             this->sq1.SetDutyCycle(this->apuRegMem.name.SQ1.dutyNum);
+            this->sq1.SetHaltWatchdogTimer(this->apuRegMem.name.SQ1.lengthCounterHault);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_LO_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
+            dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
             this->sq1.SetFreqFromPeriod(period);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_HI_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ1.HI & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
+            dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
             this->sq1.SetFreqFromPeriod(period);
             this->sq1.SetDutyCycle(0);
+            this->sq1.SetWatchdogTimer(this->apuRegMem.name.SQ1.lengthCounter);
             break;
         }
 
         case ApuRegisters::ApuAddresses::SQ2_VOL_ADDR:
         {
             this->sq2.SetDutyCycle(this->apuRegMem.name.SQ2.dutyNum);
+            this->sq2.SetHaltWatchdogTimer(this->apuRegMem.name.SQ1.lengthCounterHault);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_LO_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ2.HI & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
+            dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
             this->sq2.SetFreqFromPeriod(period);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_HI_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ2.HI & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
+            dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
             this->sq2.SetFreqFromPeriod(period);
             this->sq2.SetDutyCycle(0);
+            this->sq2.SetWatchdogTimer(this->apuRegMem.name.SQ2.lengthCounter);
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
         {
-            this->sq1.SetEnabled(this->apuRegMem.name.enableStatus.pulse1);
-            this->sq2.SetEnabled(this->apuRegMem.name.enableStatus.pulse2);
+            bool sq1Enabled = this->apuRegMem.name.enableStatus.pulse1;
+            this->sq1.SetEnabled(sq1Enabled);
+            if(sq1Enabled == false)
+            {
+                this->sq1.SetWatchdogTimer(0);
+            }
+
+            bool sq2Enabled = this->apuRegMem.name.enableStatus.pulse2;
+            this->sq2.SetEnabled(sq2Enabled);
+            if(sq2Enabled == false)
+            {
+                this->sq2.SetWatchdogTimer(0);
+            }
             break;
         }
     }
@@ -86,6 +115,11 @@ bool ApuMemoryMap::Contains(dword address) const
 int ApuMemoryMap::GetCpuClockRateHz()
 {
     return this->cpuClockRateHz;
+}
+
+int ApuMemoryMap::GetFrameCounterRateHz()
+{
+    return this->frameCounterRateHz;
 }
 
 const long long& ApuMemoryMap::GetTotalApuCycles() const

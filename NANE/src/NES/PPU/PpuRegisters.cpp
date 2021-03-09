@@ -10,7 +10,7 @@ PpuRegisters::PpuRegisters()
 
 bool PpuRegisters::PowerCycle()
 {
-    memset(this->raw, 0, sizeof(this->name));
+    memset(this->raw, 0, this->rawLen);
 
     this->vRegs.bckgndDrawing.loopyLatch = false;
     this->vRegs.bckgndDrawing.activeLoopyReg.address.val = 0;

@@ -21,6 +21,12 @@ class Apu
     public:
     Apu(int samplesPerSecond, std::shared_ptr<Dma> dma);
 
+    /**
+     * @brief Trigger a power reset for the APU.
+     * @return true is successfully.
+     */
+    bool PowerCycle();
+
     /* step is called for every CPU clock */
     void Step();
 

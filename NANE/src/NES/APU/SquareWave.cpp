@@ -15,17 +15,25 @@ namespace
 
 SquareWave::SquareWave(int cpuClockRateHz)
 {
-    this->secondsPerApuCycle = 2.0 / cpuClockRateHz;
+    this->secondsPerApuCycle = 1.0 / cpuClockRateHz;
 }
 
-void SquareWave::Clock()
+void SquareWave::ApuClock()
 {
     this->elapsedTimeSec += this->secondsPerApuCycle;
 }
 
+void SquareWave::WatchdogClock()
+{
+    if(this->watchdogTimer > 0 && this->haltWatchdog == false)
+    {
+        --this->watchdogTimer;
+    }
+}
+
 float SquareWave::OutputSample()
 {
-    if(this->enabled == false)
+    if(this->enabled == false || this->watchdogTimer <= 0)
     {
         return 0.0f;
     }
@@ -79,7 +87,17 @@ void SquareWave::SetDutyCycle(int dutyCycleNum)
     this->dutyCycle = DUTY_CYCLE_TABLE.at(dutyCycleNum);
 }
 
+void SquareWave::SetWatchdogTimer(int lengthCounter)
+{
+    this->watchdogTimer = lengthCounter;
+}
+
 void SquareWave::SetEnabled(bool isEnabled)
 {
     this->enabled = isEnabled;
+}
+
+void SquareWave::SetHaltWatchdogTimer(bool haltWatchdog)
+{
+    this->haltWatchdog = haltWatchdog;
 }

@@ -33,15 +33,23 @@ class ApuRegisters: public MemoryRepeaterArray
                 byte VOL;
                 struct
                 {
-                    byte dutyNum : 2;
-                    bit lengthCounterHault : 1;
+                    byte dutyNum : 2; // The duty cycle (ratio of high to low in the square wave) 0) 12.5%, 1) 25%, 2) 50%, 3) 75%
+                    bit lengthCounterHault : 1; //stop decrementing the length counter
                     bit constantVolume : 1;
                     byte volume : 4;
                 };
             };
             byte SWEEP;
-            byte LO;
-            byte HI;
+            byte LO; //period of the square wave (lower 8 bits)
+            union
+            {
+                byte HI;
+                struct
+                {
+                    byte lengthCounter : 5; //length counter. Counts down to zero. When zero is reached then silence the channel.
+                    byte timerHigh: 3; //period of the square wave (upper 3 bits)
+                };
+            };
         } SQ1, SQ2;
         struct
         {
@@ -85,6 +93,14 @@ class ApuRegisters: public MemoryRepeaterArray
     };
     #pragma pack(pop)
 
+    // this registers don't exist on a real NES but are used to simplify different states of the PPU
+    struct VirtualRegisters
+    {
+        //https://wiki.nesdev.com/w/index.php/APU#Frame_Counter_.28.244017.29
+        byte frameCounterSeqNum; //keeps track of the current sequence number for the frame counter
+    };
+
+
     static const int rawLen = 24; //24 bytes worth of registers
 
     //anonymous union
@@ -94,6 +110,13 @@ class ApuRegisters: public MemoryRepeaterArray
         byte raw[rawLen];
     };
 
+    /**
+     * @brief internal APU registers
+     */
+    VirtualRegisters vRegs;
+
     //constructor
     ApuRegisters();
+
+    bool PowerCycle();
  };

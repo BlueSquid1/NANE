@@ -14,6 +14,7 @@ class ApuMemoryMap : public IMemoryRW
     //1786800
     //1789773
     const int cpuClockRateHz = 1786800;
+    const int frameCounterRateHz = 240;
 
     ApuRegisters apuRegMem;
 
@@ -25,6 +26,7 @@ class ApuMemoryMap : public IMemoryRW
     public:
     //constructor
     ApuMemoryMap();
+    bool PowerCycle();
     byte Read(dword address) override;
     void Write(dword address, byte value) override;
     byte Seek(dword address) const override;
@@ -32,6 +34,7 @@ class ApuMemoryMap : public IMemoryRW
 
     //getters and setters
     int GetCpuClockRateHz();
+    int GetFrameCounterRateHz();
     const long long& GetTotalApuCycles() const;
     void SetTotalApuCycles(const long long& value);
     ApuRegisters& GetRegisters();

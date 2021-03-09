@@ -9,6 +9,17 @@ Apu::Apu(int samplesPerSecond, std::shared_ptr<Dma> dma)
     this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond/ 5);
 }
 
+bool Apu::PowerCycle()
+{
+    bool apuMemPowerCycle = this->dma->GetApuMemory().PowerCycle();
+
+    if(apuMemPowerCycle == false)
+    {
+        return false;
+    }
+    return true;
+}
+
 void Apu::Step()
 {
     //step through channels
@@ -16,8 +27,37 @@ void Apu::Step()
     if(totalClockCycles % 2 == 0)
     {
         //APU runs at half the CPU clock speed
-        this->dma->GetApuMemory().GetSquareWave1().Clock();
-        this->dma->GetApuMemory().GetSquareWave2().Clock();
+        this->dma->GetApuMemory().GetSquareWave1().ApuClock();
+        this->dma->GetApuMemory().GetSquareWave2().ApuClock();
+    }
+
+    int cyclesPerFrameCounter = this->dma->GetApuMemory().GetCpuClockRateHz() / this->dma->GetApuMemory().GetFrameCounterRateHz();
+    if(totalClockCycles % cyclesPerFrameCounter == 0)
+    {
+        switch(this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum % 4)
+        {
+            case 0:
+            {
+                break;
+            }
+            case 1:
+            {
+                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+                break;
+            }
+            case 2:
+            {
+                break;
+            }
+            case 3:
+            {
+                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+                break;
+            }
+        }
+        ++this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum;
     }
 
     int cyclesPerSample = this->dma->GetApuMemory().GetCpuClockRateHz() / this->audioSamplesPerSecond;
@@ -42,7 +82,11 @@ std::shared_ptr<ThreadSafeQueue<float>> Apu::GetAudio()
 
 float Apu::MixChannels(float sq1, float sq2)
 {
-    float pulseOutput = 95.88 / ((8128/(sq1 + sq2)) + 100);
+    float pulseOutput = 0.0f;
+    if( !(sq1 == 0.0f && sq2 == 0.0f) )
+    {
+        pulseOutput = 95.88 / ((8128/(sq1 + sq2)) + 100);
+    }
 
     float audioOutput = pulseOutput;
     return audioOutput;

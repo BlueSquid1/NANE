@@ -93,6 +93,7 @@ class PpuRegisters : public MemoryRepeaterArray
         // ppu address type
         dword_p address;
     };
+    #pragma pack(pop)
 
     // this registers don't exist on a real NES but are used to simplify different states of the PPU
     struct VirtualRegisters
@@ -132,7 +133,6 @@ class PpuRegisters : public MemoryRepeaterArray
         byte backgroundFetchTileLsb;
         byte backgroundFetchTileMsb;
     };
-    #pragma pack(pop)
 
     static const int rawLen = 8;
 

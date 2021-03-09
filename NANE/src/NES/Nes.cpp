@@ -47,6 +47,12 @@ bool Nes::PowerCycle()
     {
         return false;
     }
+
+    bool apuRet = this->apu->PowerCycle();
+    if(apuRet == false)
+    {
+        return false;
+    }
     
     return true;
 }
