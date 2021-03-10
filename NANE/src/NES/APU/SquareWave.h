@@ -8,15 +8,20 @@
 class SquareWave
 {
     private:
-    double secondsPerApuCycle;
+    int harmonics = 20;
 
+    double secondsPerApuCycle;
     double elapsedTimeSec = 0.0;
 
     int watchdogTimer = 0;
-    bool enabled = false;
     bool haltWatchdog = false;
 
-    int harmonics = 20;
+    //between 0 to 15
+    bool resetFlag = false;
+    int maxVolumeOrEnvelopePeriod = 0;
+    bool constantVolume = false;
+    int volumeDecayEnvelope = 15;
+    int envelopePeriod = 0;
 
     float frequency = 0.0;
     float dutyCycle = 0.0;
@@ -25,14 +30,18 @@ class SquareWave
     SquareWave(int cpuClockRateHz);
     void ApuClock();
     void WatchdogClock();
+    void EnvelopeClock();
 
-    //number between 0.0 to 1.0
+    //number between 0.0 to 15.0
     float OutputSample();
+
+    void ResetVolumeDecayEnvelope();
 
     //getters/setters
     void SetFreqFromPeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
     void SetWatchdogTimer(int lengthCounter);
-    void SetEnabled(bool isEnabled);
     void SetHaltWatchdogTimer(bool haltWatchdog);
+    void SetMaxVolumeOrEnvelopePeriod(int volume);
+    void SetConstantVolume(bool constantVol);
 };

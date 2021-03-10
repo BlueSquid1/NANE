@@ -38,20 +38,30 @@ void Apu::Step()
         {
             case 0:
             {
+                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
+                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
                 break;
             }
             case 1:
             {
+                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
+                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
+
                 this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
                 this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
                 break;
             }
             case 2:
             {
+                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
+                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
                 break;
             }
             case 3:
             {
+                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
+                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
+                
                 this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
                 this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
                 break;
@@ -82,11 +92,7 @@ std::shared_ptr<ThreadSafeQueue<float>> Apu::GetAudio()
 
 float Apu::MixChannels(float sq1, float sq2)
 {
-    float pulseOutput = 0.0f;
-    if( !(sq1 == 0.0f && sq2 == 0.0f) )
-    {
-        pulseOutput = 95.88 / ((8128/(sq1 + sq2)) + 100);
-    }
+    float pulseOutput = (95.88 * (sq1 + sq2)) / (8128 + (100 * (sq1 + sq2)));
 
     float audioOutput = pulseOutput;
     return audioOutput;
