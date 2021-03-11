@@ -58,7 +58,7 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq1.SetFreqFromPeriod(period);
             this->sq1.SetDutyCycle(0);
             this->sq1.ResetVolumeDecayEnvelope();
-            this->sq1.SetWatchdogTimer(this->apuRegMem.name.SQ1.lengthCounter);
+            this->sq1.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ1.lengthCounter);
             break;
         }
 
@@ -83,7 +83,7 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq2.SetFreqFromPeriod(period);
             this->sq2.SetDutyCycle(0);
             this->sq1.ResetVolumeDecayEnvelope();
-            this->sq2.SetWatchdogTimer(this->apuRegMem.name.SQ2.lengthCounter);
+            this->sq2.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ2.lengthCounter);
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:

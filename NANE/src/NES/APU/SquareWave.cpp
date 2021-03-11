@@ -2,16 +2,21 @@
 
 #include "SquareWave.h"
 
-namespace
+const std::vector<int> SquareWave::LENGTH_COUNTER_LOOKUP = 
 {
-    std::vector<float> DUTY_CYCLE_TABLE = 
-    {
-        0.125,
-        0.250,
-        0.500,
-        0.750
-    };
-}
+     10, 254, 20,  2, 40,  4, 80,  6,
+    160,   8, 60, 10, 14, 12, 26, 14,
+     12,  16, 24, 18, 48, 20, 96, 22,
+    192,  24, 72, 26, 16, 28, 32, 30
+};
+
+const std::vector<float> SquareWave::DUTY_CYCLE_TABLE = 
+{
+    0.125,
+    0.250,
+    0.500,
+    0.750
+};
 
 SquareWave::SquareWave(int cpuClockRateHz)
 {
@@ -125,7 +130,7 @@ void SquareWave::ResetVolumeDecayEnvelope()
 {
     this->resetFlag = true;
 }
-
+#include <iostream>
 void SquareWave::SetFreqFromPeriod(dword period)
 {
     // if period < 8, the corresponding pulse channel is silenced.
@@ -133,6 +138,7 @@ void SquareWave::SetFreqFromPeriod(dword period)
     if(period < 8)
     {
         this->frequency = 0.0f;
+        return;
     }
     this->frequency = 1789773.0f / (16.0f * (float)(period + 1));
 }
@@ -145,6 +151,11 @@ void SquareWave::SetDutyCycle(int dutyCycleNum)
 void SquareWave::SetWatchdogTimer(int lengthCounter)
 {
     this->watchdogTimer = lengthCounter;
+}
+
+void SquareWave::SetWatchdogTimerFromCode(int lengthCounterCode)
+{
+    this->watchdogTimer = LENGTH_COUNTER_LOOKUP.at(lengthCounterCode);
 }
 
 void SquareWave::SetHaltWatchdogTimer(bool haltWatchdog)

@@ -8,6 +8,9 @@
 class SquareWave
 {
     private:
+    static const std::vector<int> LENGTH_COUNTER_LOOKUP;
+    static const std::vector<float> DUTY_CYCLE_TABLE;
+
     int harmonics = 20;
 
     double secondsPerApuCycle;
@@ -41,6 +44,7 @@ class SquareWave
     void SetFreqFromPeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
     void SetWatchdogTimer(int lengthCounter);
+    void SetWatchdogTimerFromCode(int lengthCounterCode);
     void SetHaltWatchdogTimer(bool haltWatchdog);
     void SetMaxVolumeOrEnvelopePeriod(int volume);
     void SetConstantVolume(bool constantVol);
