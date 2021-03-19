@@ -42,45 +42,54 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq1.SetDutyCycle(this->apuRegMem.name.SQ1.dutyNum);
             this->sq1.SetHaltWatchdogTimer(this->apuRegMem.name.SQ1.lengthCounterHault);
             this->sq1.SetConstantVolume(this->apuRegMem.name.SQ1.constantVolume);
-            this->sq1.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.SQ1.volume);
+            this->sq1.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.SQ1.volumeAndEnvelopePeriod);
             this->sq1.ResetVolumeDecayEnvelope();
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ1_SWEEP_ADDR:
+        {
+            this->sq1.SetFrequencySweep(this->apuRegMem.name.SQ1.enable, this->apuRegMem.name.SQ1.period, this->apuRegMem.name.SQ1.negative, this->apuRegMem.name.SQ1.shift);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_LO_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
-            this->sq1.SetFreqFromPeriod(period);
+            this->sq1.SetPulsePeriod(period);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_HI_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
-            this->sq1.SetFreqFromPeriod(period);
+            this->sq1.SetPulsePeriod(period);
             this->sq1.SetDutyCycle(0);
             this->sq1.ResetVolumeDecayEnvelope();
             this->sq1.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ1.lengthCounter);
             break;
         }
-
+        case ApuRegisters::ApuAddresses::SQ2_SWEEP_ADDR:
+        {
+            this->sq2.SetFrequencySweep(this->apuRegMem.name.SQ2.enable, this->apuRegMem.name.SQ2.period, this->apuRegMem.name.SQ2.negative, this->apuRegMem.name.SQ2.shift);
+            break;
+        }
         case ApuRegisters::ApuAddresses::SQ2_VOL_ADDR:
         {
             this->sq2.SetDutyCycle(this->apuRegMem.name.SQ2.dutyNum);
             this->sq2.SetHaltWatchdogTimer(this->apuRegMem.name.SQ2.lengthCounterHault);
             this->sq2.SetConstantVolume(this->apuRegMem.name.SQ2.constantVolume);
-            this->sq2.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.SQ2.volume);
+            this->sq2.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.SQ2.volumeAndEnvelopePeriod);
             this->sq2.ResetVolumeDecayEnvelope();
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_LO_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
-            this->sq2.SetFreqFromPeriod(period);
+            this->sq2.SetPulsePeriod(period);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_HI_ADDR:
         {
             dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
-            this->sq2.SetFreqFromPeriod(period);
+            this->sq2.SetPulsePeriod(period);
             this->sq2.SetDutyCycle(0);
             this->sq1.ResetVolumeDecayEnvelope();
             this->sq2.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ2.lengthCounter);
@@ -99,6 +108,12 @@ void ApuMemoryMap::Write(dword address, byte value)
             {
                 this->sq2.SetWatchdogTimer(0);
             }
+            break;
+        }
+        case ApuRegisters::ApuAddresses::FRAME_COUNTER_ADDR:
+        {
+            //reset frame counter
+            this->apuRegMem.vRegs.frameCounterSeqNum = 0;
             break;
         }
     }

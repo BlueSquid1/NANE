@@ -15,12 +15,15 @@ class ApuRegisters: public MemoryRepeaterArray
     enum ApuAddresses : unsigned
     {
         SQ1_VOL_ADDR = 0x4000,
+        SQ1_SWEEP_ADDR = 0x4001,
         SQ1_LO_ADDR = 0x4002,
         SQ1_HI_ADDR = 0x4003,
         SQ2_VOL_ADDR = 0x4004,
+        SQ2_SWEEP_ADDR = 0x4005,
         SQ2_LO_ADDR = 0x4006,
         SQ2_HI_ADDR = 0x4007,
-        SND_CHN_ADDR = 0x4015
+        SND_CHN_ADDR = 0x4015,
+        FRAME_COUNTER_ADDR = 0x4017
     };
 
     #pragma pack(push, 1)
@@ -35,11 +38,21 @@ class ApuRegisters: public MemoryRepeaterArray
                 {
                     byte dutyNum : 2; // The duty cycle (ratio of high to low in the square wave) 0) 12.5%, 1) 25%, 2) 50%, 3) 75%
                     bit lengthCounterHault : 1; //stop decrementing the length counter
-                    bit constantVolume : 1;
-                    byte volume : 4;
+                    bit constantVolume : 1; //true: next byte represents the exact volume, false: use a saw tooth volume with the period in the next byte.
+                    byte volumeAndEnvelopePeriod : 4; //direct volume otherwise the period for the saw tooth envlope to use.
                 };
             };
-            byte SWEEP;
+            union
+            {
+                byte SWEEP;
+                struct
+                {
+                    bit enable : 1;
+                    byte period : 3;
+                    bit negative : 1; //true: change amount is negative, otherwise false: positive.
+                    byte shift : 3; //determines the change amount. change amount = (square wave period) >> shift;
+                };
+            };
             byte LO; //period of the square wave (lower 8 bits)
             union
             {
@@ -89,7 +102,16 @@ class ApuRegisters: public MemoryRepeaterArray
             }enableStatus; //0x4015
         };
         byte _1; //0x4016
-        byte FRAME_COUNTER; //0x4017
+        union
+        {
+            byte FRAME_COUNTER; //0x4017
+            struct
+            {
+                bit is4StepMode : 1; // false: 4 step mode, true: 5 step mode
+                bit irq_inhibit : 1;
+                byte _ : 6;
+            };
+        };
     };
     #pragma pack(pop)
 

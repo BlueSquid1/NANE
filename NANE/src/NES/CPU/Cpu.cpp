@@ -9,7 +9,7 @@
 Cpu::Cpu(std::shared_ptr<Dma> dma)
 : dma(dma)
 {
-    //this->dma->GetNmiEventHandler() += this->HandleNmiEvent;
+
 }
 
 bool Cpu::PowerCycle(dword * overridePcAddress)
@@ -58,6 +58,14 @@ int Cpu::Step(bool verbose)
     {
         int interruptCycles = this->HandleNmiEvent(verbose);
         this->dma->SetNmi(false);
+        return interruptCycles;
+    }
+
+    // interrupt request take second highest priority
+    if(this->dma->GetIrq())
+    {
+        int interruptCycles = this->HandleIrqEvent(verbose);
+        this->dma->SetIrq(false);
         return interruptCycles;
     }
 

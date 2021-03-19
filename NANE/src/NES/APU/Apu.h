@@ -6,10 +6,14 @@
 
 #include "ApuRegisters.h"
 #include "NES/Memory/Dma.h"
+#include "filters.h" //TODO
 
 class Apu
 {
     private:
+    //TODO
+    // FirstOrderFilter* filters [3]; // Hi/Lo pass filter chain
+
     //how many audio samples need to be produced per second for the game engine speaker
     int audioSamplesPerSecond;
 
@@ -32,10 +36,13 @@ class Apu
 
     std::shared_ptr<ThreadSafeQueue<float>> GetAudio();
 
-    /**
-     * Calculates the time in seconds from audio cycles 
-     */
-    double CalRealTimeSec();
-
     float MixChannels(float sq1, float sq2);
+
+    float Filter(float sample);
+
+    void ClockEnvelopes();
+
+    void ClockWatchdogs();
+
+    void ClockFreqSweeps();
 };

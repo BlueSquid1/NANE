@@ -299,6 +299,16 @@ void Dma::SetNmi(bool isActive)
     this->nmiActive = isActive;
 }
 
+bool Dma::GetIrq()
+{
+    return this->irqActive;
+}
+
+void Dma::SetIrq(bool isActive)
+{
+    this->irqActive = isActive;
+}
+
 std::unique_ptr<PatternTables> Dma::GeneratePatternTablesFromRom()
 {
     if(this->cartridge == nullptr)

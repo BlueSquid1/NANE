@@ -4,6 +4,10 @@
 
 Apu::Apu(int samplesPerSecond, std::shared_ptr<Dma> dma)
 {
+//     this->filters[0] = new HiPassFilter (90, 1786800);
+//   this->filters[1] = new HiPassFilter (440,   1786800);
+//   this->filters[2] = new LoPassFilter (14000, 1786800);
+
     this->dma = dma;
     this->audioSamplesPerSecond = samplesPerSecond;
     this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond/ 5);
@@ -34,37 +38,90 @@ void Apu::Step()
     int cyclesPerFrameCounter = this->dma->GetApuMemory().GetCpuClockRateHz() / this->dma->GetApuMemory().GetFrameCounterRateHz();
     if(totalClockCycles % cyclesPerFrameCounter == 0)
     {
-        switch(this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum % 4)
+        if(this->dma->GetApuMemory().GetRegisters().name.is4StepMode)
         {
-            case 0:
+            // 4 step mode
+            switch(this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum % 4)
             {
-                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
-                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
-                break;
-            }
-            case 1:
-            {
-                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
-                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
+                case 0:
+                {
+                    this->ClockEnvelopes();
+                    break;
+                }
+                case 1:
+                {
+                    this->ClockEnvelopes();
 
-                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
-                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
-                break;
+                    this->ClockWatchdogs();
+
+                    this->ClockFreqSweeps();
+                    break;
+                }
+                case 2:
+                {
+                    this->ClockEnvelopes();
+                    break;
+                }
+                case 3:
+                {
+                    this->ClockEnvelopes();
+                    
+                    this->ClockWatchdogs();
+
+                    this->ClockFreqSweeps();
+
+                    if(this->dma->GetApuMemory().GetRegisters().name.irq_inhibit == false)
+                    {
+                        this->dma->SetIrq(true);
+                    }
+                    break;
+                }
             }
-            case 2:
+        }
+        else
+        {
+            // 5 step mode
+            switch(this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum % 5)
             {
-                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
-                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
-                break;
-            }
-            case 3:
-            {
-                this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
-                this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
-                
-                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
-                this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
-                break;
+                case 0:
+                {
+                    this->ClockEnvelopes();
+                    break;
+                }
+                case 1:
+                {
+                    this->ClockEnvelopes();
+
+                    this->ClockWatchdogs();
+
+                    this->ClockFreqSweeps();
+                    break;
+                }
+                case 2:
+                {
+                    this->ClockEnvelopes();
+                    break;
+                }
+                case 3:
+                {
+                    // Do nothing
+                    break;
+                }
+                case 4:
+                {
+                    this->ClockEnvelopes();
+                    
+                    this->ClockWatchdogs();
+
+                    this->ClockFreqSweeps();
+
+                    if(this->dma->GetApuMemory().GetRegisters().name.irq_inhibit == false)
+                    {
+                        //TODO
+                        //raise IRQ
+                    }
+                    break;
+                }
             }
         }
         ++this->dma->GetApuMemory().GetRegisters().vRegs.frameCounterSeqNum;
@@ -77,6 +134,8 @@ void Apu::Step()
         float sq2Sample = this->dma->GetApuMemory().GetSquareWave2().OutputSample();
 
         float sample = this->MixChannels(sq1Sample, sq2Sample);
+
+        //sample = this->Filter(sample);
 
         this->audioStream->Push(sample);
     }
@@ -96,4 +155,29 @@ float Apu::MixChannels(float sq1, float sq2)
 
     float audioOutput = pulseOutput;
     return audioOutput;
+}
+
+float Apu::Filter(float sample)
+{
+    // for (FirstOrderFilter* filter : this->filters)
+    //   sample = filter->process(sample);
+    return sample;
+}
+
+void Apu::ClockEnvelopes()
+{
+    this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
+    this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
+}
+
+void Apu::ClockWatchdogs()
+{
+    this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+    this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+}
+
+void Apu::ClockFreqSweeps()
+{
+    this->dma->GetApuMemory().GetSquareWave1().SweepClock();
+    this->dma->GetApuMemory().GetSquareWave2().SweepClock();
 }

@@ -25,6 +25,7 @@ class Dma : public IMemoryRW
     ControllerManager ControllerMgr;
     std::shared_ptr<ICartridge> cartridge = NULL;
     bool nmiActive = false;
+    bool irqActive = false;
 
     bool dmaActive = false;
     bool dmaGoodCycle = false;
@@ -61,6 +62,8 @@ class Dma : public IMemoryRW
     std::shared_ptr<ICartridge>& GetCartridge();
     bool GetNmi();
     void SetNmi(bool isActive);
+    bool GetIrq();
+    void SetIrq(bool isActive);
     bool GetDmaActive() const;
     bool GetDmaGoodCycle() const;
     void SetDmaGoodCycle(bool value);

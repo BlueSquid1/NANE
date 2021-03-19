@@ -10,12 +10,12 @@ const std::vector<int> SquareWave::LENGTH_COUNTER_LOOKUP =
     192,  24, 72, 26, 16, 28, 32, 30
 };
 
-const std::vector<float> SquareWave::DUTY_CYCLE_TABLE = 
+const std::vector<std::vector<bool>> SquareWave::DUTY_CYCLE_TABLE = 
 {
-    0.125,
-    0.250,
-    0.500,
-    0.750
+    { 0, 1, 0, 0, 0, 0, 0, 0 },
+    { 0, 1, 1, 0, 0, 0, 0, 0 },
+    { 0, 1, 1, 1, 1, 0, 0, 0 },
+    { 1, 0, 0, 1, 1, 1, 1, 1 }
 };
 
 SquareWave::SquareWave(int cpuClockRateHz)
@@ -25,7 +25,13 @@ SquareWave::SquareWave(int cpuClockRateHz)
 
 void SquareWave::ApuClock()
 {
-    this->elapsedTimeSec += this->secondsPerApuCycle;
+    if(this->timerVal <= 0)
+    {
+        this->timerVal = this->pulsePeriod;
+        this->sequencePos = (this->sequencePos + 1) % 8;
+        return;
+    }
+    --this->timerVal;
 }
 
 void SquareWave::WatchdogClock()
@@ -38,80 +44,64 @@ void SquareWave::WatchdogClock()
 
 void SquareWave::EnvelopeClock()
 {
-    if(this->resetFlag)
+    if(this->volumeResetFlag)
     {
         this->volumeDecayEnvelope = 15;
         this->envelopePeriod = this->maxVolumeOrEnvelopePeriod;
-        this->resetFlag = false;
+        this->volumeResetFlag = false;
         return;
     }
 
-    if(this->envelopePeriod > 0)
-    {
-        --this->envelopePeriod;
-    }
-    else
+    if(this->envelopePeriod <= 0)
     {
         this->envelopePeriod = this->maxVolumeOrEnvelopePeriod;
 
-        if(this->volumeDecayEnvelope > 0)
-        {
-            --this->volumeDecayEnvelope;
-        }
-        else
+        if(this->volumeDecayEnvelope <= 0)
         {
             if(this->haltWatchdog == true)
             {
                 this->volumeDecayEnvelope = 15;
             }
+            return;
         }
+
+        --this->volumeDecayEnvelope;
+        return;
     }
+
+    --this->envelopePeriod;
+}
+
+void SquareWave::SweepClock()
+{
+    if(this->sweepResetFlag)
+    {
+        this->sweepCounter = this->sweepUnitPeriod + 1;
+        this->sweepResetFlag = false;
+        return;
+    }
+
+    if(this->sweepCounter <= 0)
+    {
+        this->sweepCounter = this->sweepUnitPeriod + 1;
+
+        if(this->frequencySweepEnabled)
+        {
+            this->pulsePeriod = this->CalTargetPeriod();
+        }
+        return;
+    }
+    --this->sweepCounter;
 }
 
 float SquareWave::OutputSample()
 {
-    if(this->watchdogTimer <= 0 || this->frequency <= 0.0f)
+    if(this->IsOutputMuted())
     {
         return 0.0f;
     }
 
-    /**
-     * Implement Fourier series for a square wave:
-     * 
-     *                harmonics
-     *                 ------
-     *                  \
-     * a(elapsedTime) =  \   sin( elapsedTime * frequency * 2 * pi * n ) / n )
-     *                   /   
-     *                  /    
-     *                 ------
-     *                  n = 1
-     * 
-     *                harmonics
-     *                 ------
-     *                  \
-     * b(elapsedTime) =  \   sin( (elapsedTime * frequency - phase) * 2 * pi * n ) / n )
-     *                   /   
-     *                  /    
-     *                 ------
-     *                  n = 1
-     * 
-     * square wave(elapsedTime) = (4/pi) * (a - b);
-     * 
-     */
-    float a = 0;
-    float b = 0;
-    float phase = this->dutyCycle * 2.0 * M_PI;
-
-    for (int n = 1; n < harmonics+1; n++)
-    {
-        double c = n * this->frequency * 2.0 * M_PI * this->elapsedTimeSec;
-        a += -BitUtil::approxsin(c) / n;
-        b += -BitUtil::approxsin(c - (phase * n)) / n;
-    }
-
-    //instead of multipling by 4 we will only multiple by 1 and the add 1 so the output is never above 1 or below 0
-    float normalizedSound = (1.0f / M_PI) * (a - b) + 1;
+    float normalizedSound = this->DUTY_CYCLE_TABLE.at(this->dutyCycleNum).at(this->sequencePos);
 
     // now multiply it by the volume multiplier
     float multiplier = 0.0f;
@@ -128,24 +118,53 @@ float SquareWave::OutputSample()
 
 void SquareWave::ResetVolumeDecayEnvelope()
 {
-    this->resetFlag = true;
+    this->volumeResetFlag = true;
 }
-#include <iostream>
-void SquareWave::SetFreqFromPeriod(dword period)
+
+bool SquareWave::IsOutputMuted()
 {
-    // if period < 8, the corresponding pulse channel is silenced.
-    // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29 
-    if(period < 8)
+    if(this->watchdogTimer <= 0 )
     {
-        this->frequency = 0.0f;
-        return;
+        return true;
     }
-    this->frequency = 1789773.0f / (16.0f * (float)(period + 1));
+
+    // if period < 8, the corresponding pulse channel is silenced.
+    // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29
+    // also if the period is > 0x7FF then it is silenced.
+    // https://wiki.nesdev.com/w/index.php/APU_Sweep
+    dword targetPeriod = this->CalTargetPeriod();
+    if(targetPeriod < 8 || targetPeriod > 0x7FF)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+dword SquareWave::CalTargetPeriod() const
+{
+    dword target_period = this->pulsePeriod;
+
+    dword changeAmount = this->pulsePeriod >> this->shiftPeriodAmount;
+    if(this->isNegative == false)
+    {
+        target_period += changeAmount;
+    }
+    else
+    {
+        target_period -= changeAmount;
+    }
+    return target_period;
+}
+
+void SquareWave::SetPulsePeriod(dword period)
+{
+    this->pulsePeriod = period;
 }
 
 void SquareWave::SetDutyCycle(int dutyCycleNum)
 {
-    this->dutyCycle = DUTY_CYCLE_TABLE.at(dutyCycleNum);
+    this->dutyCycleNum = dutyCycleNum;
 }
 
 void SquareWave::SetWatchdogTimer(int lengthCounter)
@@ -171,4 +190,13 @@ void SquareWave::SetMaxVolumeOrEnvelopePeriod(int volume)
 void SquareWave::SetConstantVolume(bool constantVol)
 {
     this->constantVolume = constantVol;
+}
+
+void SquareWave::SetFrequencySweep(bool isEnabled, byte sweepUnitPeriod, bool isNegative, byte shiftPeriodAmount)
+{
+    this->frequencySweepEnabled = isEnabled;
+    this->sweepUnitPeriod = sweepUnitPeriod;
+    this->isNegative = isNegative;
+    this->shiftPeriodAmount = shiftPeriodAmount;
+    this->sweepResetFlag = true;
 }
