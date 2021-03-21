@@ -67,11 +67,6 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq1.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ1.lengthCounter);
             break;
         }
-        case ApuRegisters::ApuAddresses::SQ2_SWEEP_ADDR:
-        {
-            this->sq2.SetFrequencySweep(this->apuRegMem.name.SQ2.enable, this->apuRegMem.name.SQ2.period, this->apuRegMem.name.SQ2.negative, this->apuRegMem.name.SQ2.shift);
-            break;
-        }
         case ApuRegisters::ApuAddresses::SQ2_VOL_ADDR:
         {
             this->sq2.SetDutyCycle(this->apuRegMem.name.SQ2.dutyNum);
@@ -79,6 +74,11 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq2.SetConstantVolume(this->apuRegMem.name.SQ2.constantVolume);
             this->sq2.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.SQ2.volumeAndEnvelopePeriod);
             this->sq2.ResetVolumeDecayEnvelope();
+            break;
+        }
+        case ApuRegisters::ApuAddresses::SQ2_SWEEP_ADDR:
+        {
+            this->sq2.SetFrequencySweep(this->apuRegMem.name.SQ2.enable, this->apuRegMem.name.SQ2.period, this->apuRegMem.name.SQ2.negative, this->apuRegMem.name.SQ2.shift);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_LO_ADDR:

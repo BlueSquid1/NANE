@@ -6,7 +6,7 @@
  * program entry point
  */
 int main(int argc, char *argv[])
-{    
+{
     std::string logServerIp = std::string();
     #ifdef LOG_SERVER_IP
     //if set will send cout and cerr logs to the Log server ip address below

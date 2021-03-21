@@ -93,7 +93,6 @@ void SquareWave::SweepClock()
     }
     --this->sweepCounter;
 }
-
 float SquareWave::OutputSample()
 {
     if(this->IsOutputMuted())
@@ -133,12 +132,17 @@ bool SquareWave::IsOutputMuted()
         return true;
     }
 
+    if(this->DUTY_CYCLE_TABLE.at(this->dutyCycleNum).at(this->sequencePos) == false)
+    {
+        return true;
+    }
+
     // if period < 8, the corresponding pulse channel is silenced.
     // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29
     // also if the period is > 0x7FF then it is silenced.
     // https://wiki.nesdev.com/w/index.php/APU_Sweep
     dword targetPeriod = this->CalTargetPeriod();
-    if(targetPeriod < 8 || targetPeriod > 0x7FF)
+    if(targetPeriod < 30 || targetPeriod > 0x7FF)
     {
         return true;
     }

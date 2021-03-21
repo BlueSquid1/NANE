@@ -36,10 +36,10 @@ class ApuRegisters: public MemoryRepeaterArray
                 byte VOL;
                 struct
                 {
-                    byte dutyNum : 2; // The duty cycle (ratio of high to low in the square wave) 0) 12.5%, 1) 25%, 2) 50%, 3) 75%
-                    bit lengthCounterHault : 1; //stop decrementing the length counter
-                    bit constantVolume : 1; //true: next byte represents the exact volume, false: use a saw tooth volume with the period in the next byte.
                     byte volumeAndEnvelopePeriod : 4; //direct volume otherwise the period for the saw tooth envlope to use.
+                    bit constantVolume : 1; //true: next byte represents the exact volume, false: use a saw tooth volume with the period in the next byte.
+                    bit lengthCounterHault : 1; //stop decrementing the length counter
+                    byte dutyNum : 2; // The duty cycle (ratio of high to low in the square wave) 0) 12.5%, 1) 25%, 2) 50%, 3) 75%
                 };
             };
             union
@@ -47,10 +47,11 @@ class ApuRegisters: public MemoryRepeaterArray
                 byte SWEEP;
                 struct
                 {
-                    bit enable : 1;
-                    byte period : 3;
-                    bit negative : 1; //true: change amount is negative, otherwise false: positive.
                     byte shift : 3; //determines the change amount. change amount = (square wave period) >> shift;
+                    bit negative : 1; //true: change amount is negative, otherwise false: positive.
+                    byte period : 3;
+                    bit enable : 1;
+                    
                 };
             };
             byte LO; //period of the square wave (lower 8 bits)
@@ -59,8 +60,8 @@ class ApuRegisters: public MemoryRepeaterArray
                 byte HI;
                 struct
                 {
-                    byte lengthCounter : 5; //length counter. Counts down to zero. When zero is reached then silence the channel.
                     byte timerHigh: 3; //period of the square wave (upper 3 bits)
+                    byte lengthCounter : 5; //length counter. Counts down to zero. When zero is reached then silence the channel.
                 };
             };
         } SQ1, SQ2;
@@ -107,9 +108,9 @@ class ApuRegisters: public MemoryRepeaterArray
             byte FRAME_COUNTER; //0x4017
             struct
             {
-                bit is4StepMode : 1; // false: 4 step mode, true: 5 step mode
-                bit irq_inhibit : 1;
                 byte _ : 6;
+                bit irq_inhibit : 1;
+                bit is4StepMode : 1; // false: 4 step mode, true: 5 step mode
             };
         };
     };

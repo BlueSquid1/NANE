@@ -36,8 +36,8 @@ byte Dma::Read(dword address)
             ApuRegisters::RegStruct::ChannelStatus value;
             value.pulse1 = this->apuMemory.GetSquareWave1().GetWatchdogTimer() > 0;
             value.pulse2 = this->apuMemory.GetSquareWave2().GetWatchdogTimer() > 0;
-
             ///TODO
+            
             value.frame_irq = this->irqActive;
             
             // Not sure if this is right but I noticed other emulators are doing it. Maybe it is to do with:

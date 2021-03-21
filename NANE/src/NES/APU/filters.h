@@ -5,7 +5,7 @@
 // idk what i'm doing, but wikipedia is nice enough to give some sample
 // code, so I think these work alright
 
-typedef byte hertz;
+typedef int hertz;
 
 class FirstOrderFilter {
 protected:

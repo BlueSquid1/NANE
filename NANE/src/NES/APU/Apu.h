@@ -6,10 +6,14 @@
 
 #include "ApuRegisters.h"
 #include "NES/Memory/Dma.h"
+#include "filters.h" //TODO
 
 class Apu
 {
     private:
+    //TODO
+    FirstOrderFilter* filters [3]; // Hi/Lo pass filter chain
+
     //how many audio samples need to be produced per second for the game engine speaker
     int audioSamplesPerSecond;
 

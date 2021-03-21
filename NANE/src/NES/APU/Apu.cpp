@@ -7,6 +7,12 @@ Apu::Apu(int samplesPerSecond, std::shared_ptr<Dma> dma)
     this->dma = dma;
     this->audioSamplesPerSecond = samplesPerSecond;
     this->audioStream = std::make_shared<ThreadSafeQueue<float>>(this->audioSamplesPerSecond/ 5);
+
+    //TODO
+    // Setup filters
+    this->filters[0] = new HiPassFilter (90,    1789773);
+    this->filters[1] = new HiPassFilter (440,   1789773);
+    this->filters[2] = new LoPassFilter (14000, 1789773);
 }
 
 bool Apu::PowerCycle()
@@ -49,7 +55,6 @@ void Apu::Step()
         float sample = this->MixChannels(sq1Sample, sq2Sample);
 
         //sample = this->Filter(sample);
-
         this->audioStream->Push(sample);
     }
 
@@ -72,8 +77,10 @@ float Apu::MixChannels(float sq1, float sq2)
 
 float Apu::Filter(float sample)
 {
-    // for (FirstOrderFilter* filter : this->filters)
-    //   sample = filter->process(sample);
+    for (FirstOrderFilter* filter : this->filters)
+    {
+        sample = filter->process(sample);
+    }
     return sample;
 }
 
