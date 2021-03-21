@@ -13,6 +13,7 @@ class SquareWave
 
     double secondsPerApuCycle;
 
+    bool isEnabled = false;
     int watchdogTimer = 0;
     bool haltWatchdog = false;
 
@@ -51,8 +52,11 @@ class SquareWave
     dword CalTargetPeriod() const;
 
     //getters/setters
+    void SetIsEnabled(bool isEnabled);
+    dword GetPulsePeriod();
     void SetPulsePeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
+    int GetWatchdogTimer();
     void SetWatchdogTimer(int lengthCounter);
     void SetWatchdogTimerFromCode(int lengthCounterCode);
     void SetHaltWatchdogTimer(bool haltWatchdog);

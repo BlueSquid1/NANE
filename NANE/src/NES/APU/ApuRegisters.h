@@ -86,7 +86,7 @@ class ApuRegisters: public MemoryRepeaterArray
             byte LEN;
         }DMC;
         byte _0; //0x4014
-        union
+        union ChannelStatus
         {
             byte SND_CHN; //0x4015
             struct
@@ -99,8 +99,8 @@ class ApuRegisters: public MemoryRepeaterArray
                 bit _ : 1;
                 bit frame_irq : 1;
                 bit dmc_irq : 1;
-            }enableStatus; //0x4015
-        };
+            }; //0x4015
+        }channels;
         byte _1; //0x4016
         union
         {

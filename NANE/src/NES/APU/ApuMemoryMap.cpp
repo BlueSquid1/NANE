@@ -53,13 +53,14 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::SQ1_LO_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
-            this->sq1.SetPulsePeriod(period);
+            dword upperVal = this->sq1.GetPulsePeriod() & 0xFF00;
+            this->sq1.SetPulsePeriod(upperVal | this->apuRegMem.name.SQ1.LO);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ1_HI_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ1.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ1.LO;
+            dword lowerVal = this->sq1.GetPulsePeriod() & 0x00FF;
+            dword period = (this->apuRegMem.name.SQ1.timerHigh << 8) | lowerVal;
             this->sq1.SetPulsePeriod(period);
             this->sq1.SetDutyCycle(0);
             this->sq1.ResetVolumeDecayEnvelope();
@@ -82,28 +83,31 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::SQ2_LO_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
-            this->sq2.SetPulsePeriod(period);
+            dword upperVal = this->sq2.GetPulsePeriod() & 0xFF00;
+            this->sq2.SetPulsePeriod(upperVal | this->apuRegMem.name.SQ2.LO);
             break;
         }
         case ApuRegisters::ApuAddresses::SQ2_HI_ADDR:
         {
-            dword period = (this->apuRegMem.name.SQ2.timerHigh & 0x7 << 8) | this->apuRegMem.name.SQ2.LO;
+            dword lowerVal = this->sq2.GetPulsePeriod() & 0x00FF;
+            dword period = (this->apuRegMem.name.SQ2.timerHigh << 8) | lowerVal;
             this->sq2.SetPulsePeriod(period);
             this->sq2.SetDutyCycle(0);
-            this->sq1.ResetVolumeDecayEnvelope();
+            this->sq2.ResetVolumeDecayEnvelope();
             this->sq2.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ2.lengthCounter);
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
         {
-            bool sq1Enabled = this->apuRegMem.name.enableStatus.pulse1;
+            bool sq1Enabled = this->apuRegMem.name.channels.pulse1;
+            this->sq1.SetIsEnabled(sq1Enabled);
             if(sq1Enabled == false)
             {
                 this->sq1.SetWatchdogTimer(0);
             }
 
-            bool sq2Enabled = this->apuRegMem.name.enableStatus.pulse2;
+            bool sq2Enabled = this->apuRegMem.name.channels.pulse2;
+            this->sq2.SetIsEnabled(sq2Enabled);
             if(sq2Enabled == false)
             {
                 this->sq2.SetWatchdogTimer(0);
@@ -114,6 +118,7 @@ void ApuMemoryMap::Write(dword address, byte value)
         {
             //reset frame counter
             this->apuRegMem.vRegs.frameCounterSeqNum = 0;
+            this->resetFrameCounter = true;
             break;
         }
     }
@@ -166,4 +171,13 @@ SquareWave& ApuMemoryMap::GetSquareWave1()
 SquareWave& ApuMemoryMap::GetSquareWave2()
 {
     return this->sq2;
+}
+
+bool ApuMemoryMap::GetResetFrameCounter()
+{
+    return this->resetFrameCounter;
+}
+void ApuMemoryMap::SetResetFrameCounter( bool frameCounterReset )
+{
+    this->resetFrameCounter = frameCounterReset;
 }

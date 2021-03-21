@@ -13,8 +13,10 @@ class ApuMemoryMap : public IMemoryRW
     //TODO 
     //1786800
     //1789773
-    const int cpuClockRateHz = 1786800;
+    const int cpuClockRateHz = 1789773;
     const int frameCounterRateHz = 240;
+
+    bool resetFrameCounter = false;
 
     ApuRegisters apuRegMem;
 
@@ -40,4 +42,6 @@ class ApuMemoryMap : public IMemoryRW
     ApuRegisters& GetRegisters();
     SquareWave& GetSquareWave1();
     SquareWave& GetSquareWave2();
+    bool GetResetFrameCounter();
+    void SetResetFrameCounter( bool frameCounterReset );
 };

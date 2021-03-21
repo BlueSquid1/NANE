@@ -31,6 +31,21 @@ byte Dma::Read(dword address)
             return returnVal;
             break;
         }
+        case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
+        {
+            ApuRegisters::RegStruct::ChannelStatus value;
+            value.pulse1 = this->apuMemory.GetSquareWave1().GetWatchdogTimer() > 0;
+            value.pulse2 = this->apuMemory.GetSquareWave2().GetWatchdogTimer() > 0;
+
+            ///TODO
+            value.frame_irq = this->irqActive;
+            
+            // Not sure if this is right but I noticed other emulators are doing it. Maybe it is to do with:
+            // https://wiki.nesdev.com/w/index.php/APU#Status_.28.244015.29
+            this->apuMemory.GetRegisters().name.irq_inhibit = true;
+            return value.SND_CHN;
+            break;
+        }
     }
     if(this->ControllerMgr.Contains(address))
     {

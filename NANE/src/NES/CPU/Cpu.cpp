@@ -64,6 +64,7 @@ int Cpu::Step(bool verbose)
     // interrupt request take second highest priority
     if(this->dma->GetIrq())
     {
+        // Make sure interrupts are not disabled
         int interruptCycles = this->HandleIrqEvent(verbose);
         this->dma->SetIrq(false);
         return interruptCycles;
@@ -591,16 +592,15 @@ int Cpu::HandleIrqEvent(bool verbose)
     if(this->GetRegs().name.I == false)
     {
         this->HandleInterrupt(InterruptType::irqCommand, verbose);
-        int cyclesTaken = 7;
-        return cyclesTaken;
     }
-    return 0;
+    int cyclesTaken = 7;
+    return cyclesTaken;
 }
 
 int Cpu::HandleNmiEvent(bool verbose)
 {
     this->HandleInterrupt(InterruptType::nmiCommand, verbose);
-    int cyclesTaken = 8;
+    int cyclesTaken = 7;
     return cyclesTaken;
 }
 
@@ -618,7 +618,7 @@ void Cpu::HandleInterrupt(InterruptType interruptType, bool verbose)
         }
         case InterruptType::irqCommand:
         {
-            interruptLookupAddress = 0xFFFC;
+            interruptLookupAddress = 0xFFFE;
             break;
         }
         case InterruptType::nmiCommand:

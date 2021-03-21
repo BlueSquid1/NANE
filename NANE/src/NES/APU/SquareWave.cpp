@@ -123,6 +123,11 @@ void SquareWave::ResetVolumeDecayEnvelope()
 
 bool SquareWave::IsOutputMuted()
 {
+    if(this->isEnabled == false)
+    {
+        return true;
+    }
+
     if(this->watchdogTimer <= 0 )
     {
         return true;
@@ -157,6 +162,16 @@ dword SquareWave::CalTargetPeriod() const
     return target_period;
 }
 
+void SquareWave::SetIsEnabled(bool isEnabled)
+{
+    this->isEnabled = isEnabled;
+}
+
+dword SquareWave::GetPulsePeriod()
+{
+    return this->pulsePeriod;
+}
+
 void SquareWave::SetPulsePeriod(dword period)
 {
     this->pulsePeriod = period;
@@ -165,6 +180,11 @@ void SquareWave::SetPulsePeriod(dword period)
 void SquareWave::SetDutyCycle(int dutyCycleNum)
 {
     this->dutyCycleNum = dutyCycleNum;
+}
+
+int SquareWave::GetWatchdogTimer()
+{
+    return this->watchdogTimer;
 }
 
 void SquareWave::SetWatchdogTimer(int lengthCounter)

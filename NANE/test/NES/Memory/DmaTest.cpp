@@ -108,7 +108,7 @@ TEST_CASE("DMA: Can read and write without loading a cartridge") {
     dma.Write(0x4000, 39);
     REQUIRE(dma.GetApuMemory().GetRegisters().name.SQ1.VOL == 39);
     dma.Write(0x4015, 61);
-    REQUIRE(dma.GetApuMemory().GetRegisters().name.SND_CHN == 61);
+    REQUIRE(dma.GetApuMemory().GetRegisters().name.channels.SND_CHN == 61);
 
     //Controller inputs
     REQUIRE(dma.Read(0x4016) == 65);
