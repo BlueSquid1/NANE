@@ -7,8 +7,8 @@ namespace
 
 ApuMemoryMap::ApuMemoryMap()
 : IMemoryRW(0x4000, 0x4017),
-  sq1(cpuClockRateHz),
-  sq2(cpuClockRateHz)
+  sq1(false),
+  sq2(true)
 {
 }
 
@@ -95,6 +95,21 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->sq2.SetDutyCycle(0);
             this->sq2.ResetVolumeDecayEnvelope();
             this->sq2.SetWatchdogTimerFromCode(this->apuRegMem.name.SQ2.lengthCounter);
+            break;
+        }
+        case ApuRegisters::ApuAddresses::TRI_LINEAR_ADDR:
+        {
+            this->tri;
+            break;
+        }
+        case ApuRegisters::ApuAddresses::TRI_LO_ADDR:
+        {
+            this->tri;
+            break;
+        }
+        case ApuRegisters::ApuAddresses::TRI_HI_ADDR:
+        {
+            this->tri;
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:

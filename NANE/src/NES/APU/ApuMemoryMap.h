@@ -5,6 +5,7 @@
 
 #include "ApuRegisters.h"
 #include "SquareWave.h"
+#include "TriangleWave.h"
 
 class ApuMemoryMap : public IMemoryRW
 {
@@ -22,6 +23,8 @@ class ApuMemoryMap : public IMemoryRW
 
     SquareWave sq1;
     SquareWave sq2;
+
+    TriangleWave tri;
 
     long long totalApuCycles = 0;
 

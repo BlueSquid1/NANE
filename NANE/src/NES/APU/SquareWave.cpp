@@ -18,9 +18,64 @@ const std::vector<std::vector<bool>> SquareWave::DUTY_CYCLE_TABLE =
     { 1, 0, 0, 1, 1, 1, 1, 1 }
 };
 
-SquareWave::SquareWave(int cpuClockRateHz)
+bool SquareWave::IsOutputMuted()
 {
-    this->secondsPerApuCycle = 1.0 / cpuClockRateHz;
+    if(this->isEnabled == false)
+    {
+        return true;
+    }
+
+    if(this->watchdogTimer <= 0 )
+    {
+        return true;
+    }
+
+    if(this->DUTY_CYCLE_TABLE.at(this->dutyCycleNum).at(this->sequencePos) == false)
+    {
+        return true;
+    }
+
+    // if period < 8, the corresponding pulse channel is silenced.
+    // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29
+    // also if the period is > 0x7FF then it is silenced.
+    // https://wiki.nesdev.com/w/index.php/APU_Sweep
+    dword targetPeriod = this->CalTargetPeriod();
+    if(targetPeriod < 8 || targetPeriod > 0x7FF)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+dword SquareWave::CalTargetPeriod() const
+{
+    dword target_period = this->pulsePeriod;
+
+    dword changeAmount = this->pulsePeriod >> this->shiftPeriodAmount;
+    if(this->isNegative == false)
+    {
+        target_period += changeAmount;
+    }
+    else
+    {
+        if(!this->isPulse2)
+        {
+            // for pulse 1 change amount is made negative by 1's complement
+            target_period -= changeAmount - 1;
+        }
+        else
+        {
+            // for pulse 2 change amount is made negative by 2's complement
+            target_period -= changeAmount;
+        }
+    }
+    return target_period;
+}
+
+SquareWave::SquareWave(bool isPulse2)
+{
+    this->isPulse2 = isPulse2;
 }
 
 void SquareWave::ApuClock()
@@ -118,52 +173,6 @@ float SquareWave::OutputSample()
 void SquareWave::ResetVolumeDecayEnvelope()
 {
     this->volumeResetFlag = true;
-}
-
-bool SquareWave::IsOutputMuted()
-{
-    if(this->isEnabled == false)
-    {
-        return true;
-    }
-
-    if(this->watchdogTimer <= 0 )
-    {
-        return true;
-    }
-
-    if(this->DUTY_CYCLE_TABLE.at(this->dutyCycleNum).at(this->sequencePos) == false)
-    {
-        return true;
-    }
-
-    // if period < 8, the corresponding pulse channel is silenced.
-    // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29
-    // also if the period is > 0x7FF then it is silenced.
-    // https://wiki.nesdev.com/w/index.php/APU_Sweep
-    dword targetPeriod = this->CalTargetPeriod();
-    if(targetPeriod < 30 || targetPeriod > 0x7FF)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-dword SquareWave::CalTargetPeriod() const
-{
-    dword target_period = this->pulsePeriod;
-
-    dword changeAmount = this->pulsePeriod >> this->shiftPeriodAmount;
-    if(this->isNegative == false)
-    {
-        target_period += changeAmount;
-    }
-    else
-    {
-        target_period -= changeAmount;
-    }
-    return target_period;
 }
 
 void SquareWave::SetIsEnabled(bool isEnabled)

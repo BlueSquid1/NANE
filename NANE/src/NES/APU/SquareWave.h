@@ -11,32 +11,35 @@ class SquareWave
     static const std::vector<int> LENGTH_COUNTER_LOOKUP;
     static const std::vector<std::vector<bool>> DUTY_CYCLE_TABLE;
 
-    double secondsPerApuCycle;
+    bool isPulse2 = false; //whether or not it is pulse 2. false: it is pulse 1, true it is pulse 2.
 
-    bool isEnabled = false;
-    int watchdogTimer = 0;
-    bool haltWatchdog = false;
+    bool isEnabled = false; // whether the wave is enabled. false: output is always zero, true: output is from square wave.
+    int watchdogTimer = 0; // counter until channel is silenced
+    bool haltWatchdog = false; // true: stop decrementing watchdog timer, false decrement on watchdog clock.
 
-    bool volumeResetFlag = true;
-    int maxVolumeOrEnvelopePeriod = 0;
-    bool constantVolume = false;
-    int volumeDecayEnvelope = 15;
-    int envelopePeriod = 0;
+    bool volumeResetFlag = true; // tracks when a volume adjust has just happened
+    int maxVolumeOrEnvelopePeriod = 0; //if constantVolume is true, stores max volume otherwise stores volume envelope period.
+    bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
+    int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
+    int envelopePeriod = 0; //internal variable that tracks the current sawtooth envelope period.
 
-    byte sequencePos = 0;
-    dword pulsePeriod = 0;
-    byte dutyCycleNum = 0;
-    dword timerVal = 0;
+    byte sequencePos = 0; //which part in the square wave we are up to (think of as time).
+    dword pulsePeriod = 0; //period of the square wave.
+    byte dutyCycleNum = 0; //which duty cycle is active 0: 12.5%, 1: 25%, 2: 50%, 3: 75%
+    dword timerVal = 0; //internal variable that tracks when the square wave is due to be updated.
 
-    bool sweepResetFlag = true;
-    bool frequencySweepEnabled = false;
-    byte sweepUnitPeriod = 0;
-    bool isNegative = false;
-    byte shiftPeriodAmount = 0;
-    byte sweepCounter = 0;
+    bool sweepResetFlag = true; //tracks when a frequency sweep has just be set.
+    bool frequencySweepEnabled = false; //whether or not a frequency sweep is needed.
+    byte sweepUnitPeriod = 0; //period at which the frequency needs to be changed.
+    bool isNegative = false; //frequency needs to be adjusted in a negative dirrection.
+    byte shiftPeriodAmount = 0; //amount to shift frequency (represented as a period).
+    byte sweepCounter = 0; //internal variable that tracks when the frequency needs to be changed again.
+
+    bool IsOutputMuted();
+    dword CalTargetPeriod() const;
 
     public:
-    SquareWave(int cpuClockRateHz);
+    SquareWave(bool isPulse2);
     void ApuClock();
     void WatchdogClock();
     void EnvelopeClock();
@@ -46,10 +49,6 @@ class SquareWave
     float OutputSample();
 
     void ResetVolumeDecayEnvelope();
-
-    bool IsOutputMuted();
-
-    dword CalTargetPeriod() const;
 
     //getters/setters
     void SetIsEnabled(bool isEnabled);
@@ -62,6 +61,5 @@ class SquareWave
     void SetHaltWatchdogTimer(bool haltWatchdog);
     void SetMaxVolumeOrEnvelopePeriod(int volume);
     void SetConstantVolume(bool constantVol);
-
     void SetFrequencySweep(bool isEnabled, byte sweepUnitPeriod, bool isNegative, byte shiftPeriodAmount);
 };

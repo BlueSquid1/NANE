@@ -30,22 +30,23 @@ void Apu::Step()
 {
     const long long& totalClockCycles = this->dma->GetApuMemory().GetTotalApuCycles();
 
-    //handle special case when frame counter has been written too
+    // Handle special case when frame counter has been written too
     if(this->dma->GetApuMemory().GetResetFrameCounter())
     {
+        // https://wiki.nesdev.com/w/index.php/APU#Frame_Counter_.28.244017.29
         this->ClockChannels(totalClockCycles);
         this->ClockWatchdogs();
         this->ClockFreqSweeps();
         this->dma->GetApuMemory().SetResetFrameCounter(false);
     }
 
-    //clock channels (every CPU cycle)
+    // Clock channels (every CPU cycle)
     this->ClockChannels(totalClockCycles);
 
-    //Clock frame counter (roughly at 240Hz)
+    // Clock frame counter (roughly at 240Hz)
     this->ClockFrameCounter(totalClockCycles);
 
-    //collect output if needed
+    // Collect output when audio sample is needed
     int cyclesPerSample = this->dma->GetApuMemory().GetCpuClockRateHz() / this->audioSamplesPerSecond;
     if(totalClockCycles % cyclesPerSample == 0)
     {
@@ -54,7 +55,7 @@ void Apu::Step()
 
         float sample = this->MixChannels(sq1Sample, sq2Sample);
 
-        //sample = this->Filter(sample);
+        sample = this->Filter(sample);
         this->audioStream->Push(sample);
     }
 

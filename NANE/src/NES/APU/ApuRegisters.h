@@ -22,6 +22,9 @@ class ApuRegisters: public MemoryRepeaterArray
         SQ2_SWEEP_ADDR = 0x4005,
         SQ2_LO_ADDR = 0x4006,
         SQ2_HI_ADDR = 0x4007,
+        TRI_LINEAR_ADDR = 0x4008,
+        TRI_LO_ADDR = 0x400A,
+        TRI_HI_ADDR = 0x400B,
         SND_CHN_ADDR = 0x4015,
         FRAME_COUNTER_ADDR = 0x4017
     };
@@ -67,10 +70,26 @@ class ApuRegisters: public MemoryRepeaterArray
         } SQ1, SQ2;
         struct
         {
-            byte LINEAR;
+            union
+            {
+                byte LINEAR;
+                struct
+                {
+                    byte linearCounter : 7;
+                    bit linearCounterHalt : 1;
+                };
+            };
             byte _;
-            byte LO;
-            byte HI;
+            byte LO; //period of the square wave (lower 8 bits)
+            union
+            {
+                byte HI;
+                struct
+                {
+                    byte timerHigh : 3; //period of the square wave (upper 3 bits)
+                    byte lengthCounter : 5; //length counter. Counts down to zero. When zero is reached then silence the channel.
+                };
+            };
         } TRI;
         struct
         {
