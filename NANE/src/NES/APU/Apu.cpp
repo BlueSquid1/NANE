@@ -117,7 +117,7 @@ void Apu::ClockFrameCounter(const long long& apuClockCycle)
                     this->ClockEnvelopes();
                     this->ClockWatchdogs();
                     this->ClockFreqSweeps();
-                    if(this->dma->GetApuMemory().GetRegisters().name.irq_inhibit == false)
+                    if(this->dma->GetApuMemory().GetRegisters().name.irqInhibit == false)
                     {
                         this->dma->SetIrq(true);
                     }

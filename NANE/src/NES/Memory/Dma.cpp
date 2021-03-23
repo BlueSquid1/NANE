@@ -42,7 +42,7 @@ byte Dma::Read(dword address)
             
             // Not sure if this is right but I noticed other emulators are doing it. Maybe it is to do with:
             // https://wiki.nesdev.com/w/index.php/APU#Status_.28.244015.29
-            this->apuMemory.GetRegisters().name.irq_inhibit = true;
+            this->apuMemory.GetRegisters().name.irqInhibit = true;
             return value.SND_CHN;
             break;
         }

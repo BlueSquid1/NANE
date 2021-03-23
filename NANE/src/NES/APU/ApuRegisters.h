@@ -128,7 +128,7 @@ class ApuRegisters: public MemoryRepeaterArray
             struct
             {
                 byte _ : 6;
-                bit irq_inhibit : 1;
+                bit irqInhibit : 1;
                 bit is4StepMode : 1; // false: 4 step mode, true: 5 step mode
             };
         };

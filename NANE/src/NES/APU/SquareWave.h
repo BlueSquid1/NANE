@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "Sequencer.h"
 #include "NES/Memory/BitUtil.h"
 
 class SquareWave
@@ -13,27 +14,23 @@ class SquareWave
 
     bool isPulse2 = false; //whether or not it is pulse 2. false: it is pulse 1, true it is pulse 2.
 
+    std::unique_ptr<Sequencer> watchDogSeq; //sequencer to silence the channel
     bool isEnabled = false; // whether the wave is enabled. false: output is always zero, true: output is from square wave.
-    int watchdogTimer = 0; // counter until channel is silenced
-    bool haltWatchdog = false; // true: stop decrementing watchdog timer, false decrement on watchdog clock.
 
+    std::unique_ptr<Sequencer> volumeEnvelopeSeq;
     bool volumeResetFlag = true; // tracks when a volume adjust has just happened
-    int maxVolumeOrEnvelopePeriod = 0; //if constantVolume is true, stores max volume otherwise stores volume envelope period.
     bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
     int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
-    int envelopePeriod = 0; //internal variable that tracks the current sawtooth envelope period.
 
+    std::unique_ptr<Sequencer> pulseSeq;
     byte sequencePos = 0; //which part in the square wave we are up to (think of as time).
-    dword pulsePeriod = 0; //period of the square wave.
-    byte dutyCycleNum = 0; //which duty cycle is active 0: 12.5%, 1: 25%, 2: 50%, 3: 75%
-    dword timerVal = 0; //internal variable that tracks when the square wave is due to be updated.
+    byte dutyCycleNum = 0; //which duty cycle is active 0: 12.5%, 1: 25%, 2: 50%, 3: 75%.
 
+    std::unique_ptr<Sequencer> sweepSeq;
     bool sweepResetFlag = true; //tracks when a frequency sweep has just be set.
     bool frequencySweepEnabled = false; //whether or not a frequency sweep is needed.
-    byte sweepUnitPeriod = 0; //period at which the frequency needs to be changed.
     bool isNegative = false; //frequency needs to be adjusted in a negative dirrection.
     byte shiftPeriodAmount = 0; //amount to shift frequency (represented as a period).
-    byte sweepCounter = 0; //internal variable that tracks when the frequency needs to be changed again.
 
     bool IsOutputMuted();
     dword CalTargetPeriod() const;
