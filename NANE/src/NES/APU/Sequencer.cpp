@@ -25,7 +25,11 @@ void Sequencer::Clock()
         }
         return;
     }
-    this->counter--;
+
+    if(this->haltCounter == false)
+    {
+        this->counter--;
+    }
 }
 
 int Sequencer::GetCounter() const

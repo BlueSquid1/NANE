@@ -122,7 +122,7 @@ void SquareWave::EnvelopeClock()
 {
     if(this->volumeResetFlag)
     {
-        this->volumeEnvelopeSeq->SetPeriod(this->volumeEnvelopeSeq->GetPeriod());
+        this->volumeEnvelopeSeq->SetPeriod(this->volumeEnvelopeSeq->GetPeriod(), true);
         this->volumeDecayEnvelope = 15;
         this->volumeResetFlag = false;
         return;
@@ -135,7 +135,7 @@ void SquareWave::SweepClock()
 {
     if(this->sweepResetFlag)
     {
-        this->sweepSeq->SetPeriod(this->sweepSeq->GetPeriod());
+        this->sweepSeq->SetPeriod(this->sweepSeq->GetPeriod(), true);
         this->sweepResetFlag = false;
         return;
     }
@@ -184,7 +184,7 @@ dword SquareWave::GetPulsePeriod()
 
 void SquareWave::SetPulsePeriod(dword period)
 {
-    this->pulseSeq->SetPeriod(period);
+    this->pulseSeq->SetPeriod(period, false);
 }
 
 void SquareWave::SetDutyCycle(int dutyCycleNum)
