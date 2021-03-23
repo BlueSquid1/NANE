@@ -13,7 +13,7 @@ void Sequencer::Clock()
     if(this->counter <= 0 && this->period >= 0)
     {
         //reset if needed
-        if(this->period > 0 && this->isLooping)
+        if(this->period >= 0 && this->isLooping)
         {
             this->counter = this->period;
         }
