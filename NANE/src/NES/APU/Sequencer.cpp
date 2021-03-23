@@ -47,8 +47,13 @@ void Sequencer::SetPeriod(int period, bool resetCounter)
     this->period = period;
     if(resetCounter)
     {
-        this->counter = period;
+        this->ResetCounterToPeriod();
     }
+}
+
+void Sequencer::ResetCounterToPeriod()
+{
+    this->counter = this->period;
 }
 
 bool Sequencer::GetHaltCounter() const

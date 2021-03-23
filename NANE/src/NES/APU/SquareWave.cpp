@@ -122,7 +122,7 @@ void SquareWave::EnvelopeClock()
     if(this->volumeResetFlag)
     {
         this->volumeDecayEnvelope = 15;
-        this->volumeEnvelopeSeq->SetPeriod(this->volumeEnvelopeSeq->GetPeriod(), true);
+        this->volumeEnvelopeSeq->ResetCounterToPeriod();
         this->volumeResetFlag = false;
         return;
     }
@@ -198,12 +198,12 @@ int SquareWave::GetWatchdogTimer()
 
 void SquareWave::SetWatchdogTimer(int lengthCounter)
 {
-    this->watchDogSeq->SetPeriod(lengthCounter);
+    this->watchDogSeq->SetPeriod(lengthCounter, true);
 }
 
 void SquareWave::SetWatchdogTimerFromCode(int lengthCounterCode)
 {
-    this->watchDogSeq->SetPeriod(LENGTH_COUNTER_LOOKUP.at(lengthCounterCode));
+    this->watchDogSeq->SetPeriod(LENGTH_COUNTER_LOOKUP.at(lengthCounterCode), true);
 }
 
 void SquareWave::SetHaltWatchdogTimer(bool haltWatchdog)

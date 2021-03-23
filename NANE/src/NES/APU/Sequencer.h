@@ -18,7 +18,8 @@ class Sequencer
     void Clock();
     int GetCounter() const;
     int GetPeriod() const;
-    void SetPeriod(int period, bool resetCounter = true);
+    void SetPeriod(int period, bool resetCounter);
+    void ResetCounterToPeriod();
     bool GetHaltCounter() const;
     void SetHaltCounter(bool haltCounter);
 };

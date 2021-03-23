@@ -21,11 +21,6 @@ class SquareWave
     bool volumeResetFlag = true; // tracks when a volume adjust has just happened
     bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
     int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
-    // bool volumeResetFlag = true; // tracks when a volume adjust has just happened
-    // int maxVolumeOrEnvelopePeriod = 0; //if constantVolume is true, stores max volume otherwise stores volume envelope period.
-    // bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
-    // int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
-    // int envelopePeriod = 0; //internal variable that tracks the current sawtooth envelope period.
 
     std::unique_ptr<Sequencer> pulseSeq;
     byte sequencePos = 0; //which part in the square wave we are up to (think of as time).
