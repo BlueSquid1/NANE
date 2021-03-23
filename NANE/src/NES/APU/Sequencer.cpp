@@ -10,7 +10,7 @@ Sequencer::Sequencer(int period, bool isLooping, std::function<void(void)> expir
 
 void Sequencer::Clock()
 {
-    if(this->counter <= 0 && this->period > 0)
+    if(this->counter <= 0 && this->period >= 0)
     {
         //reset if needed
         if(this->period > 0 && this->isLooping)

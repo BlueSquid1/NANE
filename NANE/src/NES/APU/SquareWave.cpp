@@ -77,13 +77,25 @@ SquareWave::SquareWave(bool isPulse2)
 {
     this->isPulse2 = isPulse2;
 
-    this->watchDogSeq = std::make_unique<Sequencer>(0, false, nullptr);
-    this->volumeEnvelopeSeq = std::make_unique<Sequencer>(0, true, [this]()
+    this->watchDogSeq = std::make_unique<Sequencer>(-1, false, nullptr);
+
+    this->pulseSeq = std::make_unique<Sequencer>(-1, true, [this]()
     {
+        this->sequencePos = (this->sequencePos + 1) % 8;
+    });
+
+    this->sweepSeq = std::make_unique<Sequencer>(-1, true, [this]()
+    {
+        if(this->frequencySweepEnabled)
+        {
+            this->pulseSeq->SetPeriod(this->CalTargetPeriod(), false);
+        }
+    });
+
+    this->volumeEnvelopeSeq = std::make_unique<Sequencer>(-1, true, [this]{
         if(this->volumeDecayEnvelope <= 0)
         {
-            // if the watchdog is halted then loop the volume envelope
-            if(watchDogSeq->GetHaltCounter() == true)
+            if(this->watchDogSeq->GetHaltCounter() == true)
             {
                 this->volumeDecayEnvelope = 15;
             }
@@ -92,19 +104,6 @@ SquareWave::SquareWave(bool isPulse2)
 
         --this->volumeDecayEnvelope;
         return;
-    });
-
-    this->pulseSeq = std::make_unique<Sequencer>(0, true, [this]()
-    {
-        this->sequencePos = (this->sequencePos + 1) % 8;
-    });
-
-    this->sweepSeq = std::make_unique<Sequencer>(0, true, [this]()
-    {
-        if(this->frequencySweepEnabled)
-        {
-            this->pulseSeq->SetPeriod(this->CalTargetPeriod(), false);
-        }
     });
 }
 
@@ -122,8 +121,8 @@ void SquareWave::EnvelopeClock()
 {
     if(this->volumeResetFlag)
     {
-        this->volumeEnvelopeSeq->SetPeriod(this->volumeEnvelopeSeq->GetPeriod(), true);
         this->volumeDecayEnvelope = 15;
+        this->volumeEnvelopeSeq->SetPeriod(this->volumeEnvelopeSeq->GetPeriod(), true);
         this->volumeResetFlag = false;
         return;
     }
