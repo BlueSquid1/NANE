@@ -52,8 +52,9 @@ void Apu::Step()
     {
         float sq1Sample = this->dma->GetApuMemory().GetSquareWave1().OutputSample();
         float sq2Sample = this->dma->GetApuMemory().GetSquareWave2().OutputSample();
+        float triSample = this->dma->GetApuMemory().GetTriangleWave().OutputSample();
 
-        float sample = this->MixChannels(sq1Sample, sq2Sample);
+        float sample = this->MixChannels(sq1Sample, sq2Sample, triSample, 0.0f, 0.0f);
 
         sample = this->Filter(sample);
         this->audioStream->Push(sample);
@@ -68,11 +69,15 @@ std::shared_ptr<ThreadSafeQueue<float>> Apu::GetAudio()
     return this->audioStream;
 }
 
-float Apu::MixChannels(float sq1, float sq2)
+float Apu::MixChannels(float sq1, float sq2, float tri, float noise, float dmc)
 {
-    float pulseOutput = (95.88 * (sq1 + sq2)) / (8128 + (100 * (sq1 + sq2)));
+    float pulseSum = sq1 + sq2;
+    float pulseOutput = (95.88 * pulseSum) / (8128 + (100 * pulseSum));
 
-    float audioOutput = pulseOutput;
+    float tndSum = (tri / 8227) + (noise / 12241) + (dmc / 22638);
+    float tndOutput = (159.79 * tndSum) / (1 + 100 * tndSum);
+
+    float audioOutput = pulseOutput + tndOutput;
     return audioOutput;
 }
 
@@ -169,10 +174,12 @@ void Apu::ClockChannels(const long long& apuClockCycle)
 {
     if(apuClockCycle % 2 == 0)
     {
-        //APU runs at half the CPU clock speed
+        //all waves except for triangle wave run at half the CPU clock speed
         this->dma->GetApuMemory().GetSquareWave1().ApuClock();
         this->dma->GetApuMemory().GetSquareWave2().ApuClock();
     }
+    
+    this->dma->GetApuMemory().GetTriangleWave().ApuClock();
 }
 
 void Apu::ClockEnvelopes()
@@ -185,6 +192,7 @@ void Apu::ClockWatchdogs()
 {
     this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
     this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
+    this->dma->GetApuMemory().GetTriangleWave().WatchdogClock();
 }
 
 void Apu::ClockFreqSweeps()

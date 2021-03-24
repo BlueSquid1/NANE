@@ -6,10 +6,11 @@
 #include "Sequencer.h"
 #include "NES/Memory/BitUtil.h"
 
-class SquareWave
+#include "IWave.h"
+
+class SquareWave : public IWave
 {
     private:
-    static const std::vector<int> LENGTH_COUNTER_LOOKUP;
     static const std::vector<std::vector<bool>> DUTY_CYCLE_TABLE;
 
     bool isPulse2 = false; //whether or not it is pulse 2. false: it is pulse 1, true it is pulse 2.
@@ -37,13 +38,13 @@ class SquareWave
 
     public:
     SquareWave(bool isPulse2);
-    void ApuClock();
+    void ApuClock() override;
     void WatchdogClock();
     void EnvelopeClock();
     void SweepClock();
 
     //number between 0.0 to 15.0
-    float OutputSample();
+    float OutputSample() override;
 
     void ResetVolumeDecayEnvelope();
 

@@ -36,7 +36,7 @@ class Apu
 
     std::shared_ptr<ThreadSafeQueue<float>> GetAudio();
 
-    float MixChannels(float sq1, float sq2);
+    float MixChannels(float sq1, float sq2, float tri, float noise, float dmc);
 
     float Filter(float sample);
 

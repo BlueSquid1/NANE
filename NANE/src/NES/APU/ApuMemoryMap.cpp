@@ -99,17 +99,21 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::TRI_LINEAR_ADDR:
         {
-            this->tri;
+            //this->tri;
             break;
         }
         case ApuRegisters::ApuAddresses::TRI_LO_ADDR:
         {
-            this->tri;
+            dword upperVal = this->tri.GetPeriod() & 0xFF00;
+            this->tri.SetPeriod(upperVal | this->apuRegMem.name.TRI.LO);
             break;
         }
         case ApuRegisters::ApuAddresses::TRI_HI_ADDR:
         {
-            this->tri;
+            dword lowerVal = this->tri.GetPeriod() & 0x00FF;
+            dword period = (this->apuRegMem.name.TRI.timerHigh << 8) | lowerVal;
+            this->tri.SetPeriod(period);
+            this->tri.SetWatchdogTimerFromCode(this->apuRegMem.name.TRI.lengthCounter);
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
@@ -186,6 +190,11 @@ SquareWave& ApuMemoryMap::GetSquareWave1()
 SquareWave& ApuMemoryMap::GetSquareWave2()
 {
     return this->sq2;
+}
+
+TriangleWave& ApuMemoryMap::GetTriangleWave()
+{
+    return this->tri;
 }
 
 bool ApuMemoryMap::GetResetFrameCounter()
