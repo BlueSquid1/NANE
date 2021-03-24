@@ -8,12 +8,23 @@ const std::vector<float> TriangleWave::SEQUENCE_TABLE =
 
 TriangleWave::TriangleWave()
 {
-    this->watchdogSeq = std::make_unique<Sequencer>(-1, false, nullptr);
+    this->watchdogSeq = std::make_unique<Sequencer>(-1, false, [this]()
+    {
+        this->triSeq->SetHaltCounter(true);
+    });
+
+    this->linearCounterSeq = std::make_unique<Sequencer>(-1, false, [this]()
+    {
+        this->triSeq->SetHaltCounter(true);
+    });
 
     this->triSeq = std::make_unique<Sequencer>(-1, true, [this]()
     {
         this->sequencePos = (this->sequencePos + 1) % 32;
     });
+
+    //triangle wave is halted on startup
+    this->triSeq->SetHaltCounter(true);
 }
 
 void TriangleWave::ApuClock()
@@ -24,6 +35,7 @@ void TriangleWave::ApuClock()
 void TriangleWave::WatchdogClock()
 {
     this->watchdogSeq->Clock();
+    this->linearCounterSeq->Clock();
 }
 
 float TriangleWave::OutputSample()
@@ -45,4 +57,20 @@ void TriangleWave::SetPeriod(dword period)
 void TriangleWave::SetWatchdogTimerFromCode(int lengthCounterCode)
 {
     this->watchdogSeq->SetPeriod(IWave::LENGTH_COUNTER_LOOKUP.at(lengthCounterCode), true);
+    this->triSeq->SetHaltCounter(false);
+}
+
+void TriangleWave::SetLinearCounter(byte countDown)
+{
+    this->linearCounterSeq->SetPeriod(countDown, true);
+    if(countDown != 0)
+    {
+        this->triSeq->SetHaltCounter(false);
+    }
+}
+
+void TriangleWave::SetHaltWatchdogTimer(bool haltWatchdog)
+{
+    this->watchdogSeq->SetHaltCounter(haltWatchdog);
+    //TODO: enable or disable linear timer
 }

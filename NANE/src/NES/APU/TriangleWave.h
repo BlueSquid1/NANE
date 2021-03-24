@@ -14,6 +14,8 @@ class TriangleWave : public IWave
 
     std::unique_ptr<Sequencer> watchdogSeq;
 
+    std::unique_ptr<Sequencer> linearCounterSeq;
+
     std::unique_ptr<Sequencer> triSeq;
     byte sequencePos = 0;
 
@@ -32,4 +34,6 @@ class TriangleWave : public IWave
     dword GetPeriod() const;
     void SetPeriod(dword period);
     void SetWatchdogTimerFromCode(int lengthCounterCode);
+    void SetLinearCounter(byte countDown);
+    void SetHaltWatchdogTimer(bool haltWatchdog);
 };

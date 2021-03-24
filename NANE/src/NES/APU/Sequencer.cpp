@@ -19,7 +19,7 @@ void Sequencer::Clock()
         }
 
         //call expire handle
-        if(this->expireHandle != nullptr)
+        if(this->expireHandle != nullptr && this->counter != -1)
         {
             this->expireHandle();
         }

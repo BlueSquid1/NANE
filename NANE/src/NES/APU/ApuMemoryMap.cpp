@@ -99,7 +99,8 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::TRI_LINEAR_ADDR:
         {
-            //this->tri;
+            this->tri.SetHaltWatchdogTimer(this->apuRegMem.name.TRI.lengthCounterHalt);
+            //TODO set linear counter
             break;
         }
         case ApuRegisters::ApuAddresses::TRI_LO_ADDR:

@@ -76,7 +76,7 @@ class ApuRegisters: public MemoryRepeaterArray
                 struct
                 {
                     byte linearCounter : 7;
-                    bit linearCounterHalt : 1;
+                    bit lengthCounterHalt : 1;
                 };
             };
             byte _;
