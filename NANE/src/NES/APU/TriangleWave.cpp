@@ -22,9 +22,6 @@ TriangleWave::TriangleWave()
     {
         this->sequencePos = (this->sequencePos + 1) % 32;
     });
-
-    //triangle wave is halted on startup
-    this->triSeq->SetHaltCounter(true);
 }
 
 void TriangleWave::ApuClock()
@@ -35,6 +32,20 @@ void TriangleWave::ApuClock()
 void TriangleWave::WatchdogClock()
 {
     this->watchdogSeq->Clock();
+}
+
+void TriangleWave::LinearCounterClock()
+{
+    if(this->linearResetFlag)
+    {
+        this->linearCounterSeq->ResetCounterToPeriod();
+
+        if(this->linearCounterSeq->GetHaltCounter() == false)
+        {
+            this->linearResetFlag = false;
+        }
+        return;
+    }
     this->linearCounterSeq->Clock();
 }
 
@@ -42,6 +53,16 @@ float TriangleWave::OutputSample()
 {
     float sample = SEQUENCE_TABLE.at(this->sequencePos);
     return sample;
+}
+
+void TriangleWave::TriggerLinearReset()
+{
+    this->linearResetFlag = true;
+}
+
+void TriangleWave::SetEnabled(bool isEnabled)
+{
+    this->triSeq->SetHaltCounter(!isEnabled);
 }
 
 dword TriangleWave::GetPeriod() const
@@ -52,25 +73,46 @@ dword TriangleWave::GetPeriod() const
 void TriangleWave::SetPeriod(dword period)
 {
     this->triSeq->SetPeriod(period, false);
+
+    if(period < 2)
+    {
+        //frequency is in the ultrasonic range. Silence channel
+        this->triSeq->SetHaltCounter(true);
+    }
+}
+
+void TriangleWave::SetWatchdogTimer(int lengthCounter)
+{
+    this->watchdogSeq->SetPeriod(lengthCounter, true);
+    if(lengthCounter > 0)
+    {
+        if(this->triSeq->GetPeriod() >= 2)
+        {
+            this->triSeq->SetHaltCounter(false);
+        }
+    }
 }
 
 void TriangleWave::SetWatchdogTimerFromCode(int lengthCounterCode)
 {
     this->watchdogSeq->SetPeriod(IWave::LENGTH_COUNTER_LOOKUP.at(lengthCounterCode), true);
-    this->triSeq->SetHaltCounter(false);
-}
-
-void TriangleWave::SetLinearCounter(byte countDown)
-{
-    this->linearCounterSeq->SetPeriod(countDown, true);
-    if(countDown != 0)
+    if(this->triSeq->GetPeriod() >= 2)
     {
         this->triSeq->SetHaltCounter(false);
     }
 }
 
-void TriangleWave::SetHaltWatchdogTimer(bool haltWatchdog)
+void TriangleWave::SetLinearCounter(byte countDown)
 {
-    this->watchdogSeq->SetHaltCounter(haltWatchdog);
-    //TODO: enable or disable linear timer
+    this->linearCounterSeq->SetPeriod(countDown, false);
+    if(countDown > 0 && this->triSeq->GetPeriod() >= 2)
+    {
+        this->triSeq->SetHaltCounter(false);
+    }
+}
+
+void TriangleWave::SetHaltTimers(bool haltTimers)
+{
+    this->watchdogSeq->SetHaltCounter(haltTimers);
+    this->linearCounterSeq->SetHaltCounter(haltTimers);
 }

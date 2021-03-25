@@ -99,8 +99,8 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::TRI_LINEAR_ADDR:
         {
-            this->tri.SetHaltWatchdogTimer(this->apuRegMem.name.TRI.lengthCounterHalt);
-            //TODO set linear counter
+            this->tri.SetLinearCounter(this->apuRegMem.name.TRI.linearCounter);
+            this->tri.SetHaltTimers(this->apuRegMem.name.TRI.lengthCounterHalt);
             break;
         }
         case ApuRegisters::ApuAddresses::TRI_LO_ADDR:
@@ -115,23 +115,32 @@ void ApuMemoryMap::Write(dword address, byte value)
             dword period = (this->apuRegMem.name.TRI.timerHigh << 8) | lowerVal;
             this->tri.SetPeriod(period);
             this->tri.SetWatchdogTimerFromCode(this->apuRegMem.name.TRI.lengthCounter);
+            this->tri.TriggerLinearReset();
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
         {
             bool sq1Enabled = this->apuRegMem.name.channels.pulse1;
-            this->sq1.SetIsEnabled(sq1Enabled);
+            this->sq1.SetEnabled(sq1Enabled);
             if(sq1Enabled == false)
             {
                 this->sq1.SetWatchdogTimer(0);
             }
 
             bool sq2Enabled = this->apuRegMem.name.channels.pulse2;
-            this->sq2.SetIsEnabled(sq2Enabled);
+            this->sq2.SetEnabled(sq2Enabled);
             if(sq2Enabled == false)
             {
                 this->sq2.SetWatchdogTimer(0);
             }
+            // bool triEnabled = this->apuRegMem.name.channels.triangle;
+            // this->tri.SetEnabled(triEnabled);
+            // if(triEnabled == false)
+            // {
+            //     this->tri.SetWatchdogTimer(0);
+            // }
+
+            //TODO
             break;
         }
         case ApuRegisters::ApuAddresses::FRAME_COUNTER_ADDR:

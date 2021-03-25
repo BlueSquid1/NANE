@@ -10,6 +10,11 @@ Sequencer::Sequencer(int period, bool isLooping, std::function<void(void)> expir
 
 void Sequencer::Clock()
 {
+    if(this->haltCounter == true)
+    {
+        return;
+    }
+
     if(this->counter <= 0 && this->period >= 0)
     {
         //reset if needed
@@ -19,17 +24,13 @@ void Sequencer::Clock()
         }
 
         //call expire handle
-        if(this->expireHandle != nullptr && this->counter != -1)
+        if(this->expireHandle != nullptr)
         {
             this->expireHandle();
         }
         return;
     }
-
-    if(this->haltCounter == false)
-    {
-        this->counter--;
-    }
+    this->counter--;
 }
 
 int Sequencer::GetCounter() const

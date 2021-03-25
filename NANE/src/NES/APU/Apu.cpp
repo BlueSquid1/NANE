@@ -186,6 +186,7 @@ void Apu::ClockEnvelopes()
 {
     this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
     this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
+    this->dma->GetApuMemory().GetTriangleWave().LinearCounterClock();
 }
 
 void Apu::ClockWatchdogs()

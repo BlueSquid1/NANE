@@ -10,4 +10,5 @@ class IWave
     public:
     virtual void ApuClock() = 0;
     virtual float OutputSample() = 0;
+    virtual void SetEnabled(bool isEnabled) = 0;
 };

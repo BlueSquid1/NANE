@@ -15,6 +15,7 @@ class TriangleWave : public IWave
     std::unique_ptr<Sequencer> watchdogSeq;
 
     std::unique_ptr<Sequencer> linearCounterSeq;
+    bool linearResetFlag = false;
 
     std::unique_ptr<Sequencer> triSeq;
     byte sequencePos = 0;
@@ -26,14 +27,19 @@ class TriangleWave : public IWave
 
     void ApuClock() override;
     void WatchdogClock();
+    void LinearCounterClock();
 
     //number between 0.0 to 15.0
     float OutputSample() override;
 
+    void TriggerLinearReset();
+
     //Getters/setters
+    void SetEnabled(bool isEnabled) override;
     dword GetPeriod() const;
     void SetPeriod(dword period);
+    void SetWatchdogTimer(int lengthCounter);
     void SetWatchdogTimerFromCode(int lengthCounterCode);
     void SetLinearCounter(byte countDown);
-    void SetHaltWatchdogTimer(bool haltWatchdog);
+    void SetHaltTimers(bool haltTimers);
 };

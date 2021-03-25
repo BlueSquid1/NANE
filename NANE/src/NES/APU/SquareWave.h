@@ -19,7 +19,7 @@ class SquareWave : public IWave
     bool isEnabled = false; // whether the wave is enabled. false: output is always zero, true: output is from square wave.
 
     std::unique_ptr<Sequencer> volumeEnvelopeSeq;
-    bool volumeResetFlag = true; // tracks when a volume adjust has just happened
+    bool volumeResetFlag = false; // tracks when a volume adjust has just happened
     bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
     int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
 
@@ -28,7 +28,7 @@ class SquareWave : public IWave
     byte dutyCycleNum = 0; //which duty cycle is active 0: 12.5%, 1: 25%, 2: 50%, 3: 75%.
 
     std::unique_ptr<Sequencer> sweepSeq;
-    bool sweepResetFlag = true; //tracks when a frequency sweep has just be set.
+    bool sweepResetFlag = false; //tracks when a frequency sweep has just be set.
     bool frequencySweepEnabled = false; //whether or not a frequency sweep is needed.
     bool isNegative = false; //frequency needs to be adjusted in a negative dirrection.
     byte shiftPeriodAmount = 0; //amount to shift frequency (represented as a period).
@@ -49,7 +49,7 @@ class SquareWave : public IWave
     void ResetVolumeDecayEnvelope();
 
     //getters/setters
-    void SetIsEnabled(bool isEnabled);
+    void SetEnabled(bool isEnabled) override;
     dword GetPulsePeriod();
     void SetPulsePeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);

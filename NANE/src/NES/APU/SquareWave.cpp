@@ -163,7 +163,7 @@ void SquareWave::ResetVolumeDecayEnvelope()
     this->volumeResetFlag = true;
 }
 
-void SquareWave::SetIsEnabled(bool isEnabled)
+void SquareWave::SetEnabled(bool isEnabled)
 {
     this->isEnabled = isEnabled;
 }
