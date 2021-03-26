@@ -12,6 +12,8 @@ class TriangleWave : public IWave
     private:
     static const std::vector<float> SEQUENCE_TABLE;
 
+    bool isEnabled = false;
+
     std::unique_ptr<Sequencer> watchdogSeq;
 
     std::unique_ptr<Sequencer> linearCounterSeq;

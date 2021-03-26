@@ -118,6 +118,18 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->tri.TriggerLinearReset();
             break;
         }
+        case ApuRegisters::ApuAddresses::NOISE_VOL_ADDR:
+        {
+            break;
+        }
+        case ApuRegisters::ApuAddresses::NOISE_LO_ADDR:
+        {
+            break;
+        }
+        case ApuRegisters::ApuAddresses::NOISE_HI_ADDR:
+        {
+            break;
+        }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
         {
             bool sq1Enabled = this->apuRegMem.name.channels.pulse1;
@@ -133,12 +145,12 @@ void ApuMemoryMap::Write(dword address, byte value)
             {
                 this->sq2.SetWatchdogTimer(0);
             }
-            // bool triEnabled = this->apuRegMem.name.channels.triangle;
-            // this->tri.SetEnabled(triEnabled);
-            // if(triEnabled == false)
-            // {
-            //     this->tri.SetWatchdogTimer(0);
-            // }
+            bool triEnabled = this->apuRegMem.name.channels.triangle;
+            this->tri.SetEnabled(triEnabled);
+            if(triEnabled == false)
+            {
+                //this->tri.SetWatchdogTimer(0);
+            }
 
             //TODO
             break;

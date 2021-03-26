@@ -25,6 +25,9 @@ class ApuRegisters: public MemoryRepeaterArray
         TRI_LINEAR_ADDR = 0x4008,
         TRI_LO_ADDR = 0x400A,
         TRI_HI_ADDR = 0x400B,
+        NOISE_VOL_ADDR = 0x400C,
+        NOISE_LO_ADDR = 0x400E,
+        NOISE_HI_ADDR = 0x400F,
         SND_CHN_ADDR = 0x4015,
         FRAME_COUNTER_ADDR = 0x4017
     };

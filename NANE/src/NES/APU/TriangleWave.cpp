@@ -31,7 +31,10 @@ void TriangleWave::ApuClock()
 
 void TriangleWave::WatchdogClock()
 {
-    this->watchdogSeq->Clock();
+    if(this->isEnabled)
+    {
+        this->watchdogSeq->Clock();
+    }
 }
 
 void TriangleWave::LinearCounterClock()
@@ -62,7 +65,7 @@ void TriangleWave::TriggerLinearReset()
 
 void TriangleWave::SetEnabled(bool isEnabled)
 {
-    this->triSeq->SetHaltCounter(!isEnabled);
+    this->isEnabled = isEnabled;
 }
 
 dword TriangleWave::GetPeriod() const
