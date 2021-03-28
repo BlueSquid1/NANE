@@ -120,14 +120,22 @@ void ApuMemoryMap::Write(dword address, byte value)
         }
         case ApuRegisters::ApuAddresses::NOISE_VOL_ADDR:
         {
+            this->noise.SetMaxVolumeOrEnvelopePeriod(this->apuRegMem.name.NOISE.volumeAndEnvelopePeriod);
+            this->noise.SetConstantVolume(this->apuRegMem.name.NOISE.constantVolume);
+            this->noise.SetHaltWatchdogTimer(this->apuRegMem.name.NOISE.lengthCounterHault);
+            this->noise.ResetVolumeDecayEnvelope();
             break;
         }
-        case ApuRegisters::ApuAddresses::NOISE_LO_ADDR:
+        case ApuRegisters::ApuAddresses::NOISE_PERIOD_ADDR:
         {
+            this->noise.SetPeriodFromLookupTable(this->apuRegMem.name.NOISE.noisePeriod);
+            this->noise.SetUseSixthBit(this->apuRegMem.name.NOISE.loopNoise);
             break;
         }
-        case ApuRegisters::ApuAddresses::NOISE_HI_ADDR:
+        case ApuRegisters::ApuAddresses::NOISE_LENGTH_COUNTER_ADDR:
         {
+            this->noise.SetWatchdogTimerFromCode(this->apuRegMem.name.NOISE.lengthCounterLoad);
+            this->noise.ResetVolumeDecayEnvelope();
             break;
         }
         case ApuRegisters::ApuAddresses::SND_CHN_ADDR:
@@ -149,10 +157,14 @@ void ApuMemoryMap::Write(dword address, byte value)
             this->tri.SetEnabled(triEnabled);
             if(triEnabled == false)
             {
-                //this->tri.SetWatchdogTimer(0);
+                this->tri.SetWatchdogTimer(0);
             }
-
-            //TODO
+            bool noiseEnabled = this->apuRegMem.name.channels.noise;
+            this->noise.SetEnabled(noiseEnabled);
+            if(noiseEnabled)
+            {
+                this->noise.SetWatchdogTimer(0);
+            }
             break;
         }
         case ApuRegisters::ApuAddresses::FRAME_COUNTER_ADDR:
@@ -217,6 +229,11 @@ SquareWave& ApuMemoryMap::GetSquareWave2()
 TriangleWave& ApuMemoryMap::GetTriangleWave()
 {
     return this->tri;
+}
+
+NoiseWave& ApuMemoryMap::GetNoiseWave()
+{
+    return this->noise;
 }
 
 bool ApuMemoryMap::GetResetFrameCounter()

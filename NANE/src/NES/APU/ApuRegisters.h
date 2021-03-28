@@ -26,8 +26,8 @@ class ApuRegisters: public MemoryRepeaterArray
         TRI_LO_ADDR = 0x400A,
         TRI_HI_ADDR = 0x400B,
         NOISE_VOL_ADDR = 0x400C,
-        NOISE_LO_ADDR = 0x400E,
-        NOISE_HI_ADDR = 0x400F,
+        NOISE_PERIOD_ADDR = 0x400E,
+        NOISE_LENGTH_COUNTER_ADDR = 0x400F,
         SND_CHN_ADDR = 0x4015,
         FRAME_COUNTER_ADDR = 0x4017
     };
@@ -96,10 +96,37 @@ class ApuRegisters: public MemoryRepeaterArray
         } TRI;
         struct
         {
-            byte VOL;
+            union
+            {
+                byte VOL;
+                struct
+                {
+                    byte volumeAndEnvelopePeriod : 4; //direct volume otherwise the period for the saw tooth envlope to use.
+                    bit constantVolume : 1; //true: next byte represents the exact volume, false: use a saw tooth volume with the period in the next byte.
+                    bit lengthCounterHault : 1; //stop decrementing the length counter
+                    byte _1 : 2;
+                };
+            };
             byte _;
-            byte LO;
-            byte HI;
+            union
+            {
+                byte PERIOD;
+                struct
+                {
+                    byte noisePeriod : 4;
+                    byte _2 : 3;
+                    bit loopNoise : 1; //true: uses 6th bit of previous random number to generate next random number. False: use bit 1 instead.
+                };
+            };
+            union
+            {
+                byte LENGTH_COUNTER;
+                struct
+                {
+                    byte _3 : 3;
+                    byte lengthCounterLoad : 5;
+                };
+            };
         }NOISE;
         struct
         {

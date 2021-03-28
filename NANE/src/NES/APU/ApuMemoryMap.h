@@ -49,6 +49,7 @@ class ApuMemoryMap : public IMemoryRW
     SquareWave& GetSquareWave1();
     SquareWave& GetSquareWave2();
     TriangleWave& GetTriangleWave();
+    NoiseWave& GetNoiseWave();
     bool GetResetFrameCounter();
     void SetResetFrameCounter( bool frameCounterReset );
 };

@@ -35,7 +35,7 @@ TEST_CASE("registers write to and read from raw") {
     REQUIRE( registers.raw[0] == 24 );
     REQUIRE( registers.raw[1] == 0 );
     //write - middle
-    registers.name.NOISE.LO = 203;
+    registers.name.NOISE.PERIOD = 203;
     REQUIRE( registers.raw[13] == 0 );
     REQUIRE( registers.raw[14] == 203 );
     REQUIRE( registers.raw[15] == 0 );

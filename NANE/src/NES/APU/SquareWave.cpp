@@ -83,20 +83,6 @@ SquareWave::SquareWave(bool isPulse2)
             this->pulseSeq->SetPeriod(this->CalTargetPeriod(), false);
         }
     });
-
-    this->volumeEnvelopeSeq = std::make_unique<Sequencer>(-1, true, [this]{
-        if(this->volumeDecayEnvelope <= 0)
-        {
-            if(this->watchDogSeq->GetHaltCounter() == true)
-            {
-                this->volumeDecayEnvelope = 15;
-            }
-            return;
-        }
-
-        --this->volumeDecayEnvelope;
-        return;
-    });
 }
 
 void SquareWave::ApuClock()
@@ -111,15 +97,7 @@ void SquareWave::WatchdogClock()
 
 void SquareWave::EnvelopeClock()
 {
-    if(this->volumeResetFlag)
-    {
-        this->volumeDecayEnvelope = 15;
-        this->volumeEnvelopeSeq->ResetCounterToPeriod();
-        this->volumeResetFlag = false;
-        return;
-    }
-
-    this->volumeEnvelopeSeq->Clock();
+    this->volEnvelope.Clock();
 }
 
 void SquareWave::SweepClock()
@@ -144,23 +122,13 @@ float SquareWave::OutputSample()
     float normalizedSound = this->DUTY_CYCLE_TABLE.at(this->dutyCycleNum).at(this->sequencePos);
 
     // now multiply it by the volume multiplier
-    float multiplier = 0.0f;
-    if(this->constantVolume)
-    {
-        // The period is used as the dirrect volume if constant volume is enabled:
-        // https://wiki.nesdev.com/w/index.php/APU#Pulse_.28.244000-4007.29
-        multiplier = this->volumeEnvelopeSeq->GetPeriod();
-    }
-    else
-    {
-        multiplier = this->volumeDecayEnvelope;
-    }
+    float multiplier = this->volEnvelope.CalculateVolume();
     return multiplier * normalizedSound;
 }
 
 void SquareWave::ResetVolumeDecayEnvelope()
 {
-    this->volumeResetFlag = true;
+    this->volEnvelope.ResetVolumeDecayEnvelope();
 }
 
 void SquareWave::SetEnabled(bool isEnabled)
@@ -201,16 +169,17 @@ void SquareWave::SetWatchdogTimerFromCode(int lengthCounterCode)
 void SquareWave::SetHaltWatchdogTimer(bool haltWatchdog)
 {
     this->watchDogSeq->SetHaltCounter(haltWatchdog);
+    this->volEnvelope.SetIsLooping(haltWatchdog);
 }
 
 void SquareWave::SetMaxVolumeOrEnvelopePeriod(int volume)
 {
-    this->volumeEnvelopeSeq->SetPeriod(volume, false);
+    this->volEnvelope.SetMaxVolumeOrEnvelopePeriod(volume);
 }
 
 void SquareWave::SetConstantVolume(bool constantVol)
 {
-    this->constantVolume = constantVol;
+    this->volEnvelope.SetConstantVolume(constantVol);
 }
 
 void SquareWave::SetFrequencySweep(bool isEnabled, byte sweepUnitPeriod, bool isNegative, byte shiftPeriodAmount)

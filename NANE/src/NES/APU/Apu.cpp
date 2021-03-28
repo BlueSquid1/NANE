@@ -53,8 +53,9 @@ void Apu::Step()
         float sq1Sample = this->dma->GetApuMemory().GetSquareWave1().OutputSample();
         float sq2Sample = this->dma->GetApuMemory().GetSquareWave2().OutputSample();
         float triSample = this->dma->GetApuMemory().GetTriangleWave().OutputSample();
+        float noiseSample = this->dma->GetApuMemory().GetNoiseWave().OutputSample();
 
-        float sample = this->MixChannels(sq1Sample, sq2Sample, triSample, 0.0f, 0.0f);
+        float sample = this->MixChannels(sq1Sample, sq2Sample, triSample, noiseSample, 0.0f);
 
         sample = this->Filter(sample);
         this->audioStream->Push(sample);
@@ -177,6 +178,7 @@ void Apu::ClockChannels(const long long& apuClockCycle)
         //all waves except for triangle wave run at half the CPU clock speed
         this->dma->GetApuMemory().GetSquareWave1().ApuClock();
         this->dma->GetApuMemory().GetSquareWave2().ApuClock();
+        this->dma->GetApuMemory().GetNoiseWave().ApuClock();
     }
     
     this->dma->GetApuMemory().GetTriangleWave().ApuClock();
@@ -187,6 +189,7 @@ void Apu::ClockEnvelopes()
     this->dma->GetApuMemory().GetSquareWave1().EnvelopeClock();
     this->dma->GetApuMemory().GetSquareWave2().EnvelopeClock();
     this->dma->GetApuMemory().GetTriangleWave().LinearCounterClock();
+    this->dma->GetApuMemory().GetNoiseWave().EnvelopeClock();
 }
 
 void Apu::ClockWatchdogs()
@@ -194,6 +197,7 @@ void Apu::ClockWatchdogs()
     this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
     this->dma->GetApuMemory().GetSquareWave1().WatchdogClock();
     this->dma->GetApuMemory().GetTriangleWave().WatchdogClock();
+    this->dma->GetApuMemory().GetNoiseWave().WatchdogClock();
 }
 
 void Apu::ClockFreqSweeps()

@@ -5,6 +5,7 @@
 
 #include "Sequencer.h"
 #include "NES/Memory/BitUtil.h"
+#include "VolumeEnvelope.h"
 
 #include "IWave.h"
 
@@ -18,10 +19,11 @@ class SquareWave : public IWave
     std::unique_ptr<Sequencer> watchDogSeq; //sequencer to silence the channel
     bool isEnabled = false; // whether the wave is enabled. false: output is always zero, true: output is from square wave.
 
-    std::unique_ptr<Sequencer> volumeEnvelopeSeq;
-    bool volumeResetFlag = false; // tracks when a volume adjust has just happened
-    bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
-    int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
+    VolumeEnvelope volEnvelope;
+    // std::unique_ptr<Sequencer> volumeEnvelopeSeq;
+    // bool volumeResetFlag = false; // tracks when a volume adjust has just happened
+    // bool constantVolume = false; //true: channel has constant volume. false: volume has sawtooth envelope.
+    // int volumeDecayEnvelope = 15; //used to track sawtooth envelope.
 
     std::unique_ptr<Sequencer> pulseSeq;
     byte sequencePos = 0; //which part in the square wave we are up to (think of as time).
@@ -39,7 +41,7 @@ class SquareWave : public IWave
     public:
     SquareWave(bool isPulse2);
     void ApuClock() override;
-    void WatchdogClock();
+    void WatchdogClock() override;
     void EnvelopeClock();
     void SweepClock();
 
@@ -54,8 +56,8 @@ class SquareWave : public IWave
     void SetPulsePeriod(dword period);
     void SetDutyCycle(int dutyCycleNum);
     int GetWatchdogTimer();
-    void SetWatchdogTimer(int lengthCounter);
-    void SetWatchdogTimerFromCode(int lengthCounterCode);
+    void SetWatchdogTimer(int lengthCounter) override;
+    void SetWatchdogTimerFromCode(int lengthCounterCode) override;
     void SetHaltWatchdogTimer(bool haltWatchdog);
     void SetMaxVolumeOrEnvelopePeriod(int volume);
     void SetConstantVolume(bool constantVol);

@@ -28,7 +28,7 @@ class TriangleWave : public IWave
     TriangleWave();
 
     void ApuClock() override;
-    void WatchdogClock();
+    void WatchdogClock() override;
     void LinearCounterClock();
 
     //number between 0.0 to 15.0
@@ -40,8 +40,8 @@ class TriangleWave : public IWave
     void SetEnabled(bool isEnabled) override;
     dword GetPeriod() const;
     void SetPeriod(dword period);
-    void SetWatchdogTimer(int lengthCounter);
-    void SetWatchdogTimerFromCode(int lengthCounterCode);
+    void SetWatchdogTimer(int lengthCounter) override;
+    void SetWatchdogTimerFromCode(int lengthCounterCode) override;
     void SetLinearCounter(byte countDown);
     void SetHaltTimers(bool haltTimers);
 };
