@@ -1,0 +1,18 @@
+TODO:
+-implement sounds
+-unit test for scrolling registers
+-rewrite in CMake
+-controls feel like they have input deplay
+
+Ppu Memory map:
+-(refactor) read and write without rom
+-read/write with rom
+-read() for OAMDATA_ADDR
+-GetVRamAddress()
+
+Ppu Registers:
+-refactor "PPUCTRL, PPUMASK and PPUSTATUS union tests" to include loopy registers and any other unions
+-test read() for PPUSTATUS_ADDR
+-test write() for loopy registers and PPUCTRL_ADDR, PPUSCROLL_ADDR and PPUADDR_ADDR
+-test TransferScrollX() and TransferScrollY()
+-test GetActiveScrollX() and GetActiveScrollY()
