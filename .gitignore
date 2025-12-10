@@ -50,3 +50,12 @@ cache.ini
 
 #nes games
 *.nes
+
+*.data
+*/NANE.js
+*/NANE.html
+*/CMakeFiles
+*/cmake_install.cmake
+*/CMakeCache.txt
+*/Makefile
+*.wasm
